@@ -30,11 +30,25 @@ Este curso no tiene quiz oficial; el repo incluye una autoevaluación de 12 preg
 ## Estructura
 
 ```
+CLAUDE.md                     cómo se elabora un curso, de principio a fin
+scripts/
+├── extraer_curso.py          descarga un curso de Skilljar → markdown crudo
+└── validar_html.py           valida un curso-interactivo.html antes de publicarlo
 <nombre-del-curso>/
 ├── README.md                 índice y hilo conductor del curso
 ├── 01-....md ... NN-....md   una lección por fichero
 └── curso-interactivo.html    el curso entero en una página
 ```
+
+## Añadir un curso nuevo
+
+```bash
+python3 scripts/extraer_curso.py <slug-del-curso>     # → /tmp/<slug>/raw_*.md
+# leer los raw_*.md, escribir los resúmenes y el HTML
+python3 scripts/validar_html.py <slug>/curso-interactivo.html
+```
+
+El procedimiento completo y las convenciones de redacción están en [CLAUDE.md](CLAUDE.md).
 
 ## Aviso
 
