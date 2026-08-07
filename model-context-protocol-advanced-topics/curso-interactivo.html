@@ -260,6 +260,13 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;ba
 .wt-note b{color:var(--ink)}
 .wt-note code{font-size:.87em}
 
+/* ── créditos ── */
+footer.credits{margin:60px 0 0;padding:24px 0 0;border-top:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.6}
+footer.credits strong{color:var(--ink-2);font-weight:640}
+footer.credits a{color:var(--accent-ink);text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);text-underline-offset:2px}
+footer.credits .who{font-size:14.5px;color:var(--ink-2);margin-bottom:10px}
+footer.credits .src{padding-left:13px;border-left:2px solid var(--border-strong)}
+
 .nores{padding:30px;text-align:center;color:var(--muted);display:none}
 .nores.on{display:block}
 @media(max-width:960px){
@@ -853,6 +860,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;ba
     </div>
   </div>
 </section>
+
+<footer class="credits">
+  <p class="who"><strong>Resúmenes y proyecto:</strong> Juanma Quijada. Elaborados y publicados en español para <strong>facilitar a la comunidad hispanohablante el acceso al conocimiento sobre Claude Code y la inteligencia artificial</strong>. · <a href="https://github.com/juaquicar/claude-code-academy-spanish" target="_blank" rel="noopener">Repositorio</a></p>
+  <p class="src"><strong>El curso original es obra de Anthropic</strong> y la autoría de su contenido —temario, vídeos, ejemplos de código y evaluaciones— le pertenece íntegramente. Esta página es un resumen de estudio derivado de ese material, no lo sustituye. El curso es gratuito: <a href="https://anthropic.skilljar.com/model-context-protocol-advanced-topics" target="_blank" rel="noopener">hazlo en la Anthropic Academy</a>.</p>
+</footer>
 
 </main>
 </div>
