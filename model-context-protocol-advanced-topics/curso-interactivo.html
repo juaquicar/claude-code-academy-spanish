@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP: Advanced Topics — Curso interactivo</title>
+<style>
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --surface-2:#F4F2EC;
+  --ink:#1F1E1D; --ink-2:#4A4742; --muted:#7A756D;
+  --accent:#C15F3C; --accent-soft:#F6E7E0; --accent-ink:#8F3F24; --on-accent:#FFFFFF;
+  --border:#E4DFD6; --border-strong:#CFC8BC;
+  --good:#2E7D5B; --good-soft:#E3F1EA;
+  --warn:#9A6B08; --warn-soft:#FAF0DA;
+  --bad:#AE3323; --bad-soft:#FAE6E2;
+  --info:#2C5F8A; --info-soft:#E3EDF6;
+  --code-bg:#F1EEE7;
+  --shadow:0 1px 2px rgba(31,30,29,.05),0 8px 24px -12px rgba(31,30,29,.18);
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#171614; --surface:#201F1C; --surface-2:#2A2825;
+  --ink:#F2EFE7; --ink-2:#D3CEC4; --muted:#9A948A;
+  --accent:#E0876A; --accent-soft:#3A2A22; --accent-ink:#F0A98F; --on-accent:#1C1A17;
+  --border:#34322D; --border-strong:#47443E;
+  --good:#6DC49B; --good-soft:#1E322A;
+  --warn:#DFAE4E; --warn-soft:#332A18;
+  --bad:#E88476; --bad-soft:#372220;
+  --info:#7FB0DB; --info-soft:#1C2A36;
+  --code-bg:#26241F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px}
+#topbar .brand{font-weight:650;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+#topbar .brand small{color:var(--muted);font-weight:450;display:block;font-size:11.5px;letter-spacing:.02em}
+.tb-spacer{flex:1}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+#search{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;width:230px}
+#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#search::placeholder{color:var(--muted)}
+.meter-wrap{display:flex;align-items:center;gap:9px}
+.meter{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.meter-lab{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1420px;margin:0 auto;padding-top:60px}
+#side{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:24px 14px 60px 20px;border-right:1px solid var(--border)}
+#side::-webkit-scrollbar{width:8px}
+#side::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+.side-h{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:650;margin:18px 0 8px 10px}
+.side-h:first-child{margin-top:0}
+#side a{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:9px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.4;transition:.13s}
+#side a:hover{background:var(--surface-2);color:var(--ink)}
+#side a.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+#side a .num{flex:none;width:20px;height:20px;border-radius:6px;background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:2px;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+#side a.active .num{background:var(--accent);color:var(--on-accent);border-color:transparent}
+#side a.done .num{background:var(--good-soft);color:var(--good);border-color:transparent}
+#side a.done .num::after{content:"✓"}
+#side a.done .num span{display:none}
+main{padding:36px 44px 120px;max-width:900px;min-width:0}
+#shell>*{min-width:0}
+section{margin-bottom:14px;scroll-margin-top:80px}
+section.hidden{display:none}
+h1{font-family:var(--serif);font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px}
+h2{font-family:var(--serif);font-size:29px;line-height:1.2;letter-spacing:-.018em;margin:0 0 6px}
+h3{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;font-weight:650}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{color:var(--ink);font-weight:640}
+a.ext{color:var(--accent-ink)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);padding:.13em .38em;border-radius:5px;color:var(--accent-ink);border:1px solid var(--border)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:13.2px;line-height:1.6}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px;font-family:var(--serif)}
+.box{border-radius:var(--radius);padding:16px 18px;margin:0 0 18px;border:1px solid var(--border);background:var(--surface)}
+.box .bh{display:flex;align-items:center;gap:8px;font-weight:680;font-size:13.5px;margin-bottom:7px}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.box.key{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.box.key .bh{color:var(--accent-ink)}
+.box.trap{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.box.trap .bh{color:var(--bad)}
+.box.tip{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 28%,transparent)}
+.box.tip .bh{color:var(--good)}
+.box.note{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 26%,transparent)}
+.box.note .bh{color:var(--info)}
+.box.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.box.warn .bh{color:var(--warn)}
+blockquote{margin:0 0 18px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55}
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+th{font-weight:640;color:var(--ink);background:var(--surface-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.widget{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.widget-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:680;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.widget-t::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:560;cursor:pointer;transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--border-strong);color:var(--ink)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl{display:flex;gap:0;margin-bottom:18px;position:relative;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--border)}
+.tl button{position:relative;flex:1;min-width:96px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tl .dot{width:40px;height:40px;border-radius:99px;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:16px;transition:.2s;z-index:1}
+.tl button:hover .dot{border-color:var(--border-strong)}
+.tl button[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:scale(1.12)}
+.tl .lab{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+.tl button[aria-selected="true"] .lab{color:var(--accent-ink)}
+.ad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.ad{grid-template-columns:1fr}}
+.ad>div{border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.ad .yes{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.ad .no{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.ad h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.ad .yes h5{color:var(--good)}
+.ad .no h5{color:var(--bad)}
+.ad ul{margin:0;padding-left:18px;font-size:13.8px}
+.ad li{margin-bottom:4px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+.scale-labs{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:-8px 2px 16px}
+.btn{font-family:inherit;font-size:14px;font-weight:580;cursor:pointer;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--border-strong);background:var(--surface)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.q-step{margin-bottom:14px}
+.q-step p{font-weight:600;color:var(--ink);margin-bottom:9px}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:11px;border:1px solid var(--border);background:var(--surface-2);display:none}
+.verdict.on{display:block;animation:fade .3s}
+.verdict b{font-size:17px;display:block;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{perspective:1000px;height:155px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;overflow:auto}
+.card .f{background:var(--surface);color:var(--ink);font-weight:600}
+.card .b{background:var(--accent-soft);color:var(--accent-ink);transform:rotateY(180deg);font-size:13.5px;font-weight:500}
+.card .f::after{content:"clic para girar";position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);font-weight:400}
+.quiz-group{position:relative}
+.quiz-q{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin-bottom:14px}
+.quiz-q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.quiz-q .qt{font-weight:620;color:var(--ink);margin-bottom:13px;font-size:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;font-family:inherit;font-size:14.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:10px 13px;color:var(--ink-2);transition:.15s;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--border-strong);color:var(--ink)}
+.opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.ok .k{background:var(--good);color:var(--surface);border-color:transparent}
+.opt.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opt.ko .k{background:var(--bad);color:var(--surface);border-color:transparent}
+.opt:disabled{cursor:default}
+.expl{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:14px;color:var(--ink-2);display:none}
+.expl.on{display:block;animation:fade .25s}
+.expl b{color:var(--ink)}
+.score{position:sticky;bottom:16px;margin-top:20px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score .lab{font-size:13px;color:var(--muted);line-height:1.4}
+.readbar{display:flex;align-items:center;gap:12px;margin:30px 0 8px;padding:14px 16px;border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--surface);flex-wrap:wrap}
+.readbar.done{border-style:solid;background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.readbar .txt{font-size:14px;color:var(--muted);flex:1;min-width:160px}
+.readbar.done .txt{color:var(--good);font-weight:600}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.grid2>*{min-width:0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.mini{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.mini h5{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+.mini p{margin:0;font-size:14px}
+.vid{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:5px 13px;background:var(--surface);transition:.15s}
+.vid:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hero-stats{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 8px}
+.hero-stats div span{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.hero-stats div small{font-size:12.5px;color:var(--muted)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+.map a,.map .mini{text-decoration:none}
+.map a{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.18s;display:block}
+.map a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.map .t{font-weight:640;color:var(--ink);font-size:15px;line-height:1.35}
+.map .d{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── flow diagram ── */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:stretch;margin-bottom:16px}
+@media(max-width:700px){.flow{grid-template-columns:1fr}}
+.flow .col{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.flow .col.main{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft)}
+.flow .col h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.flow .col.main h5{color:var(--accent-ink)}
+.flow .arrow{display:grid;place-items:center;padding:0 14px;color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+@media(max-width:700px){.flow .arrow{padding:10px 0}}
+.flow ul{margin:0;padding-left:17px;font-size:13.5px}
+.flow li{margin-bottom:3px}
+.discard{text-decoration:line-through;color:var(--muted);opacity:.7}
+/* ── config builder ── */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.cfg-ctl,.cfg-out{min-width:0}
+@media(max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.cfg-ctl label:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:inherit;font-size:13px;font-weight:560;cursor:pointer;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);transition:.15s}
+.seg button:hover{border-color:var(--border-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.cfg-out pre{margin:0;height:100%}
+.cfg-hint{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;border-left:2px solid var(--border-strong);padding-left:12px}
+/* ── diagrama de flujo de mensajes ── */
+.msg{display:grid;grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);gap:0;align-items:center;margin-bottom:14px}
+@media(max-width:700px){.msg{grid-template-columns:minmax(0,1fr)}}
+.msg .node{border:1px solid var(--border);border-radius:12px;padding:13px 15px;background:var(--surface-2);min-width:0}
+.msg .node.hl{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.msg .node h5{margin:0 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.msg .node.hl h5{color:var(--accent-ink)}
+.msg .node p{margin:0;font-size:13.5px}
+.msg .link{display:grid;place-items:center;gap:3px;padding:0 8px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+.msg .link .ar{font-size:19px;color:var(--accent);line-height:1}
+.msg .link.dead .ar{color:var(--bad)}
+.msg .link.dead{color:var(--bad)}
+/* ── tabla comparativa de flags ── */
+.flags td.y{color:var(--good);font-weight:640}
+.flags td.n{color:var(--bad);font-weight:640}
+.flags td.c{text-align:center}
+/* ── walkthrough ── */
+.wt{display:grid;grid-template-columns:minmax(0,210px) minmax(0,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-2)}
+@media(max-width:760px){.wt{grid-template-columns:minmax(0,1fr)}}
+.wt-steps{border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0}
+@media(max-width:760px){.wt-steps{border-right:none;border-bottom:1px solid var(--border)}}
+.wt-steps button{
+  font-family:inherit;text-align:left;cursor:pointer;border:none;background:none;
+  padding:10px 13px;border-bottom:1px solid var(--border);color:var(--ink-2);
+  font-size:13.2px;line-height:1.35;transition:.13s;display:flex;gap:8px;align-items:flex-start;
+}
+.wt-steps button:last-child{border-bottom:none}
+.wt-steps button:hover{background:var(--surface)}
+.wt-steps button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:620}
+.wt-steps .n{flex:none;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+.wt-steps button[aria-selected="true"] .n{color:var(--accent-ink)}
+.wt-view{min-width:0;display:flex;flex-direction:column}
+.wt-file{font-family:var(--mono);font-size:11.5px;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border);color:var(--muted)}
+.wt-file b{color:var(--accent-ink);font-weight:600}
+.wt-code{position:relative;margin:0;border:none;border-radius:0;background:var(--code-bg);max-height:340px;overflow:auto;font-size:12.6px;line-height:1.55;padding:12px 0}
+.wt-code .ln{display:block;padding:0 14px;white-space:pre;color:var(--ink)}
+.wt-code .ln.on{background:color-mix(in srgb,var(--accent) 15%,transparent);box-shadow:inset 3px 0 0 var(--accent)}
+.wt-note{padding:12px 14px;border-top:1px solid var(--border);background:var(--surface);font-size:14px;color:var(--ink-2);line-height:1.55}
+.wt-note b{color:var(--ink)}
+.wt-note code{font-size:.87em}
+
+.nores{padding:30px;text-align:center;color:var(--muted);display:none}
+.nores.on{display:block}
+@media(max-width:960px){
+  #shell{grid-template-columns:1fr}
+  #side{display:none}
+  main{padding:26px 20px 100px}
+  #search{width:140px}
+  .meter-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">MCP: Advanced Topics<small>Anthropic Academy · resumen interactivo</small></div>
+  <div class="tb-spacer"></div>
+  <div class="meter-wrap"><div class="meter"><i id="meterBar"></i></div><span class="meter-lab" id="meterLab">0 / 8</span></div>
+  <input id="search" type="search" placeholder="Buscar… (⌘/Ctrl+K)" autocomplete="off">
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  <button class="icon-btn" id="resetBtn" title="Reiniciar progreso">↺</button>
+</div>
+
+<div id="shell">
+<nav id="side">
+  <div class="side-h">Inicio</div>
+  <a href="#intro" data-nav="intro"><span class="num"><span>★</span></span> Mapa del curso</a>
+  <div class="side-h">Servidor → cliente</div>
+  <a href="#c1" data-nav="c1"><span class="num"><span>1</span></span> Sampling</a>
+  <a href="#c2" data-nav="c2"><span class="num"><span>2</span></span> Notificaciones de log y progreso</a>
+  <a href="#c3" data-nav="c3"><span class="num"><span>3</span></span> Roots</a>
+  <div class="side-h">Protocolo y transportes</div>
+  <a href="#c4" data-nav="c4"><span class="num"><span>4</span></span> Tipos de mensaje JSON</a>
+  <a href="#c5" data-nav="c5"><span class="num"><span>5</span></span> El transporte STDIO</a>
+  <a href="#c6" data-nav="c6"><span class="num"><span>6</span></span> El transporte StreamableHTTP</a>
+  <a href="#c7" data-nav="c7"><span class="num"><span>7</span></span> StreamableHTTP en profundidad</a>
+  <a href="#c8" data-nav="c8"><span class="num"><span>8</span></span> Estado y los dos flags</a>
+  <div class="side-h">Repaso</div>
+  <a href="#flash" data-nav="flash"><span class="num"><span>◆</span></span> Flashcards</a>
+  <a href="#quiz" data-nav="quiz"><span class="num"><span>?</span></span> Quiz (14 preguntas)</a>
+</nav>
+
+<main>
+<div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
+
+<!-- ═══════ INTRO ═══════ -->
+<section id="intro" data-title="mapa del curso mcp advanced topics introducción">
+  <span class="pill acc">Anthropic Academy</span>
+  <h1 style="margin-top:14px">MCP: Advanced&nbsp;Topics</h1>
+  <p class="lede">Lo que MCP puede hacer más allá de exponer herramientas: que <strong>el servidor le pida cosas al cliente</strong>. Y por qué esa dirección de comunicación es exactamente la que se rompe al desplegar.</p>
+
+  <div class="hero-stats">
+    <div><span>3</span><small>capacidades servidor → cliente</small></div>
+    <div><span>2</span><small>transportes</small></div>
+    <div><span>2</span><small>flags que lo rompen todo</small></div>
+    <div><span>17</span><small>pasos de código</small></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ El curso entero en una idea</div>
+    <p>Las tres capacidades del primer bloque —<strong>sampling</strong>, <strong>notificaciones</strong> y <strong>roots</strong>— parecen temas sueltos. No lo son: las tres necesitan <strong>que el servidor inicie una petición hacia el cliente</strong>.</p>
+    <p style="margin:0"><strong>STDIO</strong> da esa dirección gratis. <strong>HTTP no.</strong> Todo el segundo bloque es la historia de ese apaño y de los dos flags que lo desmontan.</p>
+  </div>
+
+  <h3>Las tres capacidades, en una tabla</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Capacidad</th><th>El servidor pide al cliente…</th><th>Método</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Sampling</strong></td><td>que genere texto con su LLM</td><td><code>ctx.session.create_message()</code></td></tr>
+      <tr><td><strong>Log / progreso</strong></td><td>que muestre un mensaje o el avance</td><td><code>ctx.info()</code> · <code>ctx.report_progress()</code></td></tr>
+      <tr><td><strong>Roots</strong></td><td>la lista de rutas permitidas</td><td><code>ctx.session.list_roots()</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Matriz de compatibilidad</h3>
+  <p>Qué sobrevive a cada configuración de transporte. Es el resumen ejecutable del curso — si entiendes esta tabla, lo entiendes todo.</p>
+  <div class="widget">
+    <div class="widget-t">Interactivo · elige el transporte</div>
+    <div class="chips" id="matChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-v="stdio">STDIO</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="http">StreamableHTTP</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="stateless">HTTP · stateless</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="json">HTTP · json_response</button>
+    </div>
+    <div id="matOut"></div>
+  </div>
+
+  <h3>Recorrido</h3>
+  <div class="map">
+    <a href="#c1"><div class="t">1 · Sampling</div><div class="d">El servidor pide texto sin tener LLM, ni claves, ni coste</div></a>
+    <a href="#c2"><div class="t">2 · Log y progreso</div><div class="d">Feedback en tiempo real durante una llamada larga</div></a>
+    <a href="#c3"><div class="t">3 · Roots</div><div class="d">Permisos de fichero y descubrimiento autónomo</div></a>
+    <a href="#c4"><div class="t">4 · Mensajes JSON</div><div class="d">Request/result, notifications y la frase bisagra</div></a>
+    <a href="#c5"><div class="t">5 · STDIO</div><div class="d">Bidireccional, pero solo en la misma máquina</div></a>
+    <a href="#c6"><div class="t">6 · StreamableHTTP</div><div class="d">Remoto, pero HTTP solo va en un sentido</div></a>
+    <a href="#c7"><div class="t">7 · En profundidad</div><div class="d">SSE, session ID y las dos conexiones</div></a>
+    <a href="#c8"><div class="t">8 · Los dos flags</div><div class="d">stateless_http y json_response</div></a>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ Sobre este resumen</div>
+    <p style="margin:0">El curso es <strong>de vídeo</strong>: las páginas de lección solo llevan el reproductor. Esto se ha elaborado a partir de las <strong>notas oficiales</strong> que Anthropic embebe en la plataforma, más el <strong>código y los pasos de los tres walkthroughs</strong>, que están íntegros en los capítulos 1, 2 y 3.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 1 ═══════ -->
+<section id="c1" data-title="sampling create_message callback CreateMessageResult servidor pide texto llm">
+  <div class="chead"><span class="pill">Servidor → cliente</span><span class="pill acc">Lección 1</span></div>
+  <h2>Sampling</h2>
+  <p class="lede">Técnica que permite a un servidor MCP <strong>pedirle al cliente que genere texto con un modelo de lenguaje</strong>, en vez de acceder el servidor directamente a un LLM.</p>
+
+  <h3>El problema que resuelve</h3>
+  <p>Un servidor MCP que quiera usar un LLM tendría que gestionar <strong>claves de API</strong>, gestionar <strong>autenticación</strong> y pagar los <strong>costes de tokens</strong>.</p>
+  <div class="box key">
+    <div class="bh">◈ Lo que hace sampling</div>
+    <p style="margin:0">Traslada <strong>la responsabilidad del acceso al LLM del servidor al cliente</strong>. El servidor no necesita ninguna de esas tres cosas.</p>
+  </div>
+
+  <h3>Arquitectura</h3>
+  <div class="widget">
+    <div class="widget-t">El flujo, en cuatro saltos</div>
+    <div class="msg">
+      <div class="node hl"><h5>Servidor MCP</h5><p>Crea la petición de mensaje dentro de una llamada a herramienta</p></div>
+      <div class="link"><span class="ar">→</span>create_message()</div>
+      <div class="node"><h5>Cliente MCP</h5><p>La recibe en su <strong>sampling callback</strong></p></div>
+    </div>
+    <div class="msg">
+      <div class="node"><h5>Cliente MCP</h5><p>Llama al LLM con sus propias credenciales</p></div>
+      <div class="link"><span class="ar">→</span>SDK del LLM</div>
+      <div class="node"><h5>LLM</h5><p>Genera el texto</p></div>
+    </div>
+    <div class="msg" style="margin-bottom:0">
+      <div class="node hl"><h5>Servidor MCP</h5><p>Recibe el texto y hace lo que quiera con él</p></div>
+      <div class="link"><span class="ar">←</span>CreateMessageResult</div>
+      <div class="node"><h5>Cliente MCP</h5><p>Devuelve el texto generado</p></div>
+    </div>
+  </div>
+
+  <div class="ad">
+    <div class="yes"><h5>✓ Beneficios</h5><ul>
+      <li>Elimina la complejidad de integrar un LLM en el servidor</li>
+      <li><strong>Quita el requisito de claves de API</strong> del servidor</li>
+      <li><strong>Evita el uso no autorizado de tokens</strong> en servidores públicos</li>
+    </ul></div>
+    <div class="no"><h5>◈ Caso de uso principal</h5><ul>
+      <li>Servidores MCP <strong>accesibles públicamente</strong> que necesitan capacidades de LLM</li>
+      <li>…sin acceso directo a uno</li>
+      <li>…ni los costes ni los problemas de seguridad asociados</li>
+    </ul></div>
+  </div>
+
+  <h3>Walkthrough de código</h3>
+  <p>Los 6 pasos del tutorial de la plataforma, con el código real. Toca cada paso: se resaltan las líneas exactas.</p>
+  <div class="widget"><div class="widget-t">Interactivo · sampling</div><div class="wt" data-wt="sampling"></div></div>
+
+  <div class="box trap">
+    <div class="bh">⚠ Los dos detalles que se escapan</div>
+    <ul style="margin:0">
+      <li>Los mensajes vienen <strong>formateados para MCP</strong> y no hay garantía de que sean compatibles con tu SDK de LLM: <strong>hay que convertirlos</strong>.</li>
+      <li>El callback <strong>hay que pasárselo a <code>ClientSession</code></strong>. Si no, el servidor pide sampling y no hay nadie escuchando.</li>
+    </ul>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ Ojo para el capítulo 6</div>
+    <p style="margin:0">El sampling exige que el <strong>servidor le pida algo al cliente</strong>. Esa dirección es exactamente la que HTTP no da gratis.</p>
+  </div>
+  <div class="readbar" data-read="c1"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 2 ═══════ -->
+<section id="c2" data-title="notificaciones log progreso context info report_progress logging_callback progress_callback">
+  <div class="chead"><span class="pill">Servidor → cliente</span><span class="pill acc">Lección 2</span></div>
+  <h2>Notificaciones de log y progreso</h2>
+  <p class="lede">Capacidad del servidor que da <strong>feedback en tiempo real durante la ejecución de una herramienta</strong>. Sin esto, una llamada que tarda es una caja negra.</p>
+
+  <div class="grid2">
+    <div class="mini"><h5>Qué evita</h5><p>Que el usuario crea que la llamada <strong>se ha atascado o ha fallado</strong>.</p></div>
+    <div class="mini"><h5>Qué da</h5><p><strong>Visibilidad</strong> sobre operaciones largas, en tiempo real.</p></div>
+  </div>
+  <div class="box note"><div class="bh">ℹ Es opcional</div><p style="margin:0">Puedes prescindir de ella. Es <strong>puramente mejora de UX</strong>, no cambia lo que la herramienta hace.</p></div>
+
+  <h3>Los dos lados</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · servidor y cliente</div>
+    <div class="chips" id="notiChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="n1">En el servidor</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="n2">En el cliente</button>
+    </div>
+    <div class="panel on" id="n1">
+      <ul style="margin-bottom:0">
+        <li>Las funciones de herramienta <strong>reciben automáticamente un argumento <code>Context</code> como último parámetro</strong>. No hay que registrarlo.</li>
+        <li>El objeto <code>Context</code> ofrece <code>info()</code>, <code>warning()</code>, <code>debug()</code> y <code>error()</code> para logs, y <code>report_progress()</code> para el avance.</li>
+        <li>Llamar a esos métodos <strong>envía mensajes al cliente automáticamente</strong>.</li>
+      </ul>
+    </div>
+    <div class="panel" id="n2">
+      <p>Dos callbacks separados… y aquí está el detalle que se confunde: <strong>se registran en sitios distintos</strong>.</p>
+      <div class="tw" style="margin:0"><table>
+        <thead><tr><th>Callback</th><th>Dónde se pasa</th><th>Por qué</th></tr></thead>
+        <tbody>
+          <tr><td><strong>logging</strong></td><td><code>ClientSession(...)</code></td><td>Es de <strong>la sesión entera</strong></td></tr>
+          <tr><td><strong>progreso</strong></td><td><code>call_tool(...)</code></td><td>Es de <strong>una llamada concreta</strong></td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin:12px 0 0">Los callbacks deciden <strong>cómo mostrar</strong> la información: terminal, interfaz web, lo que sea.</p>
+    </div>
+  </div>
+
+  <h3>Walkthrough de código</h3>
+  <div class="widget"><div class="widget-t">Interactivo · notificaciones</div><div class="wt" data-wt="notifications"></div></div>
+
+  <div class="box note">
+    <div class="bh">ℹ Ojo para el capítulo 6</div>
+    <p style="margin:0">Igual que el sampling, esto exige que el <strong>servidor mande mensajes al cliente</strong>. Es lo segundo que se rompe al pasar a HTTP.</p>
+  </div>
+  <div class="readbar" data-read="c2"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 3 ═══════ -->
+<section id="c3" data-title="roots permisos ficheros carpetas is_path_allowed list_roots file:// descubrimiento">
+  <div class="chead"><span class="pill">Servidor → cliente</span><span class="pill acc">Lección 3</span></div>
+  <h2>Roots</h2>
+  <p class="lede">Forma codificada de que un usuario <strong>conceda a un servidor acceso a ficheros y carpetas concretos</strong>.</p>
+
+  <h3>El problema sin roots</h3>
+  <p>El usuario dice <em>"convierte bikin.mp4"</em>. Claude <strong>no puede localizar el fichero</strong> en un sistema de ficheros complejo sin la ruta completa. Y exigirle al usuario que escriba rutas completas es incómodo.</p>
+
+  <div class="box key">
+    <div class="bh">◈ Root</div>
+    <p style="margin:0">Fichero o carpeta al que el usuario concede permiso de acceso <strong>por adelantado</strong> — normalmente vía argumentos de línea de comandos al arrancar el servidor. Su URI <strong>debe empezar por <code>file://</code></strong>.</p>
+  </div>
+
+  <h3>Las tres herramientas del ejemplo</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Herramienta</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ConvertVideo</strong></td><td>La herramienta original</td></tr>
+      <tr><td><strong>ReadDirectory</strong></td><td>Lista ficheros y carpetas de un directorio</td></tr>
+      <tr><td><strong>ListRoots</strong></td><td>Devuelve los roots disponibles</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="grid2">
+    <div class="mini"><h5>① Control de permisos</h5><p>Limita el acceso del servidor <strong>solo a las zonas autorizadas</strong>.</p></div>
+    <div class="mini"><h5>② Descubrimiento autónomo</h5><p>Claude puede <strong>buscar por los roots disponibles</strong> para encontrar ficheros, sin que el usuario dé la ruta completa.</p></div>
+  </div>
+
+  <div class="box trap">
+    <div class="bh">⚠ La limitación clave del capítulo</div>
+    <p><strong>El SDK de MCP no impone las restricciones de root automáticamente.</strong> El desarrollador del servidor tiene que implementar las comprobaciones de acceso a mano.</p>
+    <p style="margin:0">Escribe algo como <code>is_path_allowed()</code> y <strong>llámala en todas tus herramientas</strong> antes de tocar nada.</p>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ ListRoots es opcional</div>
+    <p style="margin:0">Como alternativa puedes meter la lista de roots <strong>directamente en el prompt</strong>. El patrón de herramienta permite a Claude <strong>consultar dinámicamente</strong> los roots cuando le hagan falta.</p>
+  </div>
+
+  <h3>Walkthrough de código</h3>
+  <p>Un conversor de vídeo con <code>ffmpeg</code> expuesto por MCP. Siete pasos entre <code>main.py</code>, el cliente y el servidor.</p>
+  <div class="widget"><div class="widget-t">Interactivo · roots</div><div class="wt" data-wt="roots"></div></div>
+
+  <div class="box note">
+    <div class="bh">ℹ Ojo para el capítulo 6</div>
+    <p style="margin:0"><code>ctx.session.list_roots()</code> es, otra vez, <strong>el servidor pidiéndole algo al cliente</strong>. Tercera capacidad que depende de esa dirección.</p>
+  </div>
+  <div class="readbar" data-read="c3"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 4 ═══════ -->
+<section id="c4" data-title="tipos de mensaje json rpc request result notification schema.ts">
+  <div class="chead"><span class="pill">Protocolo</span><span class="pill acc">Lección 4</span></div>
+  <h2>Tipos de mensaje JSON</h2>
+  <p class="lede">La comunicación en MCP son <strong>mensajes JSON entre clientes y servidores</strong>. Cada tipo tiene un propósito distinto.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · las dos categorías</div>
+    <div class="chips" id="jsonChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="j1">Pares Request / Result</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="j2">Notifications</button>
+    </div>
+    <div class="panel on" id="j1">
+      <p><strong>Siempre van juntos</strong>: a cada petición le corresponde un resultado.</p>
+      <ul style="margin:0"><li><code>call_tool_request</code> + <code>call_tool_result</code></li><li><code>initialize_request</code> + <code>initialize_result</code></li></ul>
+    </div>
+    <div class="panel" id="j2">
+      <p>Eventos que <strong>no necesitan respuesta</strong>.</p>
+      <ul style="margin:0"><li><code>progress_notification</code></li><li><code>logging_message_notification</code></li><li><code>tool_change_notification</code></li></ul>
+    </div>
+  </div>
+
+  <h3>Clasificación por dirección</h3>
+  <ul>
+    <li><strong>Client messages</strong> — los envía el cliente MCP al servidor.</li>
+    <li><strong>Server messages</strong> — los envía el servidor MCP al cliente.</li>
+  </ul>
+
+  <div class="box key">
+    <div class="bh">◈ La frase bisagra del curso</div>
+    <p><strong>Los servidores pueden enviar mensajes AL cliente</strong>: hay <em>server requests</em> y <em>server notifications</em>.</p>
+    <p style="margin:0"><strong>Esa capacidad direccional se convierte en la limitación crítica del transporte StreamableHTTP.</strong></p>
+  </div>
+  <p>Todo lo de los capítulos 1 a 3 son mensajes en esa dirección. Todo lo del 6 al 8 es lo que pasa cuando esa dirección deja de ser gratis.</p>
+
+  <h3>Dos detalles</h3>
+  <div class="grid2">
+    <div class="mini"><h5>El esquema</h5><p>Un fichero TypeScript en el repo de la especificación: <code>schema.ts</code>. <strong>No es código ejecutable</strong>, solo descripciones de tipos por comodidad.</p></div>
+    <div class="mini"><h5>La estructura</h5><p>Formato <strong>JSON-RPC</strong>, con campos <code>method</code>, <code>params</code> e <code>ID</code>.</p></div>
+  </div>
+  <div class="readbar" data-read="c4"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 5 ═══════ -->
+<section id="c5" data-title="transporte stdio stdin stdout bidireccional inicialización misma máquina">
+  <div class="chead"><span class="pill">Transportes</span><span class="pill acc">Lección 5</span></div>
+  <h2>El transporte STDIO</h2>
+  <p class="lede"><strong>Transporte</strong> = el mecanismo para mover los mensajes JSON entre cliente y servidor. En <strong>STDIO</strong>, el cliente <strong>lanza el servidor como un proceso aparte</strong> y hablan por los flujos estándar.</p>
+
+  <div class="widget">
+    <div class="widget-t">Bidireccional por naturaleza</div>
+    <div class="msg">
+      <div class="node hl"><h5>Cliente</h5><p>escribe en el <code>stdin</code> del servidor</p></div>
+      <div class="link"><span class="ar">→</span>stdin</div>
+      <div class="node"><h5>Servidor</h5><p>lo lee de su <code>stdin</code></p></div>
+    </div>
+    <div class="msg" style="margin-bottom:0">
+      <div class="node hl"><h5>Cliente</h5><p>lo lee del <code>stdout</code> del servidor</p></div>
+      <div class="link"><span class="ar">←</span>stdout</div>
+      <div class="node"><h5>Servidor</h5><p>escribe en su <code>stdout</code></p></div>
+    </div>
+  </div>
+
+  <div class="ad">
+    <div class="yes"><h5>✓ La ventaja</h5><ul><li><strong>Comunicación bidireccional:</strong> cualquiera de los dos puede iniciar una petición <strong>en cualquier momento</strong></li><li>Por eso sampling, notificaciones y roots funcionan sin ningún apaño</li></ul></div>
+    <div class="no"><h5>✗ La limitación</h5><ul><li>Solo funciona cuando cliente y servidor corren en la <strong>misma máquina física</strong></li></ul></div>
+  </div>
+
+  <h3>Secuencia de inicialización obligatoria</h3>
+  <ol>
+    <li><strong>Initialize request</strong> — cliente → servidor</li>
+    <li><strong>Initialize result</strong> — servidor → cliente</li>
+    <li><strong>Initialize notification</strong> — cliente → servidor, <strong>no requiere respuesta</strong></li>
+  </ol>
+
+  <h3>Los tres tipos de mensaje</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Tipo</th><th>¿Espera respuesta?</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Requests</strong></td><td>Sí</td></tr>
+      <tr><td><strong>Notifications</strong></td><td>No</td></tr>
+      <tr><td><strong>Results</strong></td><td>Son la respuesta a un request</td></tr>
+    </tbody>
+  </table></div>
+
+  <blockquote>El transporte HTTP tiene limitaciones sobre las peticiones iniciadas por el servidor que STDIO no tiene.</blockquote>
+  <div class="readbar" data-read="c5"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 6 ═══════ -->
+<section id="c6" data-title="transporte streamablehttp remoto unidireccional limitación despliegue">
+  <div class="chead"><span class="pill">Transportes</span><span class="pill acc">Lección 6</span></div>
+  <h2>El transporte StreamableHTTP</h2>
+  <p class="lede">Permite la comunicación <strong>sobre HTTP</strong>, habilitando <strong>alojar el servidor remotamente</strong> — al contrario que STDIO, que exige que ambos estén en la misma máquina.</p>
+
+  <div class="box tip">
+    <div class="bh">✓ La ventaja</div>
+    <p style="margin:0"><strong>Alojamiento remoto.</strong> Los servidores pueden ser <strong>accesibles públicamente</strong> en una URL como <code>mcpserver.com</code>, lo que amplía enormemente lo que se puede hacer con un servidor MCP.</p>
+  </div>
+
+  <h3>La limitación crítica</h3>
+  <div class="widget">
+    <div class="widget-t">HTTP solo va en un sentido</div>
+    <div class="msg">
+      <div class="node hl"><h5>Cliente</h5><p>pide sin problema</p></div>
+      <div class="link"><span class="ar">→</span>petición HTTP</div>
+      <div class="node"><h5>Servidor</h5><p>responde</p></div>
+    </div>
+    <div class="msg" style="margin-bottom:0">
+      <div class="node"><h5>Cliente</h5><p>¿en qué dirección? ¿es siquiera accesible?</p></div>
+      <div class="link dead"><span class="ar">⇠</span>no hay vía</div>
+      <div class="node"><h5>Servidor</h5><p>quiere iniciar una petición</p></div>
+    </div>
+  </div>
+
+  <div class="box trap">
+    <div class="bh">⚠ Por qué exactamente</div>
+    <ul style="margin:0">
+      <li>El servidor <strong>no conoce la dirección del cliente</strong>.</li>
+      <li>El cliente <strong>puede no ser accesible públicamente</strong>.</li>
+    </ul>
+  </div>
+
+  <h3>Qué se ve afectado</h3>
+  <p>Todos los tipos de mensaje que necesitan comunicación servidor → cliente. Es decir: <strong>exactamente todo el primer bloque del curso</strong>.</p>
+  <div class="ad">
+    <div class="no"><h5>✗ En riesgo</h5><ul>
+      <li><strong>Peticiones de sampling</strong> → cap. 1</li>
+      <li><strong>Listado de roots</strong> → cap. 3</li>
+      <li><strong>Notificaciones de progreso</strong> → cap. 2</li>
+      <li><strong>Notificaciones de logging</strong> → cap. 2</li>
+    </ul></div>
+    <div class="yes"><h5>◈ Los dos flags</h5><ul>
+      <li><code>stateless HTTP</code> — por defecto <strong>false</strong></li>
+      <li><code>JSON response</code> — por defecto <strong>false</strong></li>
+      <li>Ponerlos a <strong>true reduce la funcionalidad</strong></li>
+    </ul></div>
+  </div>
+
+  <div class="box trap">
+    <div class="bh">⚠ El fallo de despliegue clásico</div>
+    <p style="margin:0">La aplicación <strong>funciona perfectamente en local con STDIO</strong> y <strong>falla al desplegarla con HTTP</strong>, por estas restricciones de mensajería. Es el error que este capítulo existe para prevenir.</p>
+  </div>
+  <p>Hay solución: StreamableHTTP <strong>tiene apaños</strong> para la comunicación servidor → cliente — <strong>pero con condiciones</strong>.</p>
+  <div class="readbar" data-read="c6"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 7 ═══════ -->
+<section id="c7" data-title="streamablehttp en profundidad sse session id conexión larga corta enrutado">
+  <div class="chead"><span class="pill">Transportes</span><span class="pill acc">Lección 7</span></div>
+  <h2>StreamableHTTP en profundidad</h2>
+  <p class="lede">El apaño: usar <strong>server-sent events (SSE)</strong> para que el servidor pueda hacer streaming de mensajes hacia el cliente.</p>
+
+  <blockquote>Las respuestas SSE habilitan comunicación bidireccional sobre HTTP manteniendo las conexiones abiertas y enviando mensajes individuales del servidor al cliente.</blockquote>
+
+  <h3>Flujo de inicialización</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · los cuatro pasos</div>
+    <div class="tl" id="tl7" role="tablist">
+      <button role="tab" aria-selected="true" data-p="i1"><span class="dot">①</span><span class="lab">initialize</span></button>
+      <button role="tab" aria-selected="false" data-p="i2"><span class="dot">②</span><span class="lab">session ID</span></button>
+      <button role="tab" aria-selected="false" data-p="i3"><span class="dot">③</span><span class="lab">initialized</span></button>
+      <button role="tab" aria-selected="false" data-p="i4"><span class="dot">④</span><span class="lab">GET → SSE</span></button>
+    </div>
+    <div class="panel on" id="i1"><p style="margin:0">El <strong>cliente</strong> envía la petición <code>initialize</code>.</p></div>
+    <div class="panel" id="i2"><p style="margin:0">El <strong>servidor</strong> responde con el resultado <strong>más la cabecera con el MCP session ID</strong>.<br><br><strong>Session ID</strong> = identificador aleatorio asignado durante la inicialización, incluido en todas las peticiones posteriores <strong>como cabecera HTTP</strong>.</p></div>
+    <div class="panel" id="i3"><p style="margin:0">El <strong>cliente</strong> envía la notificación <code>initialized</code> con el session ID.</p></div>
+    <div class="panel" id="i4"><p style="margin:0">El <strong>cliente</strong>, <em>opcionalmente</em>, hace una petición <strong>GET</strong> con el session ID para <strong>establecer la conexión SSE</strong>.<br><br>Es esta conexión la que <code>stateless_http</code> desactiva.</p></div>
+  </div>
+
+  <h3>Las dos conexiones SSE</h3>
+  <p>El punto que hay que retener del capítulo.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Conexión</th><th>Vida</th><th>Para qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SSE de larga duración</strong></td><td>persistente</td><td><strong>Peticiones iniciadas por el servidor</strong> — sampling, notificaciones</td></tr>
+      <tr><td><strong>SSE de corta duración</strong></td><td>se cierra sola</td><td>Respuestas a <strong>una llamada a herramienta concreta</strong>; se cierra automáticamente tras el resultado</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Enrutado de mensajes</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Mensaje</th><th>Va por</th></tr></thead>
+    <tbody>
+      <tr><td>Notificaciones de <strong>progreso</strong></td><td>conexión <strong>larga</strong></td></tr>
+      <tr><td>Mensajes de <strong>logging</strong> + <strong>resultados de herramienta</strong></td><td>conexión <strong>corta</strong>, atada a esa petición</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box trap">
+    <div class="bh">⚠ Detalle contraintuitivo</div>
+    <p style="margin:0"><strong>Progreso y logging no viajan por la misma conexión</strong>, aunque los emitas desde la misma función de herramienta con el mismo <code>ctx</code>.</p>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ La limitación clave</div>
+    <p style="margin:0"><strong>Poner ciertos flags a <code>true</code> rompe el apaño</strong>, lo que hace que StreamableHTTP sea complejo de entender y de usar correctamente.</p>
+  </div>
+  <div class="readbar" data-read="c7"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 8 ═══════ -->
+<section id="c8" data-title="stateless_http json_response flags escalado horizontal balanceador streaming">
+  <div class="chead"><span class="pill">Transportes</span><span class="pill acc">Lección 8</span></div>
+  <h2>Estado: los dos flags</h2>
+  <p class="lede">Los flags que rompen el apaño SSE. Entender qué apagan es lo que evita el fallo de despliegue.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · enciende los flags y mira qué se rompe</div>
+    <div class="cfg-ctl" style="margin-bottom:16px">
+      <label><code>stateless_http</code> — para escalado horizontal</label>
+      <div class="seg" data-g="stateless"><button aria-pressed="true" data-v="0">false <small>(por defecto)</small></button><button aria-pressed="false" data-v="1">true</button></div>
+      <label><code>json_response</code> — desactiva el streaming en el POST</label>
+      <div class="seg" data-g="json"><button aria-pressed="true" data-v="0">false <small>(por defecto)</small></button><button aria-pressed="false" data-v="1">true</button></div>
+    </div>
+    <div id="flagOut"></div>
+  </div>
+
+  <h3>Flag 1 · <code>stateless_http</code></h3>
+  <p>Se pone a <code>true</code> cuando el servidor MCP necesita <strong>escalado horizontal</strong> entre varias instancias con un balanceador de carga.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ Por qué haría falta</div>
+    <p style="margin:0">Una sola instancia no puede con mucho tráfico. El escalado horizontal usa <strong>varias copias del servidor + un balanceador</strong> que reparte las peticiones <strong>aleatoriamente</strong>.</p>
+  </div>
+
+  <div class="box trap">
+    <div class="bh">⚠ El problema sin stateless</div>
+    <p>El cliente necesita <strong>dos conexiones</strong>: un <strong>GET SSE</strong> para las peticiones servidor → cliente, y un <strong>POST</strong> para las de cliente → servidor.</p>
+    <p style="margin:0">El balanceador puede mandar cada una <strong>a una instancia distinta</strong>. Si una herramienta en el <strong>Servidor A</strong> necesita hacer sampling, tiene que salir por la conexión GET SSE abierta contra el <strong>Servidor B</strong> — y eso exige una coordinación compleja.</p>
+  </div>
+
+  <h4>Qué pasa con <code>stateless_http = true</code></h4>
+  <ul>
+    <li><strong>No se asignan session IDs</strong> a los clientes.</li>
+    <li>El servidor <strong>no puede rastrear clientes individuales</strong>.</li>
+    <li><strong>Se desactiva la vía de respuesta GET SSE</strong> → el servidor <strong>no puede enviar peticiones al cliente</strong>.</li>
+    <li><strong>Elimina</strong> sampling, logging de progreso y suscripciones a recursos.</li>
+    <li><strong>No hace falta inicialización</strong> del cliente: se salta la petición <code>initialize</code> y su notificación.</li>
+    <li><strong>Reduce el tráfico</strong> del servidor.</li>
+  </ul>
+  <p>Es un intercambio directo: <strong>escalabilidad a cambio de las capacidades servidor → cliente</strong>.</p>
+
+  <h3>Flag 2 · <code>json_response</code></h3>
+  <p>Desactiva las <strong>respuestas por streaming en las peticiones POST</strong>.</p>
+  <ul>
+    <li>Las respuestas POST devuelven <strong>solo el resultado final, en JSON plano</strong>.</li>
+    <li><strong>Sin mensajes intermedios por streaming.</strong></li>
+    <li><strong>Sin sentencias de progreso ni de log</strong> durante la ejecución.</li>
+    <li>El cliente <strong>espera a que la herramienta termine por completo</strong> antes de recibir nada.</li>
+  </ul>
+
+  <h3>Tabla comparativa</h3>
+  <div class="tw"><table class="flags">
+    <thead><tr><th></th><th>Por defecto</th><th><code>stateless_http</code></th><th><code>json_response</code></th></tr></thead>
+    <tbody>
+      <tr><td>Session ID</td><td class="c y">sí</td><td class="c n">no</td><td class="c y">sí</td></tr>
+      <tr><td>Inicialización</td><td class="c y">obligatoria</td><td class="c n">se salta</td><td class="c y">obligatoria</td></tr>
+      <tr><td>GET SSE (servidor → cliente)</td><td class="c y">sí</td><td class="c n">desactivada</td><td class="c y">sí</td></tr>
+      <tr><td>Sampling</td><td class="c y">✓</td><td class="c n">✗</td><td class="c y">✓</td></tr>
+      <tr><td>Roots</td><td class="c y">✓</td><td class="c n">✗</td><td class="c y">✓</td></tr>
+      <tr><td>Progreso y logging</td><td class="c y">✓</td><td class="c n">✗</td><td class="c n">✗</td></tr>
+      <tr><td>Streaming en el POST</td><td class="c y">sí</td><td class="c y">sí</td><td class="c n">no</td></tr>
+      <tr><td>Escalado horizontal</td><td class="c n">difícil</td><td class="c y">fácil</td><td class="c">igual</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ La conclusión del curso</div>
+    <p style="margin:0"><strong>Ambos flags cambian significativamente el comportamiento del servidor. Usa en desarrollo el mismo transporte que vas a usar en producción, para evitar problemas al desplegar.</strong></p>
+  </div>
+  <p>Lo que se rompe al desplegar no es tu código: es la <strong>dirección de comunicación</strong> que tu código daba por hecha.</p>
+  <div class="readbar" data-read="c8"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ FLASHCARDS ═══════ -->
+<section id="flash" data-title="flashcards repaso tarjetas chuleta">
+  <span class="pill acc">Repaso activo</span>
+  <h2 style="margin-top:12px">Flashcards</h2>
+  <p class="lede">Los hechos concretos del curso. Clic para girar.</p>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn" id="flipAll">Girar todas</button>
+    <button class="btn" id="shuffleCards">Barajar</button>
+  </div>
+  <div class="cards" id="cardGrid"></div>
+</section>
+
+<hr>
+
+<!-- ═══════ QUIZ ═══════ -->
+<section id="quiz" data-title="quiz preguntas examen assessment mcp concepts autoevaluación">
+  <span class="pill acc">Autoevaluación</span>
+  <h2 style="margin-top:12px">Quiz — 14 preguntas</h2>
+  <p class="lede">Elige una respuesta y te digo al momento si es correcta y <strong>por qué</strong>.</p>
+  <div class="box note">
+    <div class="bh">ℹ Hay una evaluación oficial</div>
+    <p style="margin:0">El curso trae un <strong>Assessment on MCP Concepts de 10 preguntas</strong> en la plataforma. Hacerlo registra un intento en tu cuenta, así que esto es la <strong>preparación</strong>. Cuando lo hagas, registra aquí las preguntas reales con su feedback, como en <code>claude-code-in-action</code>.</p>
+  </div>
+  <div class="quiz-group">
+    <div id="quizBox"></div>
+    <div class="score" id="scoreBox">
+      <div><div class="big" id="scoreNum">0 / 14</div><div class="lab" id="scoreLab">Aún no has contestado</div></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="quizReset">Reiniciar</button>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("mcpadv1_"+k))??d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem("mcpadv1_"+k,JSON.stringify(v))}catch(e){}}
+};
+const root=document.documentElement;
+root.dataset.theme=LS.get("theme","light");
+$("#themeBtn").onclick=()=>{const t=root.dataset.theme==="light"?"dark":"light";root.dataset.theme=t;LS.set("theme",t);};
+
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+/* tabs genéricos */
+function wireTabs(c){
+  const btns=$$('[role="tab"]',c);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    const scope=c.closest(".widget")||document;
+    btns.forEach(x=>{const p=$("#"+x.dataset.p,scope); if(p)p.classList.toggle("on",x===b);});
+  });
+}
+["#notiChips","#jsonChips","#tl7"].forEach(s=>{const e=$(s);if(e)wireTabs(e);});
+
+/* ══ intro · matriz de compatibilidad ══ */
+(function(){
+  const chips=$("#matChips"), out=$("#matOut"); if(!chips) return;
+  const CAPS=["Sampling","Roots","Notificaciones de progreso","Notificaciones de logging","Resultados de herramienta"];
+  const M={
+    stdio:{t:"STDIO",n:"Cliente y servidor en la misma máquina, hablando por stdin/stdout.",
+      v:[1,1,1,1,1], nota:"<strong>Bidireccional por naturaleza.</strong> Cualquiera de los dos puede iniciar una petición en cualquier momento. Nada que apañar.<br><br><span style='color:var(--bad)'>Límite: solo funciona en la misma máquina física.</span>"},
+    http:{t:"StreamableHTTP (por defecto)",n:"Servidor remoto, accesible en una URL pública.",
+      v:[1,1,1,1,1], nota:"Funciona <strong>gracias al apaño de SSE</strong>: una conexión larga para las peticiones del servidor y una corta por llamada. <br><br>No es gratis como en STDIO — es una capa encima de un HTTP que solo va en un sentido."},
+    stateless:{t:"StreamableHTTP · stateless_http = true",n:"Escalado horizontal con balanceador de carga.",
+      v:[0,0,0,0,1], nota:"Sin session IDs, sin inicialización, y <strong>la vía GET SSE desactivada</strong>. El servidor ya no puede iniciar nada hacia el cliente.<br><br><strong>Cae todo el primer bloque del curso.</strong> A cambio: escalas y bajas el tráfico."},
+    json:{t:"StreamableHTTP · json_response = true",n:"Sin streaming en las respuestas POST.",
+      v:[1,1,0,0,1], nota:"El GET SSE sigue vivo, así que <strong>sampling y roots sobreviven</strong>. Lo que cae es el streaming del POST: <strong>nada de progreso ni logs durante la ejecución</strong>.<br><br>El cliente espera a que la herramienta termine del todo antes de recibir nada."}
+  };
+  function render(k){
+    const m=M[k];
+    out.innerHTML=
+      '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px">'+
+      '<h4 style="margin:0;font-size:19px">'+m.t+'</h4></div>'+
+      '<p style="font-size:14px;color:var(--muted);margin-bottom:14px">'+m.n+'</p>'+
+      '<div class="tw" style="margin-bottom:14px"><table><tbody>'+
+      CAPS.map((c,i)=>'<tr><td>'+c+'</td><td style="width:110px;text-align:right;font-weight:640;color:var(--'+
+        (m.v[i]?"good":"bad")+')">'+(m.v[i]?"✓ funciona":"✗ no")+'</td></tr>').join("")+
+      '</tbody></table></div>'+
+      '<div class="box '+(k==="stateless"?"trap":k==="json"?"warn":"tip")+'" style="margin:0"><div class="bh">'+
+      (k==="stdio"?"✓ Sin restricciones":k==="http"?"✓ Funciona, pero con andamio":"⚠ Qué pierdes")+
+      '</div><p style="margin:0">'+m.nota+'</p></div>';
+  }
+  $$('[role="tab"]',chips).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',chips).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(b.dataset.v);
+  });
+  render("stdio");
+})();
+
+/* ══ cap 8 · simulador de flags ══ */
+(function(){
+  const out=$("#flagOut"); if(!out) return;
+  const st={stateless:"0",json:"0"};
+  const FILAS=[
+    ["Session ID asignado",       (s,j)=>!s],
+    ["Inicialización obligatoria",(s,j)=>!s],
+    ["Vía GET SSE",               (s,j)=>!s],
+    ["Sampling",                  (s,j)=>!s],
+    ["Roots (list_roots)",        (s,j)=>!s],
+    ["Notificaciones de progreso",(s,j)=>!s&&!j],
+    ["Mensajes de logging",       (s,j)=>!s&&!j],
+    ["Streaming en el POST",      (s,j)=>!j],
+    ["Escalado horizontal fácil", (s,j)=>!!s]
+  ];
+  function render(){
+    const s=st.stateless==="1", j=st.json==="1";
+    const rotas=FILAS.slice(3,7).filter(([n,f])=>!f(s,j)).length;
+    out.innerHTML=
+      '<div class="tw" style="margin-bottom:14px"><table><tbody>'+
+      FILAS.map(([n,f])=>{
+        const ok=f(s,j);
+        return '<tr><td>'+n+'</td><td style="width:90px;text-align:right;font-weight:640;color:var(--'+
+          (ok?"good":"bad")+')">'+(ok?"✓":"✗")+'</td></tr>';
+      }).join("")+'</tbody></table></div>'+
+      '<div class="box '+(!s&&!j?"tip":rotas>=4?"trap":"warn")+'" style="margin:0"><div class="bh">'+
+      (!s&&!j?"✓ Todo disponible":"⚠ "+rotas+" de las 4 capacidades servidor → cliente rotas")+'</div><p style="margin:0">'+
+      (!s&&!j
+        ? "Configuración por defecto. El apaño SSE está en pie: conexión larga para las peticiones del servidor, corta por cada llamada a herramienta."
+        : s&&j ? "Ambos flags a la vez: <strong>no queda nada</strong> de la comunicación servidor → cliente, y encima el POST no hace streaming. El cliente solo recibe el resultado final."
+        : s ? "Sin session ID el servidor <strong>no puede rastrear clientes individuales</strong>, y se desactiva la vía GET SSE. A cambio, cualquier instancia detrás del balanceador puede atender cualquier petición."
+        : "El GET SSE sigue vivo, así que <strong>sampling y roots sobreviven</strong>. Lo que se pierde es todo lo que se emitía <em>durante</em> la ejecución: progreso y logs.")+
+      '</p></div>';
+  }
+  $$(".seg").forEach(seg=>{
+    const g=seg.dataset.g;
+    $$("button",seg).forEach(b=>b.onclick=()=>{
+      $$("button",seg).forEach(x=>x.setAttribute("aria-pressed",x===b));
+      st[g]=b.dataset.v; render();
+    });
+  });
+  render();
+})();
+
+/* ══ walkthroughs ══ */
+const WT={"sampling":{"files":{"server.py":"from mcp.server.fastmcp import FastMCP, Context\nfrom mcp.types import SamplingMessage, TextContent\n\nmcp = FastMCP(name=\"Demo Server\")\n\n\n@mcp.tool()\nasync def summarize(text_to_summarize: str, ctx: Context):\n    prompt = f\"\"\"\n        Please summarize the following text:\n        {text_to_summarize}\n    \"\"\"\n\n    result = await ctx.session.create_message(\n        messages=[\n            SamplingMessage(\n                role=\"user\", content=TextContent(type=\"text\", text=prompt)\n            )\n        ],\n        max_tokens=4000,\n        system_prompt=\"You are a helpful research assistant.\",\n    )\n\n    if result.content.type == \"text\":\n        return result.content.text\n    else:\n        raise ValueError(\"Sampling failed\")\n\n\nif __name__ == \"__main__\":\n    mcp.run(transport=\"stdio\")\n","client.py":"import asyncio\nfrom anthropic import AsyncAnthropic\nfrom mcp import ClientSession, StdioServerParameters\nfrom mcp.client.stdio import stdio_client\nfrom mcp.client.session import RequestContext\nfrom mcp.types import (\n    CreateMessageRequestParams,\n    CreateMessageResult,\n    TextContent,\n    SamplingMessage,\n)\n\nanthropic_client = AsyncAnthropic()\nmodel = \"claude-sonnet-4-0\"\n\nserver_params = StdioServerParameters(\n    command=\"uv\",\n    args=[\"run\", \"server.py\"],\n)\n\n\nasync def chat(input_messages: list[SamplingMessage], max_tokens=4000):\n    messages = []\n    for msg in input_messages:\n        if msg.role == \"user\" and msg.content.type == \"text\":\n            content = (\n                msg.content.text\n                if hasattr(msg.content, \"text\")\n                else str(msg.content)\n            )\n            messages.append({\"role\": \"user\", \"content\": content})\n        elif msg.role == \"assistant\" and msg.content.type == \"text\":\n            content = (\n                msg.content.text\n                if hasattr(msg.content, \"text\")\n                else str(msg.content)\n            )\n            messages.append({\"role\": \"assistant\", \"content\": content})\n\n    response = await anthropic_client.messages.create(\n        model=model,\n        messages=messages,\n        max_tokens=max_tokens,\n    )\n\n    text = \"\".join([p.text for p in response.content if p.type == \"text\"])\n    return text\n\n\nasync def sampling_callback(\n    context: RequestContext, params: CreateMessageRequestParams\n):\n    # Call Claude using the Anthropic SDK\n    text = await chat(params.messages)\n\n    return CreateMessageResult(\n        role=\"assistant\",\n        model=model,\n        content=TextContent(type=\"text\", text=text),\n    )\n\n\nasync def run():\n    async with stdio_client(server_params) as (read, write):\n        async with ClientSession(\n            read, write, sampling_callback=sampling_callback\n        ) as session:\n            await session.initialize()\n\n            result = await session.call_tool(\n                name=\"summarize\",\n                arguments={\"text_to_summarize\": \"lots of text\"},\n            )\n            print(result.content)\n\n\nif __name__ == \"__main__\":\n    import asyncio\n\n    asyncio.run(run())\n"},"steps":[{"file":"server.py","line":14,"endLine":22,"title":"Initiating sampling","markdown":"On the server, during a tool call, run the `create_message()` method, passing in some messages that you wish to send to a language model."},{"file":"client.py","line":50,"endLine":52,"title":"Sampling callbacks","markdown":"On the client, you must implement a sampling callback. It will receive a list of messages provided by the server."},{"file":"client.py","line":24,"endLine":38,"title":"Message formats","markdown":"The list of messages provided by the server are formatted for communication in MCP. The individual messages aren't guaranteed to be compatible with whatever LLM SDK you are using. \n      \nFor example, if you're using the Anthropic SDK, you'll have to write a little bit of conversion logic to turn the MCP messages into a format compatible with Anthropic's SDK."},{"file":"client.py","line":53,"endLine":60,"title":"Returning generated text","markdown":"After generating text with the LLM, you'll return a `CreateMessageResult`, which contains the generated text."},{"file":"client.py","line":66,"endLine":66,"title":"Connecting the callback","markdown":"Don't forget: the callback on the client needs to be passed into the `ClientSession` call."},{"file":"server.py","line":24,"endLine":27,"title":"Getting the result","markdown":"After the client has generated and returned some text, it will be sent to the server. You can do anything with this text:\n\n* Use it as part of a workflow in your tool\n* Decide to make another sampling call\n* Return the generated text\n"}]},"notifications":{"files":{"server.py":"from mcp.server.fastmcp import FastMCP, Context\nimport asyncio\n\nmcp = FastMCP(name=\"Demo Server\")\n\n\n@mcp.tool()\nasync def add(a: int, b: int, ctx: Context) -> int:\n    await ctx.info(\"Preparing to add...\")\n    await ctx.report_progress(20, 100)\n\n    await asyncio.sleep(2)\n\n    await ctx.info(\"OK, adding...\")\n    await ctx.report_progress(80, 100)\n\n    return a + b\n\n\nif __name__ == \"__main__\":\n    mcp.run(transport=\"stdio\")\n","client.py":"from mcp import ClientSession, StdioServerParameters\nfrom mcp.client.stdio import stdio_client\nfrom mcp.types import LoggingMessageNotificationParams\n\nserver_params = StdioServerParameters(\n    command=\"uv\",\n    args=[\"run\", \"server.py\"],\n)\n\n\nasync def logging_callback(params: LoggingMessageNotificationParams):\n    print(params.data)\n\n\nasync def print_progress_callback(\n    progress: float, total: float | None, message: str | None\n):\n    if total is not None:\n        percentage = (progress / total) * 100\n        print(f\"Progress: {progress}/{total} ({percentage:.1f}%)\")\n    else:\n        print(f\"Progress: {progress}\")\n\n\nasync def run():\n    async with stdio_client(server_params) as (read, write):\n        async with ClientSession(\n            read, write, logging_callback=logging_callback\n        ) as session:\n            await session.initialize()\n\n            await session.call_tool(\n                name=\"add\",\n                arguments={\"a\": 1, \"b\": 3},\n                progress_callback=print_progress_callback,\n            )\n\n\nif __name__ == \"__main__\":\n    import asyncio\n\n    asyncio.run(run())\n"},"steps":[{"file":"server.py","line":8,"endLine":8,"title":"Tool function receives Context argument","markdown":"Tool functions automatically receive 'Context' as their last argument. This object has methods for logging and reporting progress to the client."},{"file":"server.py","line":9,"endLine":15,"title":"Create logs and progress with context","markdown":"Throughout your tool function, call the `info()`, `warning()`, `debug()`, or `error()` methods to log different types of messages for the client. Also call the `report_progress()` method to estimate the amount of remaining work for the tool call."},{"file":"client.py","line":11,"endLine":22,"title":"Define callbacks on the client","markdown":"The client needs to define logging and progress callbacks, which will automatically be called whenever the server emits log or progress messages. These callbacks should try to display the provided logging and progress data to the user."},{"file":"client.py","line":27,"endLine":36,"title":"Pass callbacks to appropriate functions","markdown":"Make sure you provide the logging callback to the `ClientSession` and the progress callback to the `call_tool()` function."}]},"roots":{"files":{"main.py":"import asyncio\nimport sys\nimport os\nfrom dotenv import load_dotenv\nfrom contextlib import AsyncExitStack\n\nfrom mcp_client import MCPClient\nfrom core.claude import Claude\n\nfrom core.cli_chat import CliChat\nfrom core.cli import CliApp\n\nload_dotenv()\n\n# Anthropic Config\nclaude_model = os.getenv(\"CLAUDE_MODEL\", \"claude-sonnet-4-0\")\nanthropic_api_key = os.getenv(\"ANTHROPIC_API_KEY\", \"\")\n\n\nassert claude_model, \"Error: CLAUDE_MODEL cannot be empty. Update .env\"\nassert anthropic_api_key, (\n    \"Error: ANTHROPIC_API_KEY cannot be empty. Update .env\"\n)\n\n\nasync def main():\n    claude_service = Claude(model=claude_model)\n\n    # Get root directories from command line arguments\n    root_paths = sys.argv[1:]\n    if not root_paths:\n        print(\"Usage: uv run main.py <root1> [root2] ...\")\n        print(\"Example: uv run main.py /path/to/videos /another/path\")\n        sys.exit(1)\n\n    clients = {}\n\n    async with AsyncExitStack() as stack:\n        # Create the MCP client with the provided root directories\n        doc_client = await stack.enter_async_context(\n            MCPClient(\n                command=\"uv\", args=[\"run\", \"mcp_server.py\"], roots=root_paths\n            )\n        )\n        clients[\"doc_client\"] = doc_client\n\n        chat = CliChat(\n            doc_client=doc_client,\n            clients=clients,\n            claude_service=claude_service,\n        )\n\n        cli = CliApp(chat)\n        await cli.initialize()\n        await cli.run()\n\n\nif __name__ == \"__main__\":\n    if sys.platform == \"win32\":\n        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())\n    asyncio.run(main())\n","mcp_client.py":"from typing import Optional, Any\nfrom contextlib import AsyncExitStack\nfrom mcp import ClientSession, StdioServerParameters, types\nfrom mcp.client.stdio import stdio_client\nfrom mcp.types import Root, ListRootsResult, ErrorData\nfrom mcp.shared.context import RequestContext\nfrom pathlib import Path\nfrom pydantic import FileUrl\n\nimport json\nfrom pydantic import AnyUrl\n\n\nclass MCPClient:\n    def __init__(\n        self,\n        command: str,\n        args: list[str],\n        env: Optional[dict] = None,\n        roots: Optional[list[str]] = None,\n    ):\n        self._command = command\n        self._args = args\n        self._env = env\n        self._roots = self._create_roots(roots) if roots else []\n        self._session: Optional[ClientSession] = None\n        self._exit_stack: AsyncExitStack = AsyncExitStack()\n\n    def _create_roots(self, root_paths: list[str]) -> list[Root]:\n        \"\"\"Convert path strings to Root objects.\"\"\"\n        roots = []\n        for path in root_paths:\n            p = Path(path).resolve()\n            file_url = FileUrl(f\"file://{p}\")\n            roots.append(Root(uri=file_url, name=p.name or \"Root\"))\n        return roots\n\n    async def _handle_list_roots(\n        self, context: RequestContext[\"ClientSession\", None]\n    ) -> ListRootsResult | ErrorData:\n        \"\"\"Callback for when server requests roots.\"\"\"\n        return ListRootsResult(roots=self._roots)\n\n    async def connect(self):\n        server_params = StdioServerParameters(\n            command=self._command,\n            args=self._args,\n            env=self._env,\n        )\n        stdio_transport = await self._exit_stack.enter_async_context(\n            stdio_client(server_params)\n        )\n        _stdio, _write = stdio_transport\n        self._session = await self._exit_stack.enter_async_context(\n            ClientSession(\n                _stdio,\n                _write,\n                list_roots_callback=self._handle_list_roots\n                if self._roots\n                else None,\n            )\n        )\n        await self._session.initialize()\n\n    def session(self) -> ClientSession:\n        if self._session is None:\n            raise ConnectionError(\n                \"Client session not initialized or cache not populated. Call connect_to_server first.\"\n            )\n        return self._session\n\n    async def list_tools(self) -> list[types.Tool]:\n        result = await self.session().list_tools()\n        return result.tools\n\n    async def call_tool(\n        self, tool_name: str, tool_input\n    ) -> types.CallToolResult | None:\n        return await self.session().call_tool(tool_name, tool_input)\n\n    async def list_prompts(self) -> list[types.Prompt]:\n        result = await self.session().list_prompts()\n        return result.prompts\n\n    async def get_prompt(self, prompt_name, args: dict[str, str]):\n        result = await self.session().get_prompt(prompt_name, args)\n        return result.messages\n\n    async def read_resource(self, uri: str) -> Any:\n        result = await self.session().read_resource(AnyUrl(uri))\n        resource = result.contents[0]\n\n        if isinstance(resource, types.TextResourceContents):\n            if resource.mimeType == \"application/json\":\n                return json.loads(resource.text)\n\n            return resource.text\n\n    async def cleanup(self):\n        await self._exit_stack.aclose()\n        self._session = None\n\n    async def __aenter__(self):\n        await self.connect()\n        return self\n\n    async def __aexit__(self, exc_type, exc_val, exc_tb):\n        await self.cleanup()\n","mcp_server.py":"from pathlib import Path\nfrom mcp.server.fastmcp import FastMCP\nfrom pydantic import Field\nfrom mcp.server.fastmcp import Context\nfrom core.video_converter import VideoConverter\nfrom core.utils import file_url_to_path\n\nmcp = FastMCP(\"VidsMCP\", log_level=\"ERROR\")\n\n\nasync def is_path_allowed(requested_path: Path, ctx: Context) -> bool:\n    roots_result = await ctx.session.list_roots()\n    client_roots = roots_result.roots\n\n    if not requested_path.exists():\n        return False\n\n    if requested_path.is_file():\n        requested_path = requested_path.parent\n\n    for root in client_roots:\n        root_path = file_url_to_path(root.uri)\n        try:\n            requested_path.relative_to(root_path)\n            return True\n        except ValueError:\n            continue\n\n    return False\n\n\n@mcp.tool()\nasync def convert_video(\n    input_path: str = Field(description=\"Path to the input MP4 file\"),\n    format: str = Field(description=\"Output format (e.g. 'mov')\"),\n    *,\n    ctx: Context,\n):\n    \"\"\"Convert an MP4 video file to another format using ffmpeg\"\"\"\n    input_file = VideoConverter.validate_input(input_path)\n\n    # Ensure the input file is contained in a root\n    if not await is_path_allowed(input_file, ctx):\n        raise ValueError(f\"Access to path is not allowed: {input_path}\")\n\n    return await VideoConverter.convert(input_path, format)\n\n\n@mcp.tool()\nasync def list_roots(ctx: Context):\n    \"\"\"\n    List all directories that are accessible to this server.\n    These are the root directories where files can be read from or written to.\n    \"\"\"\n    roots_result = await ctx.session.list_roots()\n    client_roots = roots_result.roots\n\n    return [file_url_to_path(root.uri) for root in client_roots]\n\n\n@mcp.tool()\nasync def read_dir(\n    path: str = Field(description=\"Path to a directory to read\"),\n    *,\n    ctx: Context,\n):\n    \"\"\"Read directory contents. Path must be within one of the client's roots.\"\"\"\n    requested_path = Path(path).resolve()\n\n    if not await is_path_allowed(requested_path, ctx):\n        raise ValueError(\"Error: can only read directories within a root\")\n\n    return [entry.name for entry in requested_path.iterdir()]\n\n\nif __name__ == \"__main__\":\n    mcp.run(transport=\"stdio\")\n"},"steps":[{"file":"main.py","line":30,"endLine":30,"title":"Defining roots","markdown":"Ideally, a user will dictate which files/folders can be accessed by the MCP server. \n\nThis program is set up to accept a list of CLI arguments, which are interpretted as paths that the user wants to allow access to.\n\nThat list of paths is provided to the `MCPClient` down on lines 42."},{"file":"mcp_client.py","line":29,"endLine":36,"title":"Creating root objects","markdown":"According to the MCP spec, all roots should have a URI that begins with `file://`. \n    \nThis function takes the list of paths of that the user provided and turns them into `Root` objects."},{"file":"mcp_client.py","line":38,"endLine":42,"title":"Roots callback","markdown":"The client doesn't immediately provide the list of roots to the server. Instead, the server can make a request to the client at some future point in time. We make a callback that will be executed when the server requests the roots. The callback needs to return the list of roots inside of a `ListRootsResult` object.\n    \nThis callback is passed into the ClientSession down on line 58."},{"file":"mcp_server.py","line":49,"endLine":58,"title":"Using the roots","markdown":"On to the server. The server will use the roots in two scenarios: \n    \n1. Whenever a tool attempts to access a file or folder\n2. When a LLM (like Claude) needs to resolve a file or folder to a full path. Think of when a user says 'read the todos.txt file' - Claude needs to figure out where the text file is, and might do so by looking at the list of roots\n    \nTo handle the second case, we can either define a tool that lists out the roots or inject them directly in a prompt."},{"file":"mcp_server.py","line":55,"endLine":55,"title":"Accessing the roots","markdown":"Roots are accessed by calling `ctx.session.list_roots()`. \n    \nThis sends a message back to the client, which causes it to run the root-listing callback."},{"file":"mcp_server.py","line":11,"endLine":29,"title":"Authorizing access","markdown":"Remember: the MCP SDK does not attempt to limit what files or folders your tools attempt to read! You must implement that check yourself.\n    \nConsider implementing a function like `is_path_allowed`, which will decide whether a path is accessible by comparing it to the list of roots."},{"file":"mcp_server.py","line":43,"endLine":44,"title":"Authorizing access","markdown":"Once you've put an authorization function together - like `is_path_allowed` - use it throughout your tools to ensure the requested path is accessible."}]}};
+$$(".wt").forEach(host=>{
+  const d=WT[host.dataset.wt]; if(!d) return;
+  const steps=d.steps;
+  host.innerHTML=
+    '<div class="wt-steps">'+steps.map((s,i)=>
+      '<button role="tab" aria-selected="'+(i===0)+'" data-i="'+i+'">'+
+      '<span class="n">'+(i+1)+'</span><span>'+s.title+'</span></button>').join("")+'</div>'+
+    '<div class="wt-view"><div class="wt-file"></div><pre class="wt-code"><code></code></pre><div class="wt-note"></div></div>';
+  const codeEl=$(".wt-code code",host), fileEl=$(".wt-file",host), noteEl=$(".wt-note",host);
+  function md(t){
+    return esc(t)
+      .replace(/`([^`]+)`/g,"<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>")
+      .replace(/^\* (.+)$/gm,"• $1")
+      .replace(/\n{2,}/g,"<br><br>").replace(/\n/g,"<br>");
+  }
+  function show(i){
+    const s=steps[i], src=d.files[s.file]||"";
+    const lineas=src.replace(/\n$/,"").split("\n");
+    fileEl.innerHTML='<b>'+s.file+'</b> · líneas '+s.line+(s.endLine!==s.line?"–"+s.endLine:"");
+    codeEl.innerHTML=lineas.map((l,n)=>{
+      const num=n+1, on=num>=s.line&&num<=s.endLine;
+      return '<span class="ln'+(on?" on":"")+'">'+String(num).padStart(3," ")+"  "+esc(l||" ")+'</span>';
+    }).join("");
+    noteEl.innerHTML="<b>"+(i+1)+" · "+s.title+"</b><br>"+md(s.markdown.trim());
+    const pre=$(".wt-code",host), first=$(".ln.on",pre);
+    if(first) pre.scrollTop=Math.max(0,first.offsetTop-70);
+  }
+  const btns=$$(".wt-steps button",host);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    show(+b.dataset.i);
+  });
+  show(0);
+});
+
+/* ══ flashcards ══ */
+const CARDS=[
+ ["¿Qué es el sampling?","Que el <strong>servidor le pida al cliente</strong> que genere texto con un LLM, en vez de acceder el servidor a uno directamente."],
+ ["¿Qué tres problemas del servidor resuelve el sampling?","Gestionar <strong>claves de API</strong>, gestionar <strong>autenticación</strong> y pagar los <strong>costes de tokens</strong>."],
+ ["¿Quién llama realmente al LLM en sampling?","<strong>El cliente.</strong> El servidor solo crea la petición; el cliente la recibe en su callback, llama al LLM y devuelve el texto."],
+ ["Caso de uso principal del sampling","<strong>Servidores MCP públicos</strong> que necesitan capacidades de LLM sin acceso directo a uno, ni sus costes ni sus problemas de seguridad."],
+ ["Métodos del sampling","Servidor: <code>create_message()</code>. Cliente: un <strong>sampling callback</strong> que devuelve un <code>CreateMessageResult</code>."],
+ ["¿Dónde se registra el sampling callback?","Se pasa a <strong><code>ClientSession</code></strong>. Si no, el servidor pide sampling y no hay nadie escuchando."],
+ ["¿Por qué hay que convertir los mensajes en el cliente?","Vienen <strong>formateados para MCP</strong> y <strong>no hay garantía</strong> de que sean compatibles con el SDK de LLM que uses."],
+ ["¿Cómo llega <code>Context</code> a tu función de herramienta?","<strong>Automáticamente, como último argumento.</strong> No hay que registrarlo."],
+ ["Métodos de <code>Context</code>","<code>info()</code>, <code>warning()</code>, <code>debug()</code>, <code>error()</code> para logs · <code>report_progress()</code> para el avance."],
+ ["Los dos callbacks de notificaciones y dónde van","<strong>logging → <code>ClientSession</code></strong> (es de la sesión entera). <strong>progreso → <code>call_tool()</code></strong> (es de una llamada concreta)."],
+ ["¿Son obligatorias las notificaciones de log y progreso?","No. Son <strong>opcionales</strong> y puramente <strong>mejora de UX</strong>: evitan que el usuario crea que la llamada se ha colgado."],
+ ["¿Qué es un root?","Fichero o carpeta que el usuario <strong>autoriza por adelantado</strong>, típicamente por argumentos de línea de comandos al arrancar el servidor."],
+ ["¿Con qué debe empezar la URI de un root?","Con <strong><code>file://</code></strong>, según la especificación de MCP."],
+ ["¿Manda el cliente los roots de entrada?","<strong>No.</strong> Registra un <strong>callback</strong> (<code>list_roots_callback</code>) que responde cuando el servidor los pide más adelante."],
+ ["¿Cómo pide el servidor los roots?","Con <strong><code>ctx.session.list_roots()</code></strong>, que manda un mensaje de vuelta al cliente y dispara su callback."],
+ ["La limitación clave de roots","<strong>El SDK de MCP no impone las restricciones.</strong> Tienes que implementar tú <code>is_path_allowed()</code> y llamarla en todas tus herramientas."],
+ ["Los dos beneficios de roots","<strong>Control de permisos</strong> (solo zonas autorizadas) y <strong>descubrimiento autónomo</strong> (Claude encuentra el fichero sin ruta completa)."],
+ ["Las tres herramientas del ejemplo de roots","<strong>ConvertVideo</strong> (la original), <strong>ReadDirectory</strong> y <strong>ListRoots</strong>. Esta última es opcional."],
+ ["Las dos categorías de mensaje MCP","<strong>Pares request/result</strong> (siempre van juntos) y <strong>notifications</strong> (no necesitan respuesta)."],
+ ["¿Dónde está el esquema de MCP?","En <strong><code>schema.ts</code></strong>, del repo de la especificación. <strong>No es código ejecutable</strong>: solo descripciones de tipos."],
+ ["Formato de los mensajes MCP","<strong>JSON-RPC</strong>, con campos <code>method</code>, <code>params</code> e <code>ID</code>."],
+ ["La frase bisagra del curso","<strong>Los servidores pueden enviar mensajes al cliente</strong> — y esa capacidad direccional es la limitación crítica de StreamableHTTP."],
+ ["¿Cómo funciona STDIO?","El cliente <strong>lanza el servidor como proceso aparte</strong> y hablan por <strong>stdin/stdout</strong>."],
+ ["Ventaja y límite de STDIO","Ventaja: <strong>bidireccional</strong>, cualquiera inicia una petición cuando quiera. Límite: <strong>solo en la misma máquina física</strong>."],
+ ["La secuencia de inicialización","<strong>initialize request</strong> → <strong>initialize result</strong> → <strong>initialize notification</strong> (esta sin respuesta)."],
+ ["La ventaja de StreamableHTTP","<strong>Alojamiento remoto</strong>: servidores accesibles públicamente en una URL."],
+ ["¿Por qué HTTP no deja al servidor iniciar peticiones?","El servidor <strong>no conoce la dirección del cliente</strong>, y el cliente <strong>puede no ser accesible públicamente</strong>."],
+ ["El apaño de StreamableHTTP","Conexiones <strong>SSE</strong>: mantener la conexión abierta y hacer streaming de mensajes individuales del servidor al cliente."],
+ ["¿Qué es el session ID y cómo viaja?","Identificador <strong>aleatorio</strong> asignado en la inicialización, incluido en todas las peticiones posteriores <strong>como cabecera HTTP</strong>."],
+ ["Las dos conexiones SSE","<strong>Larga:</strong> peticiones iniciadas por el servidor y notificaciones de progreso. <strong>Corta:</strong> logging + resultado de una llamada concreta; se cierra sola."],
+ ["¿Por dónde van progreso y logging?","<strong>Por conexiones distintas.</strong> Progreso → la larga. Logging y el resultado → la corta."],
+ ["¿Para qué sirve <code>stateless_http</code>?","Para <strong>escalado horizontal</strong>: varias instancias detrás de un balanceador que reparte las peticiones aleatoriamente."],
+ ["El problema que resuelve stateless","Sin él, el GET SSE y el POST del mismo cliente <strong>pueden acabar en instancias distintas</strong>, y coordinarlas es complejo."],
+ ["¿Qué pierdes con <code>stateless_http = true</code>?","Session IDs, rastreo de clientes, la <strong>vía GET SSE</strong>, y con ella <strong>sampling, logging de progreso y suscripciones a recursos</strong>. Tampoco hace falta inicialización."],
+ ["¿Qué hace <code>json_response = true</code>?","Desactiva el <strong>streaming en las respuestas POST</strong>: solo el resultado final en JSON plano, sin progreso ni logs durante la ejecución."],
+ ["La conclusión del curso","<strong>Usa en desarrollo el mismo transporte que vas a usar en producción.</strong> Lo que se rompe al desplegar es la dirección de comunicación que dabas por hecha."]
+];
+(function(){
+  const grid=$("#cardGrid"); if(!grid) return;
+  function paint(list){
+    grid.innerHTML="";
+    list.forEach(([f,b])=>{
+      const el=document.createElement("button"); el.className="card";
+      el.innerHTML='<div class="inner"><div class="f">'+f+'</div><div class="b">'+b+'</div></div>';
+      el.onclick=()=>el.classList.toggle("flip");
+      grid.appendChild(el);
+    });
+  }
+  paint(CARDS);
+  $("#flipAll").onclick=()=>{
+    const any=$$(".card",grid).some(c=>!c.classList.contains("flip"));
+    $$(".card",grid).forEach(c=>c.classList.toggle("flip",any));
+  };
+  $("#shuffleCards").onclick=()=>{
+    const a=[...CARDS];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    paint(a);
+  };
+})();
+
+/* ══ quiz ══ */
+const QUIZ=[
+ {q:"Vas a publicar un servidor MCP accesible desde internet y una de sus herramientas necesita resumir texto con un LLM. ¿Qué usas?",
+  o:["Sampling: el servidor pide al cliente que genere el texto",
+     "Meter una clave de API en el servidor y llamar al LLM desde ahí",
+     "Una notificación de progreso con el texto a resumir",
+     "Un root que apunte al fichero con el texto"],
+  a:0, e:"Es el caso de uso principal del sampling: <strong>servidores públicos que necesitan un LLM sin tener acceso a uno</strong>. Traslada al cliente la gestión de claves, la autenticación y el coste de tokens, y evita el uso no autorizado de tokens en un servidor abierto."},
+
+ {q:"En una operación de sampling, ¿quién llama realmente al modelo de lenguaje?",
+  o:["El servidor, usando las credenciales que le pasa el cliente",
+     "El cliente, en su sampling callback, con sus propias credenciales",
+     "El propio protocolo MCP, que actúa de proxy",
+     "Depende del transporte que se esté usando"],
+  a:1, e:"El servidor solo <strong>crea la petición</strong> con <code>create_message()</code>. El cliente la recibe en su sampling callback, <strong>llama al LLM</strong> y devuelve un <code>CreateMessageResult</code>. Ese es el punto entero de la técnica."},
+
+ {q:"Has implementado un sampling callback perfecto, pero el servidor se queda esperando y nunca recibe texto. ¿Qué falta?",
+  o:["Registrar el callback en la herramienta del servidor",
+     "Cambiar el transporte a StreamableHTTP",
+     "Pasar el callback a <code>ClientSession</code>",
+     "Aumentar el <code>max_tokens</code> de la petición"],
+  a:2, e:"El callback <strong>hay que pasárselo a <code>ClientSession</code></strong>. Si no, el servidor pide sampling y no hay nadie escuchando. Es el paso que el walkthrough marca explícitamente con un \"no lo olvides\"."},
+
+ {q:"¿Por qué el cliente del walkthrough tiene una función <code>chat()</code> que reformatea mensajes antes de llamar a Claude?",
+  o:["Para traducir los mensajes al idioma del usuario",
+     "Porque los mensajes vienen en formato MCP, sin garantía de ser compatibles con el SDK del LLM",
+     "Porque el SDK de Anthropic no acepta mensajes de rol assistant",
+     "Para recortar los mensajes al límite de contexto"],
+  a:1, e:"Los mensajes que envía el servidor están <strong>formateados para comunicación en MCP</strong>. No hay garantía de que encajen con el SDK de LLM que uses, así que hace falta <strong>lógica de conversión</strong>."},
+
+ {q:"¿Cómo obtiene tu función de herramienta el objeto <code>Context</code> para emitir logs y progreso?",
+  o:["Lo recibe automáticamente como último argumento",
+     "Hay que importarlo y crear una instancia global",
+     "Se pide con <code>mcp.get_context()</code> dentro de la función",
+     "Lo inyecta el cliente al llamar a <code>call_tool()</code>"],
+  a:0, e:"Las funciones de herramienta <strong>reciben <code>Context</code> automáticamente como último parámetro</strong>. Ese objeto trae <code>info()</code>, <code>warning()</code>, <code>debug()</code>, <code>error()</code> y <code>report_progress()</code>, y llamarlos manda mensajes al cliente solo."},
+
+ {q:"Ves los logs del servidor en tu cliente pero la barra de progreso no se mueve nunca. ¿Qué has hecho mal?",
+  o:["El callback de progreso hay que pasarlo a <code>call_tool()</code>, no a <code>ClientSession</code>",
+     "Falta llamar a <code>report_progress()</code> con un total distinto de 100",
+     "Los dos callbacks deben ser la misma función",
+     "El progreso solo funciona con el transporte StreamableHTTP"],
+  a:0, e:"Van a <strong>sitios distintos</strong>: el de <strong>logging a <code>ClientSession</code></strong> porque es de la sesión entera, y el de <strong>progreso a <code>call_tool()</code></strong> porque es de una llamada concreta. Que los logs lleguen y el progreso no es la señal exacta de esta confusión."},
+
+ {q:"¿Quién decide qué carpetas son roots, y cuándo?",
+  o:["El servidor, al arrancar, leyendo su fichero de configuración",
+     "Claude, dinámicamente, según lo que pida el usuario",
+     "El usuario, por adelantado, típicamente por argumentos de línea de comandos",
+     "El SDK de MCP, que expone el directorio de trabajo actual"],
+  a:2, e:"Un root es un fichero o carpeta al que <strong>el usuario concede permiso por adelantado</strong>, normalmente vía argumentos de línea de comandos al arrancar. Y su URI <strong>debe empezar por <code>file://</code></strong>."},
+
+ {q:"Tu servidor MCP tiene roots configurados. Una herramienta pide leer un fichero que está fuera de todos ellos. ¿Qué ocurre?",
+  o:["El SDK de MCP bloquea la lectura automáticamente",
+     "El cliente rechaza la petición antes de que llegue al servidor",
+     "La lectura sale adelante, salvo que tú hayas implementado la comprobación",
+     "El servidor lanza una excepción de permisos del sistema operativo"],
+  a:2, e:"Es la <strong>limitación clave</strong> del capítulo: <strong>el SDK no impone las restricciones de root</strong>. Tienes que escribir algo como <code>is_path_allowed()</code> y <strong>llamarla en todas tus herramientas</strong>. Si no lo haces, roots es documentación, no seguridad."},
+
+ {q:"¿Cómo le llegan los roots al servidor?",
+  o:["El cliente se los envía durante la inicialización",
+     "El servidor los pide con <code>ctx.session.list_roots()</code>, lo que dispara un callback en el cliente",
+     "Se leen de una variable de entorno que fija el cliente",
+     "Vienen como argumento de cada llamada a herramienta"],
+  a:1, e:"El cliente <strong>no los entrega de entrada</strong>: registra un <code>list_roots_callback</code> y el servidor los pide <strong>cuando los necesita</strong> con <code>ctx.session.list_roots()</code>. Ese mensaje va del servidor al cliente — otra vez la misma dirección."},
+
+ {q:"¿Qué tienen en común sampling, las notificaciones de progreso y el listado de roots?",
+  o:["Las tres requieren que el servidor inicie una petición hacia el cliente",
+     "Las tres son opcionales y solo mejoran la experiencia de usuario",
+     "Las tres necesitan una clave de API en el servidor",
+     "Las tres solo funcionan con el transporte StreamableHTTP"],
+  a:0, e:"Es la idea que vertebra el curso. Las tres van <strong>del servidor al cliente</strong>, y por eso las tres se rompen a la vez cuando el transporte deja de soportar bien esa dirección."},
+
+ {q:"¿Cuál es la ventaja de STDIO que HTTP no tiene, y cuál es su límite?",
+  o:["Es más rápido; el límite es que no soporta notificaciones",
+     "Es bidireccional y cualquiera puede iniciar una petición; el límite es que exige la misma máquina física",
+     "Cifra los mensajes; el límite es que necesita un session ID",
+     "Permite escalado horizontal; el límite es que no soporta sampling"],
+  a:1, e:"STDIO da <strong>comunicación bidireccional completa</strong> —el cliente escribe en el stdin del servidor y lee de su stdout, y ambos pueden iniciar peticiones en cualquier momento—. A cambio, <strong>solo funciona si los dos corren en la misma máquina física</strong>."},
+
+ {q:"Tu servidor funciona en local con STDIO. Lo despliegas con StreamableHTTP y dejan de verse los logs y el progreso. ¿Por qué?",
+  o:["Porque HTTP es unidireccional y el servidor no puede iniciar peticiones al cliente con facilidad",
+     "Porque el session ID caduca antes de que termine la herramienta",
+     "Porque los callbacks hay que volver a registrarlos tras cada petición",
+     "Porque HTTP no transporta mensajes JSON-RPC"],
+  a:0, e:"Es <strong>el fallo de despliegue clásico</strong> que el curso existe para prevenir. El servidor <strong>no conoce la dirección del cliente</strong> y el cliente <strong>puede no ser accesible públicamente</strong>, así que la dirección servidor → cliente deja de ser gratis."},
+
+ {q:"En StreamableHTTP hay dos conexiones SSE. ¿Por cuál viajan las notificaciones de progreso?",
+  o:["Por la corta, junto con los mensajes de logging",
+     "Por la larga, junto con las peticiones iniciadas por el servidor",
+     "Por ninguna: el progreso va en la respuesta del POST",
+     "Por las dos, duplicadas, para garantizar la entrega"],
+  a:1, e:"Detalle contraintuitivo: <strong>progreso y logging no comparten conexión</strong>, aunque los emitas desde la misma herramienta con el mismo <code>ctx</code>. <strong>Progreso → la larga</strong> (la de las peticiones del servidor). <strong>Logging y el resultado → la corta</strong>, atada a esa petición y cerrada después."},
+
+ {q:"Pones <code>stateless_http = true</code> para escalar horizontalmente. ¿Qué dejas de tener?",
+  o:["Solo el streaming de las respuestas POST",
+     "Session IDs, la vía GET SSE y con ella sampling, progreso, logging y suscripciones a recursos",
+     "La capacidad de exponer herramientas al cliente",
+     "Nada: el flag solo afecta al rendimiento"],
+  a:1, e:"Sin session IDs el servidor <strong>no puede rastrear clientes individuales</strong> y se <strong>desactiva la vía GET SSE</strong>, así que cae todo lo que va del servidor al cliente. Tampoco hace falta inicialización y baja el tráfico. El que solo quita el streaming del POST es <code>json_response</code>."}
+];
+function mountQuiz(boxSel,data,key,numSel,labSel,resetSel){
+  const box=$(boxSel); if(!box) return;
+  const KEYS="ABCD";
+  let answers=LS.get(key,{});
+  function render(){
+    box.innerHTML="";
+    data.forEach((q,i)=>{
+      const d=document.createElement("div"); d.className="quiz-q";
+      d.innerHTML='<div class="qn">Pregunta '+(i+1)+' / '+data.length+'</div><div class="qt">'+q.q+'</div>';
+      const ul=document.createElement("div"); ul.className="opts";
+      q.o.forEach((t,j)=>{
+        const b=document.createElement("button"); b.className="opt";
+        b.innerHTML='<span class="k">'+KEYS[j]+'</span><span>'+t+'</span>';
+        b.onclick=()=>{ if(answers[i]!==undefined) return; answers[i]=j; LS.set(key,answers); render(); score(); };
+        ul.appendChild(b);
+      });
+      d.appendChild(ul);
+      const ex=document.createElement("div"); ex.className="expl";
+      ex.innerHTML='<b>'+(answers[i]===q.a?"✓ Correcto. ":"✗ La correcta es "+KEYS[q.a]+". ")+'</b>'+q.e;
+      d.appendChild(ex);
+      if(answers[i]!==undefined){
+        [...ul.children].forEach((b,j)=>{
+          b.disabled=true;
+          if(j===q.a)b.classList.add("ok"); else if(j===answers[i])b.classList.add("ko");
+        });
+        ex.classList.add("on");
+      }
+      box.appendChild(d);
+    });
+  }
+  function score(){
+    const done=Object.keys(answers).length;
+    const ok=Object.entries(answers).filter(([i,v])=>data[i].a===+v).length;
+    $(numSel).textContent=ok+" / "+data.length;
+    const lab=$(labSel);
+    if(!done){lab.textContent="Aún no has contestado";return;}
+    const pct=Math.round(ok/done*100), full=done===data.length;
+    const thr=Math.ceil(data.length*0.85), mid=Math.ceil(data.length*0.65);
+    lab.innerHTML=done+" contestadas · "+pct+"% de acierto"+
+      (full?(ok>=thr?" · <b style='color:var(--good)'>listo para la evaluación oficial</b>"
+        :ok>=mid?" · repasa las falladas y vuelve":" · vuelve a leer los capítulos de las falladas"):"");
+  }
+  $(resetSel).onclick=()=>{answers={};LS.set(key,answers);render();score();box.scrollIntoView({behavior:"smooth",block:"start"});};
+  render(); score();
+}
+mountQuiz("#quizBox",QUIZ,"quiz","#scoreNum","#scoreLab","#quizReset");
+
+/* ══ progreso ══ */
+(function(){
+  const CH=["c1","c2","c3","c4","c5","c6","c7","c8"];
+  let read=LS.get("read",{});
+  function sync(){
+    const n=CH.filter(c=>read[c]).length;
+    $("#meterBar").style.width=(n/CH.length*100)+"%";
+    $("#meterLab").textContent=n+" / "+CH.length;
+    CH.forEach(c=>{const a=$('[data-nav="'+c+'"]'); if(a)a.classList.toggle("done",!!read[c]);});
+    $$(".readbar[data-read]").forEach(bar=>{
+      const k=bar.dataset.read; if(!CH.includes(k))return;
+      const on=!!read[k];
+      bar.classList.toggle("done",on);
+      $(".txt",bar).textContent=on?"✓ Leído":"¿Capítulo asimilado?";
+      $(".btn",bar).textContent=on?"Desmarcar":"Marcar como leído";
+    });
+  }
+  $$(".readbar[data-read] .btn").forEach(b=>{
+    b.onclick=()=>{const k=b.closest(".readbar").dataset.read;read[k]=!read[k];LS.set("read",read);sync();};
+  });
+  $("#resetBtn").onclick=()=>{read={};LS.set("read",read);LS.set("quiz",{});sync();location.reload();};
+  sync();
+})();
+
+/* ══ scrollspy ══ */
+(function(){
+  const links=$$("#side a"), map={};
+  links.forEach(a=>map[a.dataset.nav]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const a=map[e.target.id]; if(a)a.classList.add("active");
+      }
+    });
+  },{rootMargin:"-70px 0px -70% 0px",threshold:0});
+  $$("main section").forEach(s=>obs.observe(s));
+})();
+
+/* ══ buscador ══ */
+(function(){
+  const inp=$("#search"), secs=$$("main section"), nores=$("#nores"), hrs=$$("main hr");
+  const norm=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+  inp.oninput=()=>{
+    const q=norm(inp.value.trim());
+    if(!q){secs.forEach(s=>s.classList.remove("hidden"));hrs.forEach(h=>h.style.display="");nores.classList.remove("on");return;}
+    let any=false;
+    secs.forEach(s=>{
+      const hay=norm((s.dataset.title||"")+" "+s.textContent).includes(q);
+      s.classList.toggle("hidden",!hay); if(hay)any=true;
+    });
+    hrs.forEach(h=>h.style.display="none");
+    nores.classList.toggle("on",!any);
+  };
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();inp.focus();inp.select();}
+    if(e.key==="Escape"&&document.activeElement===inp){inp.value="";inp.dispatchEvent(new Event("input"));inp.blur();}
+  });
+})();
+</script>
+</body>
+</html>

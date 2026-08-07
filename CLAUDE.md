@@ -17,6 +17,27 @@ Si un `raw_*.md` sale casi vacío, esa lección se renderiza por JavaScript (tí
 
 **No lances un quiz oficial sin permiso:** empezarlo registra un intento en la cuenta del usuario. Cargarlo en modo lectura (`load=true`) sí vale para saber cuántas preguntas tiene.
 
+#### Si el curso es de vídeo y todas las lecciones salen vacías
+
+No está perdido: hay dos yacimientos dentro del propio HTML de cualquier lección.
+
+**Las notas oficiales.** Skilljar embebe en `window.__chatData` las notas de *todos* los cursos, indexadas por una clave que aparece como `llmContentKey`. Son las que alimentan el botón *"Open in Claude"* y cubren el temario lección a lección:
+
+```bash
+grep -o 'llmContentKey: *"[^"]*"' L<id>.html | sort -u   # localiza la clave del curso
+```
+
+Luego corta el objeto `window.__chatData = {...}` equilibrando llaves (con conciencia de cadenas y escapes) y quédate con esa clave.
+
+**Los walkthroughs de código.** Las lecciones interactivas llevan un editor con el proyecto entero en dos constantes JS: `files` (ruta → contenido) y `tutorialSteps` (`file`, `line`, `endLine`, `title`, `markdown`). Se extraen evaluándolas en un contexto aislado de Node:
+
+```js
+const seg = html.slice(html.indexOf("const files"), html.indexOf("// Library code"));
+vm.runInNewContext(seg + ";globalThis.__o={files,tutorialSteps};", ctx);
+```
+
+Corta en `// Library code`: es el marcador estable. No cortes en `currentDecorations`, que está *dentro* de una función posterior y deja el slice a medias.
+
 ### 2 · Escribir los `.md`
 
 Un fichero por lección: `NN-titulo-en-kebab-case.md`, numerado desde `01` en el orden del currículo. Más un `README.md` con índice y el hilo conductor del curso.
@@ -53,6 +74,7 @@ Reglas de estilo que no se negocian:
 - **Un solo fichero, sin dependencias externas ni conexión.** Se abre con doble clic.
 - **Texto con tokens de texto**, nunca con el color de un acento. Sobre fondo de acento usa `--on-accent`, que cambia en modo oscuro; blanco sobre salmón no tiene contraste.
 - **Los items de grid llevan `min-width:0`.** Por defecto es `auto` y un `<pre>` largo revienta el ancho de la página. Ya ha pasado dos veces.
+- **Un contenedor con scroll del que midas `offsetTop` necesita `position:relative`.** Si no, el `offsetParent` de los hijos es `<body>` y cualquier auto-scroll se satura al fondo.
 
 ### 5 · Validar antes de darlo por bueno
 
@@ -71,6 +93,11 @@ Para mirar el resultado con los ojos, Chrome headless saca capturas:
 ```
 
 Ojo: headless captura desde el origen de la página, así que `#ancla` en la URL no sirve para ver una sección de más abajo. Para eso, inyecta un `<script>` en una copia temporal.
+
+Dos cosas más sobre headless, aprendidas a base de perder tiempo:
+
+- Si manipulas el DOM y capturas en el mismo tick, puedes fotografiar **un frame intermedio** y perseguir un bug que no existe. Antes de dar por buena una anomalía visual, confírmala leyendo el DOM (`matches()`, `getAttribute`) — eso sí es fiable.
+- `requestAnimationFrame` **no se dispara** bajo `--virtual-time-budget`. Usa `setTimeout` para encadenar sondas.
 
 ### 6 · Cerrar
 

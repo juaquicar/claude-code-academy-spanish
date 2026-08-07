@@ -10,6 +10,9 @@ Cada curso trae **un `.md` por lección** para leer en el editor, y **un `curso-
 |---|---|---|
 | **[Claude Code in Action](claude-code-in-action/)** | 9 | Dirigir sesiones largas · CLAUDE.md · Skills de verificación · Modos de permisos · Hooks · Routines y headless · GitHub Actions y Code Review · Verificar runs no supervisados · Plugins |
 | **[Introduction to Subagents](introduction-to-subagents/)** | 4 | Qué son · Crearlos · Diseñarlos bien · Usarlos con criterio |
+| **[MCP: Advanced Topics](model-context-protocol-advanced-topics/)** | 8 | Sampling · Log y progreso · Roots · Mensajes JSON · STDIO · StreamableHTTP · SSE en profundidad · stateless_http y json_response |
+
+> **[▶ index.html](index.html)** — página de inicio para navegar entre los cursos, con tu progreso de cada uno. Ábrela con doble clic.
 
 ### Claude Code in Action
 
@@ -26,6 +29,14 @@ Incluye las **8 preguntas reales del quiz oficial** con su feedback, más 15 de 
 Usar y crear subagentes para gestionar el contexto y delegar tareas. El eje: un subagente es **una ventana de contexto aparte** que devuelve solo un resumen y descarta el resto. La regla de decisión — **¿importa el trabajo intermedio?** No → delega. Sí → hilo principal.
 
 Este curso no tiene quiz oficial; el repo incluye una autoevaluación de 12 preguntas construida a partir del material.
+
+### MCP: Advanced Topics
+
+[Curso original](https://anthropic.skilljar.com/model-context-protocol-advanced-topics)
+
+Las capacidades de MCP que van más allá de exponer herramientas. El eje: **sampling, notificaciones y roots son la misma cosa vista desde tres ángulos** — el servidor pidiéndole algo al cliente. STDIO da esa dirección gratis; HTTP no, y la rescata con un apaño de SSE que dos flags desmontan.
+
+Los tres walkthroughs de código de la plataforma están integrados: en el HTML se navegan paso a paso, con las líneas exactas resaltadas. La evaluación oficial de 10 preguntas está pendiente de hacer.
 
 ## Estructura
 
