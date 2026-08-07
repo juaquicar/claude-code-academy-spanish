@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude with the Anthropic API — Curso interactivo</title>
+<style>
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --surface-2:#F4F2EC;
+  --ink:#1F1E1D; --ink-2:#4A4742; --muted:#7A756D;
+  --accent:#C15F3C; --accent-soft:#F6E7E0; --accent-ink:#8F3F24; --on-accent:#FFFFFF;
+  --border:#E4DFD6; --border-strong:#CFC8BC;
+  --good:#2E7D5B; --good-soft:#E3F1EA;
+  --warn:#9A6B08; --warn-soft:#FAF0DA;
+  --bad:#AE3323; --bad-soft:#FAE6E2;
+  --info:#2C5F8A; --info-soft:#E3EDF6;
+  --code-bg:#F1EEE7;
+  --shadow:0 1px 2px rgba(31,30,29,.05),0 8px 24px -12px rgba(31,30,29,.18);
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#171614; --surface:#201F1C; --surface-2:#2A2825;
+  --ink:#F2EFE7; --ink-2:#D3CEC4; --muted:#9A948A;
+  --accent:#E0876A; --accent-soft:#3A2A22; --accent-ink:#F0A98F; --on-accent:#1C1A17;
+  --border:#34322D; --border-strong:#47443E;
+  --good:#6DC49B; --good-soft:#1E322A;
+  --warn:#DFAE4E; --warn-soft:#332A18;
+  --bad:#E88476; --bad-soft:#372220;
+  --info:#7FB0DB; --info-soft:#1C2A36;
+  --code-bg:#26241F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px}
+#topbar .brand{font-weight:650;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+#topbar .brand small{color:var(--muted);font-weight:450;display:block;font-size:11.5px;letter-spacing:.02em}
+.tb-spacer{flex:1}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+#search{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;width:230px}
+#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#search::placeholder{color:var(--muted)}
+.meter-wrap{display:flex;align-items:center;gap:9px}
+.meter{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.meter-lab{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1420px;margin:0 auto;padding-top:60px}
+#side{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:24px 14px 60px 20px;border-right:1px solid var(--border)}
+#side::-webkit-scrollbar{width:8px}
+#side::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+.side-h{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:650;margin:18px 0 8px 10px}
+.side-h:first-child{margin-top:0}
+#side a{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:9px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.4;transition:.13s}
+#side a:hover{background:var(--surface-2);color:var(--ink)}
+#side a.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+#side a .num{flex:none;width:20px;height:20px;border-radius:6px;background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:2px;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+#side a.active .num{background:var(--accent);color:var(--on-accent);border-color:transparent}
+#side a.done .num{background:var(--good-soft);color:var(--good);border-color:transparent}
+#side a.done .num::after{content:"✓"}
+#side a.done .num span{display:none}
+main{padding:36px 44px 120px;max-width:900px;min-width:0}
+#shell>*{min-width:0}
+section{margin-bottom:14px;scroll-margin-top:80px}
+section.hidden{display:none}
+h1{font-family:var(--serif);font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px}
+h2{font-family:var(--serif);font-size:29px;line-height:1.2;letter-spacing:-.018em;margin:0 0 6px}
+h3{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;font-weight:650}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{color:var(--ink);font-weight:640}
+a.ext{color:var(--accent-ink)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);padding:.13em .38em;border-radius:5px;color:var(--accent-ink);border:1px solid var(--border)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:13.2px;line-height:1.6}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px;font-family:var(--serif)}
+.box{border-radius:var(--radius);padding:16px 18px;margin:0 0 18px;border:1px solid var(--border);background:var(--surface)}
+.box .bh{display:flex;align-items:center;gap:8px;font-weight:680;font-size:13.5px;margin-bottom:7px}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.box.key{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.box.key .bh{color:var(--accent-ink)}
+.box.trap{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.box.trap .bh{color:var(--bad)}
+.box.tip{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 28%,transparent)}
+.box.tip .bh{color:var(--good)}
+.box.note{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 26%,transparent)}
+.box.note .bh{color:var(--info)}
+.box.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.box.warn .bh{color:var(--warn)}
+blockquote{margin:0 0 18px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55}
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+th{font-weight:640;color:var(--ink);background:var(--surface-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.widget{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.widget-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:680;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.widget-t::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:560;cursor:pointer;transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--border-strong);color:var(--ink)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl{display:flex;gap:0;margin-bottom:18px;position:relative;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--border)}
+.tl button{position:relative;flex:1;min-width:96px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tl .dot{width:40px;height:40px;border-radius:99px;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:16px;transition:.2s;z-index:1}
+.tl button:hover .dot{border-color:var(--border-strong)}
+.tl button[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:scale(1.12)}
+.tl .lab{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+.tl button[aria-selected="true"] .lab{color:var(--accent-ink)}
+.ad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.ad{grid-template-columns:1fr}}
+.ad>div{border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.ad .yes{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.ad .no{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.ad h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.ad .yes h5{color:var(--good)}
+.ad .no h5{color:var(--bad)}
+.ad ul{margin:0;padding-left:18px;font-size:13.8px}
+.ad li{margin-bottom:4px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+.scale-labs{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:-8px 2px 16px}
+.btn{font-family:inherit;font-size:14px;font-weight:580;cursor:pointer;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--border-strong);background:var(--surface)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.q-step{margin-bottom:14px}
+.q-step p{font-weight:600;color:var(--ink);margin-bottom:9px}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:11px;border:1px solid var(--border);background:var(--surface-2);display:none}
+.verdict.on{display:block;animation:fade .3s}
+.verdict b{font-size:17px;display:block;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{perspective:1000px;height:155px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;overflow:auto}
+.card .f{background:var(--surface);color:var(--ink);font-weight:600}
+.card .b{background:var(--accent-soft);color:var(--accent-ink);transform:rotateY(180deg);font-size:13.5px;font-weight:500}
+.card .f::after{content:"clic para girar";position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);font-weight:400}
+.quiz-group{position:relative}
+.quiz-q{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin-bottom:14px}
+.quiz-q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.quiz-q .qt{font-weight:620;color:var(--ink);margin-bottom:13px;font-size:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;font-family:inherit;font-size:14.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:10px 13px;color:var(--ink-2);transition:.15s;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--border-strong);color:var(--ink)}
+.opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.ok .k{background:var(--good);color:var(--surface);border-color:transparent}
+.opt.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opt.ko .k{background:var(--bad);color:var(--surface);border-color:transparent}
+.opt:disabled{cursor:default}
+.expl{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:14px;color:var(--ink-2);display:none}
+.expl.on{display:block;animation:fade .25s}
+.expl b{color:var(--ink)}
+.score{position:sticky;bottom:16px;margin-top:20px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score .lab{font-size:13px;color:var(--muted);line-height:1.4}
+.readbar{display:flex;align-items:center;gap:12px;margin:30px 0 8px;padding:14px 16px;border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--surface);flex-wrap:wrap}
+.readbar.done{border-style:solid;background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.readbar .txt{font-size:14px;color:var(--muted);flex:1;min-width:160px}
+.readbar.done .txt{color:var(--good);font-weight:600}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.grid2>*{min-width:0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.mini{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.mini h5{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+.mini p{margin:0;font-size:14px}
+.vid{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:5px 13px;background:var(--surface);transition:.15s}
+.vid:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hero-stats{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 8px}
+.hero-stats div span{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.hero-stats div small{font-size:12.5px;color:var(--muted)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+.map a,.map .mini{text-decoration:none}
+.map a{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.18s;display:block}
+.map a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.map .t{font-weight:640;color:var(--ink);font-size:15px;line-height:1.35}
+.map .d{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── flow diagram ── */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:stretch;margin-bottom:16px}
+@media(max-width:700px){.flow{grid-template-columns:1fr}}
+.flow .col{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.flow .col.main{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft)}
+.flow .col h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.flow .col.main h5{color:var(--accent-ink)}
+.flow .arrow{display:grid;place-items:center;padding:0 14px;color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+@media(max-width:700px){.flow .arrow{padding:10px 0}}
+.flow ul{margin:0;padding-left:17px;font-size:13.5px}
+.flow li{margin-bottom:3px}
+.discard{text-decoration:line-through;color:var(--muted);opacity:.7}
+/* ── config builder ── */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.cfg-ctl,.cfg-out{min-width:0}
+@media(max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.cfg-ctl label:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:inherit;font-size:13px;font-weight:560;cursor:pointer;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);transition:.15s}
+.seg button:hover{border-color:var(--border-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.cfg-out pre{margin:0;height:100%}
+.cfg-hint{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;border-left:2px solid var(--border-strong);padding-left:12px}
+/* ── diagrama de flujo de mensajes ── */
+.msg{display:grid;grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);gap:0;align-items:center;margin-bottom:14px}
+@media(max-width:700px){.msg{grid-template-columns:minmax(0,1fr)}}
+.msg .node{border:1px solid var(--border);border-radius:12px;padding:13px 15px;background:var(--surface-2);min-width:0}
+.msg .node.hl{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.msg .node h5{margin:0 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.msg .node.hl h5{color:var(--accent-ink)}
+.msg .node p{margin:0;font-size:13.5px}
+.msg .link{display:grid;place-items:center;gap:3px;padding:0 8px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+.msg .link .ar{font-size:19px;color:var(--accent);line-height:1}
+.msg .link.dead .ar{color:var(--bad)}
+.msg .link.dead{color:var(--bad)}
+/* ── tabla comparativa de flags ── */
+.flags td.y{color:var(--good);font-weight:640}
+.flags td.n{color:var(--bad);font-weight:640}
+.flags td.c{text-align:center}
+/* ── laboratorio de puntuaciones ── */
+.lab{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-2)}
+@media(max-width:760px){.lab{grid-template-columns:minmax(0,1fr)}}
+.lab-steps{border-right:1px solid var(--border);display:flex;flex-direction:column;min-width:0}
+@media(max-width:760px){.lab-steps{border-right:none;border-bottom:1px solid var(--border)}}
+.lab-steps button{font-family:inherit;text-align:left;cursor:pointer;border:none;background:none;padding:11px 13px;border-bottom:1px solid var(--border);color:var(--ink-2);font-size:13.4px;line-height:1.35;transition:.13s;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.lab-steps button:last-child{border-bottom:none}
+.lab-steps button:hover{background:var(--surface)}
+.lab-steps button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:620}
+.lab-steps .sc{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted);flex:none}
+.lab-steps button[aria-selected="true"] .sc{color:var(--accent-ink)}
+.lab-view{min-width:0;padding:16px 18px;background:var(--surface)}
+.lab-bar{height:9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden;margin:10px 0 4px}
+.lab-bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.lab-num{font-size:32px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.lab-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+/* ── flujo numerado ── */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.steps .st{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:11px;padding:12px 14px;background:var(--surface);min-width:0}
+.steps .st::before{counter-increment:s;content:counter(s);flex:none;width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.steps .st p{margin:0;font-size:14.3px}
+.steps .st b{color:var(--ink)}
+/* ── calculadora de caché ── */
+.cache-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.cache-row label{font-size:13px;color:var(--muted);font-weight:600;min-width:130px}
+/* ── créditos ── */
+footer.credits{margin:60px 0 0;padding:24px 0 0;border-top:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.6}
+footer.credits strong{color:var(--ink-2);font-weight:640}
+footer.credits a{color:var(--accent-ink);text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);text-underline-offset:2px}
+footer.credits .who{font-size:14.5px;color:var(--ink-2);margin-bottom:10px}
+footer.credits .src{padding-left:13px;border-left:2px solid var(--border-strong)}
+
+.nores{padding:30px;text-align:center;color:var(--muted);display:none}
+.nores.on{display:block}
+@media(max-width:960px){
+  #shell{grid-template-columns:1fr}
+  #side{display:none}
+  main{padding:26px 20px 100px}
+  #search{width:140px}
+  .meter-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">Claude with the Anthropic API<small>Anthropic Academy · resumen interactivo</small></div>
+  <div class="tb-spacer"></div>
+  <div class="meter-wrap"><div class="meter"><i id="meterBar"></i></div><span class="meter-lab" id="meterLab">0 / 11</span></div>
+  <input id="search" type="search" placeholder="Buscar… (⌘/Ctrl+K)" autocomplete="off">
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  <button class="icon-btn" id="resetBtn" title="Reiniciar progreso">↺</button>
+</div>
+
+<div id="shell">
+<nav id="side">
+  <div class="side-h">Inicio</div>
+  <a href="#intro" data-nav="intro"><span class="num"><span>★</span></span> Mapa del curso</a>
+  <div class="side-h">Fundamentos</div>
+  <a href="#c1" data-nav="c1"><span class="num"><span>1</span></span> Acceder al API</a>
+  <div class="side-h">Medir y mejorar</div>
+  <a href="#c2" data-nav="c2"><span class="num"><span>2</span></span> Evaluación de prompts</a>
+  <a href="#c3" data-nav="c3"><span class="num"><span>3</span></span> Prompt engineering</a>
+  <div class="side-h">Extender</div>
+  <a href="#c4" data-nav="c4"><span class="num"><span>4</span></span> Tool use</a>
+  <a href="#c5" data-nav="c5"><span class="num"><span>5</span></span> Herramientas avanzadas</a>
+  <a href="#c6" data-nav="c6"><span class="num"><span>6</span></span> RAG</a>
+  <a href="#c7" data-nav="c7"><span class="num"><span>7</span></span> Funcionalidades de Claude</a>
+  <div class="side-h">Optimizar e integrar</div>
+  <a href="#c8" data-nav="c8"><span class="num"><span>8</span></span> Prompt caching</a>
+  <a href="#c9" data-nav="c9"><span class="num"><span>9</span></span> MCP</a>
+  <a href="#c10" data-nav="c10"><span class="num"><span>10</span></span> Claude Code y computer use</a>
+  <div class="side-h">Arquitectura</div>
+  <a href="#c11" data-nav="c11"><span class="num"><span>11</span></span> Agentes y workflows</a>
+  <div class="side-h">Repaso</div>
+  <a href="#flash" data-nav="flash"><span class="num"><span>◆</span></span> Flashcards</a>
+  <a href="#quiz" data-nav="quiz"><span class="num"><span>?</span></span> Autoevaluación</a>
+</nav>
+
+<main>
+<div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
+
+<!-- ═══ INTRO ═══ -->
+<section id="intro" data-title="mapa del curso anthropic api introducción">
+  <span class="pill acc">Anthropic Academy</span>
+  <h1 style="margin-top:14px">Claude with the Anthropic&nbsp;API</h1>
+  <p class="lede">El curso más grande de la academia: 85 lecciones desde la primera llamada al API hasta construir agentes. El recorrido completo de desarrollador — <strong>pedir, medir, mejorar, extender y automatizar</strong>.</p>
+
+  <div class="hero-stats">
+    <div><span>85</span><small>lecciones</small></div>
+    <div><span>11</span><small>capítulos</small></div>
+    <div><span>8</span><small>evaluaciones oficiales</small></div>
+    <div><span>2,32→7,86</span><small>lo que sube un prompt</small></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ El curso enseña una disciplina, no una lista de funcionalidades</div>
+    <p style="margin:0"><strong>Pide</strong> → <strong>mide antes de retocar</strong> → <strong>mejora con técnicas medidas</strong> → <strong>extiende</strong> → <strong>optimiza</strong> → <strong>integra</strong> → <strong>elige la arquitectura</strong>. Ese orden es el argumento.</p>
+  </div>
+
+  <h3>El recorrido</h3>
+  <div class="steps">
+    <div class="st"><p><b>Pide.</b> Una llamada al API es un modelo, un <code>max_tokens</code> y una lista de mensajes. Todo lo demás son matices sobre esos tres.</p></div>
+    <div class="st"><p><b>Mide antes de retocar.</b> El error típico es probar un prompt dos veces y desplegarlo. Antes de tocar nada: <strong>dataset + prompt + LLM + grader</strong>.</p></div>
+    <div class="st"><p><b>Mejora con técnicas, no a ojo.</b> Claro y directo, específico, XML, ejemplos. El curso mide cada una: <strong>2,32 → 3,92 → 7,86</strong>.</p></div>
+    <div class="st"><p><b>Extiende.</b> Tool use para lo que Claude no sabe. RAG para lo que no cabe. Funcionalidades nativas para lo que ya viene resuelto.</p></div>
+    <div class="st"><p><b>Optimiza.</b> El caché reutiliza el trabajo de procesar la entrada — con reglas estrictas que hay que conocer.</p></div>
+    <div class="st"><p><b>Integra.</b> MCP traslada el peso de escribir esquemas y funciones del desarrollador al mantenedor del servidor.</p></div>
+    <div class="st"><p><b>Decide la arquitectura.</b> Y aquí el consejo final, que va a contracorriente: <strong>prioriza workflows.</strong></p></div>
+  </div>
+
+  <blockquote>Los usuarios quieren productos que funcionen al 100%, no agentes vistosos. Resuelve el problema de forma fiable primero; innova después.</blockquote>
+
+  <div class="map">
+    <a href="#c1"><div class="t">1 · Acceder al API</div><div class="d">Modelos, petición, multi-turno, temperature, streaming, salida controlada</div></a>
+    <a href="#c2"><div class="t">2 · Evaluación de prompts</div><div class="d">Dataset, grading por modelo y por código</div></a>
+    <a href="#c3"><div class="t">3 · Prompt engineering</div><div class="d">Cuatro técnicas, con sus puntuaciones</div></a>
+    <a href="#c4"><div class="t">4 · Tool use</div><div class="d">Esquemas, bloques, resultados, multi-turno</div></a>
+    <a href="#c5"><div class="t">5 · Herramientas avanzadas</div><div class="d">Batch, structured data, fine-grained, text edit, web search</div></a>
+    <a href="#c6"><div class="t">6 · RAG</div><div class="d">Chunking, embeddings, BM25, reranking, contextual</div></a>
+    <a href="#c7"><div class="t">7 · Funcionalidades</div><div class="d">Thinking, imágenes, PDF, citations, code execution</div></a>
+    <a href="#c8"><div class="t">8 · Prompt caching</div><div class="d">Las reglas y los breakpoints</div></a>
+    <a href="#c9"><div class="t">9 · MCP</div><div class="d">Tools, resources, prompts, cliente y servidor</div></a>
+    <a href="#c10"><div class="t">10 · Claude Code</div><div class="d">Y computer use por dentro</div></a>
+    <a href="#c11"><div class="t">11 · Agentes y workflows</div><div class="d">Los patrones y la recomendación final</div></a>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ Sobre este resumen</div>
+    <p style="margin:0">El curso es <strong>de vídeo</strong>: las páginas de lección solo llevan el reproductor y los ejercicios son notebooks descargables. Esto se ha elaborado a partir de las <strong>notas oficiales</strong> que Anthropic embebe en la plataforma — 75 notas, una por lección de contenido.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 1 ═══ -->
+<section id="c1" data-title="acceder al api modelos opus sonnet haiku temperature streaming system prompt pre-fill stop sequence">
+  <div class="chead"><span class="pill">Fundamentos</span><span class="pill acc">Capítulo 1</span></div>
+  <h2>Acceder a Claude con el API</h2>
+  <p class="lede">Una llamada al API es <strong>un modelo, un <code>max_tokens</code> y una lista de mensajes</strong>. Todo lo demás de este capítulo son matices sobre esos tres.</p>
+
+  <h3>Los tres modelos</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · ¿cuál elijo?</div>
+    <div class="chips" id="modChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="m1">Opus</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="m2">Sonnet</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="m3">Haiku</button>
+    </div>
+    <div class="panel on" id="m1"><p><strong>La mayor inteligencia.</strong> Tareas complejas, multipaso, que exigen razonamiento profundo y planificación.</p><p style="margin:0"><strong>Contrapartida:</strong> mayor coste y latencia. <br><strong>Elígelo cuando:</strong> la prioridad es la inteligencia.</p></div>
+    <div class="panel" id="m2"><p><strong>Equilibrado:</strong> buena inteligencia, velocidad y coste. Fuerte en programación y <strong>edición precisa de código</strong>.</p><p style="margin:0"><strong>Elígelo cuando:</strong> tus requisitos son equilibrados. Es el de la mayoría de casos prácticos.</p></div>
+    <div class="panel" id="m3"><p><strong>El más rápido</strong>, optimizado para velocidad y coste.</p><div class="box trap" style="margin:0"><div class="bh">⚠ Lo que le falta</div><p style="margin:0"><strong>No tiene las capacidades de razonamiento de Opus/Sonnet.</strong> Ideal para interacción en tiempo real y procesamiento de alto volumen.</p></div></div>
+  </div>
+  <div class="box tip"><div class="bh">✓ El enfoque habitual</div><p style="margin:0">Usar <strong>varios modelos en la misma aplicación</strong> según lo que pida cada tarea, en vez de elegir uno solo para todo.</p></div>
+
+  <h3>El flujo de acceso, en 5 pasos</h3>
+  <div class="steps">
+    <div class="st"><p><b>El cliente envía el texto a tu servidor.</b> ⚠ <strong>Nunca accedas al API directamente desde una aplicación cliente</strong>: la clave debe permanecer secreta.</p></div>
+    <div class="st"><p><b>Tu servidor llama al API</b> con un SDK (Python, TypeScript, JavaScript, Go, Ruby) o HTTP plano. Obligatorios: <strong>clave + modelo + messages + <code>max_tokens</code></strong>.</p></div>
+    <div class="st"><p><b>Generación en cuatro etapas:</b> tokenización → embedding → contextualización → generación.</p></div>
+    <div class="st"><p><b>El modelo se detiene</b> al alcanzar <code>max_tokens</code> o al generar un token especial de fin de secuencia.</p></div>
+    <div class="st"><p><b>El API devuelve</b> el texto + contadores de uso + <code>stop_reason</code>.</p></div>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · las cuatro etapas de generación</div>
+    <div class="tl" id="tl1" role="tablist">
+      <button role="tab" aria-selected="true" data-p="g1"><span class="dot">◱</span><span class="lab">Tokenización</span></button>
+      <button role="tab" aria-selected="false" data-p="g2"><span class="dot">◲</span><span class="lab">Embedding</span></button>
+      <button role="tab" aria-selected="false" data-p="g3"><span class="dot">◳</span><span class="lab">Contextualización</span></button>
+      <button role="tab" aria-selected="false" data-p="g4"><span class="dot">◰</span><span class="lab">Generación</span></button>
+    </div>
+    <div class="panel on" id="g1"><p style="margin:0">Parte la entrada en <strong>tokens</strong> — palabras, trozos de palabra, símbolos, espacios.</p></div>
+    <div class="panel" id="g2"><p style="margin:0">Convierte los tokens en <strong>listas de números</strong> que representan todos los significados posibles de esa palabra.</p></div>
+    <div class="panel" id="g3"><p style="margin:0">Ajusta los embeddings <strong>según los tokens vecinos</strong>, para fijar el significado preciso.</p></div>
+    <div class="panel" id="g4"><p style="margin:0">La capa de salida produce <strong>probabilidades</strong> para la siguiente palabra. El modelo la selecciona combinando <strong>probabilidad y aleatoriedad</strong>, la añade y repite.<br><br>Aquí es donde entra <code>temperature</code>.</p></div>
+  </div>
+
+  <h3>La primera petición</h3>
+  <pre><code>client.messages.create(
+    model=model,
+    max_tokens=1000,
+    messages=[{"role": "user", "content": "What is quantum computing?"}]
+)</code></pre>
+  <div class="box trap"><div class="bh">⚠ <code>max_tokens</code> no es lo que crees</div><p style="margin:0">Es un <strong>límite de seguridad</strong> de longitud, <strong>no una longitud objetivo</strong>. No le pidas 1000 tokens esperando una respuesta de 1000 tokens.</p></div>
+  <p>El texto suelto se saca de <strong><code>message.content[0].text</code></strong>; la respuesta completa trae metadatos y estructura anidada.</p>
+  <p><strong>Conseguir la clave:</strong> <a class="ext" href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> → <em>Get API Keys</em> → <em>Create Key</em> → workspace <code>Default</code> y un nombre → <strong>cópiala: se muestra una sola vez</strong>. Guárdala en un <code>.env</code> ignorado por git.</p>
+
+  <h3>Conversaciones multi-turno</h3>
+  <div class="box trap">
+    <div class="bh">⚠ La limitación que lo condiciona todo</div>
+    <p style="margin:0"><strong>El API de Anthropic no almacena ningún mensaje.</strong> Cada petición es independiente y no recuerda nada de las anteriores.</p>
+  </div>
+  <p>La solución tiene dos partes: <strong>mantener la lista de mensajes a mano</strong> en tu código, y <strong>enviar el historial completo</strong> con cada petición de seguimiento. Necesitarás <code>add_user_message</code>, <code>add_assistant_message</code> y <code>chat</code>.</p>
+
+  <h3>Los tres controles de la respuesta</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · qué controla cada uno</div>
+    <div class="chips" id="ctlChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="k1">System prompt</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="k2">Temperature</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="k3">Pre-fill y stop sequence</button>
+    </div>
+    <div class="panel on" id="k1">
+      <blockquote style="margin-top:0">Controlan <em>cómo</em> responde Claude, no <em>qué</em> responde.</blockquote>
+      <p>Se pasa como cadena al argumento <code>system</code>. La primera línea suele asignar el rol —<em>"You are a patient math tutor"</em>— seguida de instrucciones de comportamiento.</p>
+      <p style="margin:0"><strong>Implementación:</strong> diccionario <code>params</code>, añade la clave <code>system</code> <strong>solo si hay prompt</strong>, y desempaqueta con <code>**</code>. Si no hay, <strong>excluye el parámetro</strong> en vez de pasar <code>None</code>.</p>
+    </div>
+    <div class="panel" id="k2">
+      <p>Parámetro de <strong>0 a 1</strong> que manipula directamente la distribución de probabilidad del siguiente token.</p>
+      <div class="ad" style="margin-bottom:12px">
+        <div class="yes"><h5>Cerca de 0</h5><p style="margin:0;font-size:14px"><strong>Determinista:</strong> siempre el token más probable.<br>Extracción de datos, tareas factuales.</p></div>
+        <div class="no" style="background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 25%,transparent)"><h5 style="color:var(--info)">Cerca de 1</h5><p style="margin:0;font-size:14px">Más probabilidad de tokens improbables: <strong>creativo e inesperado</strong>.<br>Brainstorming, escritura, marketing.</p></div>
+      </div>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ Matiz</div><p style="margin:0">Subir la temperatura <strong>no garantiza</strong> una salida distinta: solo <strong>aumenta la probabilidad</strong> de variación.</p></div>
+    </div>
+    <div class="panel" id="k3">
+      <h4 style="margin-top:0">Pre-fill del mensaje de asistente</h4>
+      <p>Añades a mano un mensaje de asistente al final. Claude lo ve como <strong>contenido que ya escribió él</strong> y continúa.</p>
+      <div class="box trap"><div class="bh">⚠ Continúa desde el final exacto</div><p style="margin:0">No desde frases completas. Tendrás que <strong>unir el pre-fill con la respuesta generada</strong>.</p></div>
+      <h4>Stop sequences</h4>
+      <p style="margin-bottom:10px">Cortan la generación cuando aparece una cadena. <strong>El texto de la stop sequence no se incluye</strong> en la salida.</p>
+      <p style="margin:0"><em>"cuenta del 1 al 10"</em> + stop <code>"five"</code> → <code>"one, two, three, four, "</code>. Afinada a <code>", five"</code> → <code>"one, two, three, four"</code>.</p>
+    </div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ Datos estructurados: el patrón de tres piezas</div>
+    <p>Claude añade por su cuenta markdown, encabezados y comentarios al generar JSON o código. Para obtener el dato crudo:</p>
+    <ol style="margin-bottom:0">
+      <li><strong>Mensaje de usuario</strong> — la petición.</li>
+      <li><strong>Pre-fill del asistente</strong> — el delimitador de apertura, <code>```json</code>.</li>
+      <li><strong>Stop sequence</strong> — el delimitador de cierre, <code>```</code>.</li>
+    </ol>
+  </div>
+  <p>Claude asume que ya empezó a responder, genera solo el contenido y se detiene al llegar al cierre. <strong>Funciona con cualquier dato estructurado</strong>, no solo JSON.</p>
+
+  <h3>Streaming</h3>
+  <p>Mostrar la respuesta <strong>trozo a trozo mientras se genera</strong>. Resuelve que una respuesta puede tardar 10-30 segundos y los usuarios esperan feedback inmediato, no un spinner.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Evento</th><th>Qué es</th></tr></thead>
+    <tbody>
+      <tr><td><code>message_start</code></td><td>Acuse de recibo inicial</td></tr>
+      <tr><td><code>content_block_start</code></td><td>Empieza la generación</td></tr>
+      <tr><td><strong><code>content_block_delta</code></strong></td><td><strong>Contiene los trozos de texto reales — el que importa</strong></td></tr>
+      <tr><td><code>content_block_stop</code> / <code>message_stop</code></td><td>Generación completa</td></tr>
+    </tbody>
+  </table></div>
+  <p><code>client.messages.stream()</code> con <strong><code>text_stream</code></strong> extrae solo el texto; <strong><code>get_final_message()</code></strong> ensambla todos los trozos para guardarlos.</p>
+  <div class="readbar" data-read="c1"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 2 ═══ -->
+<section id="c2" data-title="evaluación de prompts eval dataset grader model based code based">
+  <div class="chead"><span class="pill">Medir</span><span class="pill acc">Capítulo 2</span></div>
+  <h2>Evaluación de prompts</h2>
+  <p class="lede">Pruebas automatizadas de prompts con <strong>métricas objetivas</strong>. El capítulo que separa retocar a ojo de mejorar de verdad.</p>
+
+  <h3>Las tres salidas tras escribir un prompt</h3>
+  <div class="ad">
+    <div class="no"><h5>✗ Las dos trampas</h5><ul>
+      <li>Probarlo una o dos veces y <strong>desplegarlo</strong></li>
+      <li>Probarlo con entradas propias y hacer <strong>ajustes menores</strong> para casos límite</li>
+    </ul></div>
+    <div class="yes"><h5>✓ Lo recomendado</h5><ul>
+      <li>Pasarlo por un <strong>pipeline de evaluación</strong> para tener una puntuación objetiva</li>
+    </ul></div>
+  </div>
+  <blockquote>Los ingenieros infra-prueban los prompts de forma sistemática. Consigue puntuaciones objetivas <em>antes</em> de iterar y desplegar.</blockquote>
+
+  <h3>El workflow de 6 pasos</h3>
+  <div class="steps">
+    <div class="st"><p><b>Prompt inicial.</b> Un borrador de referencia que optimizar.</p></div>
+    <div class="st"><p><b>Dataset de evaluación.</b> Pueden ser <strong>3 ejemplos o miles</strong>, a mano o generados por LLM.</p></div>
+    <div class="st"><p><b>Variaciones.</b> Interpola cada entrada en la plantilla del prompt.</p></div>
+    <div class="st"><p><b>Respuestas.</b> Pasa cada variación por Claude y recoge las salidas.</p></div>
+    <div class="st"><p><b>Puntuar.</b> Un grader puntúa cada respuesta y se promedia.</p></div>
+    <div class="st"><p><b>Iterar.</b> Modifica según las puntuaciones, repite, compara versiones.</p></div>
+  </div>
+  <div class="box key"><div class="bh">◈ El núcleo del pipeline</div><p style="margin:0"><strong>dataset + prompt + LLM + grader.</strong> Con muy poco código. No existe metodología estándar: hay herramientas de sobra, pero puedes empezar con una implementación propia.</p></div>
+
+  <h3>Generar el dataset</h3>
+  <p>A mano, o automatizado con Claude — <strong>usa modelos rápidos como Haiku para generarlo</strong>. Array de objetos JSON con una propiedad <code>task</code>.</p>
+  <p>El proceso reutiliza el patrón del capítulo 1: pre-fill con <code>```json</code>, stop sequence <code>```</code>, parsear y guardar.</p>
+
+  <h3>Los tres tipos de grader</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · elige el grader</div>
+    <div class="chips" id="gradChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="gr1">Code graders</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="gr2">Model graders</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="gr3">Human graders</button>
+    </div>
+    <div class="panel on" id="gr1">
+      <p>Comprobaciones programáticas: longitud, presencia de palabras, validación de sintaxis, índices de legibilidad. <strong>Rápidos y deterministas.</strong></p>
+      <pre style="margin-bottom:10px"><code>validate_json()    # → 10 si válido, 0 si error
+validate_python()  # parseo del AST
+validate_regex()   # compilación</code></pre>
+      <p>Requiere que el dataset lleve una clave <strong><code>format</code></strong> con el tipo esperado.</p>
+      <div class="box key" style="margin:0"><div class="bh">◈ La fórmula final</div><p style="margin:0"><code>puntuación = (puntuación_del_modelo + puntuación_de_sintaxis) / 2</code><br><br>Mide a la vez que sea <strong>correcto</strong> y que sea <strong>técnicamente válido</strong>.</p></div>
+    </div>
+    <div class="panel" id="gr2">
+      <p><strong>Una llamada adicional al API</strong> que evalúa la salida original. Muy flexibles para calidad y seguimiento de instrucciones.</p>
+      <div class="box trap"><div class="bh">⚠ El error que arruina un model grader</div><p style="margin:0">Si le pides <strong>solo la puntuación</strong>, tiende a dar valores mediocres por defecto. Pídele <strong>fortalezas, debilidades, razonamiento y puntuación</strong>, en ese orden.</p></div>
+      <p style="margin:0">Formato JSON con pre-fill y stop sequences, parsea y promedia. Son flexibles pero <strong>pueden ser inconsistentes</strong>; aun así dan una referencia objetiva.</p>
+    </div>
+    <div class="panel" id="gr3">
+      <p style="margin:0">Una persona evalúa las respuestas. <strong>Los más flexibles</strong>, pero <strong>lentos y tediosos</strong>.</p>
+    </div>
+  </div>
+  <p><strong>Requisitos comunes:</strong> devolver una <strong>señal objetiva</strong>, normalmente numérica, y <strong>definir los criterios por adelantado</strong>.</p>
+  <div class="readbar" data-read="c2"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 3 ═══ -->
+<section id="c3" data-title="prompt engineering claro directo específico xml ejemplos one-shot multi-shot puntuaciones">
+  <div class="chead"><span class="pill">Mejorar</span><span class="pill acc">Capítulo 3</span></div>
+  <h2>Prompt engineering</h2>
+  <p class="lede">Cuatro técnicas. Lo que hace valioso este capítulo es que <strong>el curso mide cada una</strong> sobre el mismo caso: un plan de comidas para un atleta.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · aplica las técnicas y mira subir la puntuación</div>
+    <div class="lab" id="lab"></div>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ El montaje del pipeline</div>
+    <p style="margin:0">Clase evaluadora flexible con <strong>concurrencia</strong> (ajusta <code>max_concurrent_tasks</code> a tus límites de rate) · <code>prompt_input_spec</code> define las entradas · <code>extra_criteria</code> añade requisitos al grading · <code>output.html</code> es el informe con resultados y puntuaciones.</p>
+  </div>
+
+  <h3>Técnica 3 · Estructurar con XML</h3>
+  <p>Envuelve las secciones en etiquetas descriptivas cuando interpolas contenido, para que el modelo <strong>distinga entre tipos de información</strong>.</p>
+  <div class="ad">
+    <div class="no"><h5>✗ Sin estructura</h5><p style="margin:0;font-size:14px">Volcar código y documentación seguidos en el prompt.</p></div>
+    <div class="yes"><h5>✓ Con etiquetas</h5><p style="margin:0;font-size:14px"><code>&lt;my_code&gt;</code> y <code>&lt;docs&gt;</code> separados.</p></div>
+  </div>
+  <p><strong>Nombra las etiquetas de forma específica:</strong> <code>sales_records</code> es mejor que <code>data</code>. Y funciona <strong>incluso con bloques cortos</strong> — envolver <code>&lt;athlete_information&gt;</code> aclara que es una entrada externa a considerar.</p>
+
+  <h3>Técnica 4 · Dar ejemplos</h3>
+  <p><strong>One-shot</strong> = un ejemplo. <strong>Multi-shot</strong> = varios. Estructúralos con etiquetas XML que contengan entrada de muestra y salida ideal.</p>
+  <div class="grid2">
+    <div class="mini"><h5>Dónde son más útiles</h5><p>Casos límite (sarcasmo), formatos de salida complejos, y aclarar la calidad o el estilo esperados.</p></div>
+    <div class="mini" style="border-color:var(--accent)"><h5>El bucle que cierra el curso</h5><p><strong>Usa como plantilla los ejemplos con mejor puntuación de tus evals.</strong> El capítulo 2 alimenta al 3.</p></div>
+  </div>
+  <ul>
+    <li>Añade contexto para los casos límite: <em>"be especially careful with sarcasm"</em>.</li>
+    <li><strong>Incluye el razonamiento</strong> de por qué esa salida es la ideal — refuerza las características que buscas.</li>
+    <li>Colócalos <strong>después</strong> de las instrucciones y guidelines principales.</li>
+  </ul>
+  <div class="readbar" data-read="c3"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 4 ═══ -->
+<section id="c4" data-title="tool use esquemas tool_use_id stop_reason bloques mensaje run_conversation run_tools">
+  <div class="chead"><span class="pill">Extender</span><span class="pill acc">Capítulo 4</span></div>
+  <h2>Tool use</h2>
+  <p class="lede">Método para que Claude acceda a <strong>información externa</strong> más allá de sus datos de entrenamiento. Por defecto no tiene información actual ni en tiempo real.</p>
+
+  <div class="widget">
+    <div class="widget-t">El flujo, en 5 pasos</div>
+    <div class="msg">
+      <div class="node hl"><h5>Tu servidor</h5><p>Envía la petición <strong>+ los esquemas de herramienta</strong></p></div>
+      <div class="link"><span class="ar">→</span>tools</div>
+      <div class="node"><h5>Claude</h5><p>Evalúa si necesita datos externos</p></div>
+    </div>
+    <div class="msg">
+      <div class="node"><h5>Tu servidor</h5><p><strong>Ejecuta el código</strong> que obtiene el dato</p></div>
+      <div class="link"><span class="ar">←</span>tool_use</div>
+      <div class="node hl"><h5>Claude</h5><p>Pide información concreta</p></div>
+    </div>
+    <div class="msg" style="margin-bottom:0">
+      <div class="node hl"><h5>Tu servidor</h5><p>Petición de seguimiento con <strong>el resultado</strong></p></div>
+      <div class="link"><span class="ar">→</span>tool_result</div>
+      <div class="node"><h5>Claude</h5><p>Respuesta final con el dato integrado</p></div>
+    </div>
+  </div>
+
+  <h3>El proyecto: recordatorios con fecha</h3>
+  <p>Tres problemas obligan a usar herramientas, y cada uno tiene la suya:</p>
+  <div class="tw"><table>
+    <thead><tr><th>Problema</th><th>Herramienta</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Desconoce la hora</strong> — sabe la fecha, no la hora exacta</td><td>Fecha y hora actuales</td></tr>
+      <tr><td><strong>Calcula mal el tiempo</strong> — se equivoca sumando fechas</td><td>Sumar duración</td></tr>
+      <tr><td><strong>No puede poner recordatorios</strong> — entiende el concepto, no lo implementa</td><td>Poner recordatorio</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Las funciones de herramienta</h3>
+  <pre><code>def get_current_datetime(date_format="%Y%m%d %H:%M:%S"):
+    if not date_format:
+        raise ValueError("date format cannot be empty")
+    return datetime.now().strftime(date_format)</code></pre>
+  <div class="box key">
+    <div class="bh">◈ Los mensajes de error los lee Claude</div>
+    <p style="margin:0">Son <strong>visibles para él</strong>, así que puede <strong>reintentar con los parámetros corregidos</strong>. Escríbelos pensando en que los va a leer él: nombres descriptivos, validación de entradas, y errores con significado.</p>
+  </div>
+
+  <h3>Los esquemas</h3>
+  <p><strong>JSON Schema</strong> es una especificación de validación de datos <strong>que no es específica de ML</strong>; la comunidad la adoptó para tool calling.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Campo</th><th>Contenido</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>Identificador</td></tr>
+      <tr><td><code>description</code></td><td><strong>3-4 frases</strong>: qué hace, cuándo usarla, qué devuelve</td></tr>
+      <tr><td><code>input_schema</code></td><td>El JSON Schema con argumentos, tipos y descripciones</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box tip">
+    <div class="bh">✓ El truco para generarlos</div>
+    <p style="margin:0">Lleva tu función a claude.ai, pídele <em>"write valid JSON schema spec for tool calling for this function, follow best practices in attached documentation"</em> y <strong>adjunta la página de tool use de la documentación del API</strong>. Copia el resultado.<br><br>Envuelve el diccionario con <strong><code>ToolParam()</code></strong> de <code>anthropic.types</code> para evitar errores de tipo.</p>
+  </div>
+
+  <h3>Los tres detalles que hay que memorizar</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · toca cada uno</div>
+    <div class="chips" id="tuChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="t1">Bloques de mensaje</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="t2">tool_use_id</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="t3">stop_reason</button>
+    </div>
+    <div class="panel on" id="t1">
+      <p>Los mensajes pasan a contener <strong>varios bloques</strong>, no solo texto. La respuesta con herramienta trae un <strong>bloque de texto</strong> (explicación para el usuario) y un <strong>bloque tool use</strong> (nombre + argumentos).</p>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ El fallo</div><p style="margin:0">Al guardar en el historial, <strong>añade <code>response.content</code> entero</strong>, no solo el texto. Y actualiza <code>add_user_message</code> / <code>add_assistant_message</code> para soportar múltiples bloques.</p></div>
+    </div>
+    <div class="panel" id="t2">
+      <p>Enlaza cada petición con su resultado <strong>cuando Claude hace varias llamadas simultáneas</strong>. Cada tool use tiene un ID único; cada resultado debe referenciar el suyo.</p>
+      <div class="tw" style="margin-bottom:12px"><table>
+        <thead><tr><th>Campo del bloque de resultado</th><th>Qué es</th></tr></thead>
+        <tbody>
+          <tr><td><code>tool_use_id</code></td><td>El ID del bloque original</td></tr>
+          <tr><td><code>content</code></td><td>La salida convertida a cadena, normalmente JSON</td></tr>
+          <tr><td><code>is_error</code></td><td>Booleano. Por defecto <code>false</code></td></tr>
+        </tbody>
+      </table></div>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ Dos cosas que se olvidan</div><p style="margin:0">El bloque de resultado va en un <strong>mensaje de USUARIO</strong>, no de asistente. Y hay que <strong>incluir los esquemas originales</strong> en el seguimiento, aunque no vayas a usar herramientas otra vez.</p></div>
+    </div>
+    <div class="panel" id="t3">
+      <p>Campo que indica por qué dejó de generar Claude. <strong><code>stop_reason == "tool_use"</code></strong> significa que quiere llamar a una herramienta — <strong>es la condición del bucle</strong>.</p>
+      <p style="margin:0">Hay otros valores, pero este es el que se comprueba casi siempre.</p>
+    </div>
+  </div>
+
+  <h3>El bucle multi-turno</h3>
+  <p>No puedes predecir cuántas herramientas necesitará una consulta, así que el sistema debe manejar <strong>cadenas arbitrarias</strong>. Tres funciones:</p>
+  <div class="steps">
+    <div class="st"><p><b><code>run_conversation</code></b> — llama a Claude, añade la respuesta al historial, comprueba <code>stop_reason</code>; si no es <code>tool_use</code> sale del bucle, si lo es llama a <code>run_tools</code> y añade los resultados como mensaje de usuario.</p></div>
+    <div class="st"><p><b><code>run_tools</code></b> — filtra los bloques <code>tool_use</code>, ejecuta cada uno vía <code>run_tool</code>, y crea <strong>un <code>tool_result</code> por cada bloque</strong>.</p></div>
+    <div class="st"><p><b><code>run_tool</code></b> — el dispatcher: empareja nombres con funciones. Escalable.</p></div>
+  </div>
+  <p>Añadir una herramienta nueva son tres pasos mecánicos: <strong>esquema + enrutado + implementación</strong>.</p>
+  <div class="readbar" data-read="c4"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 5 ═══ -->
+<section id="c5" data-title="batch tool structured data tool_choice fine grained text edit web search">
+  <div class="chead"><span class="pill">Extender</span><span class="pill acc">Capítulo 5</span></div>
+  <h2>Herramientas avanzadas y predefinidas</h2>
+  <p class="lede">Dos trucos de diseño y tres herramientas que Claude ya trae.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · las cinco</div>
+    <div class="chips" id="advChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="a1">Batch tool</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="a2">Datos estructurados</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="a3">Fine-grained</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="a4">Text edit</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="a5">Web search</button>
+    </div>
+
+    <div class="panel on" id="a1">
+      <p>Permite ejecutar <strong>varias herramientas en paralelo dentro de un solo mensaje</strong>.</p>
+      <div class="box trap"><div class="bh">⚠ El problema que resuelve</div><p style="margin:0">Claude <em>puede</em> técnicamente enviar varios bloques <code>tool_use</code> en un mensaje, pero <strong>rara vez lo hace en la práctica</strong>. El resultado son llamadas secuenciales innecesarias.</p></div>
+      <p style="margin:0"><strong>El mecanismo:</strong> una herramienta que recibe una lista de <code>invocations</code> (nombre + argumentos). <code>run_batch</code> itera y llama a <code>run_tool</code> por cada una. <strong>Engaña a Claude para paralelizar</strong> dándole una abstracción de más alto nivel.</p>
+    </div>
+
+    <div class="panel" id="a2">
+      <p>Alternativa al pre-fill + stop sequence del capítulo 1 para extraer JSON.</p>
+      <div class="tw" style="margin-bottom:12px"><table>
+        <thead><tr><th></th><th>Pre-fill + stop</th><th>Herramienta</th></tr></thead>
+        <tbody>
+          <tr><td>Fiabilidad</td><td>Menor</td><td><strong>Mayor</strong></td></tr>
+          <tr><td>Complejidad</td><td><strong>Menor</strong></td><td>Mayor</td></tr>
+          <tr><td>JSON Schema</td><td>No</td><td><strong>Sí</strong></td></tr>
+        </tbody>
+      </table></div>
+      <div class="box trap"><div class="bh">⚠ Requisito crítico</div><p style="margin:0">Fuerza la llamada con <code>tool_choice = {"type": "tool", "name": "tu_herramienta"}</code>. Sin eso, Claude puede no llamarla.</p></div>
+      <p style="margin:0">Los datos salen de <strong><code>response.content[0].input</code></strong> — <strong>no hace falta enviar un tool result</strong>. Usa esto cuando la fiabilidad importe más que la simplicidad.</p>
+    </div>
+
+    <div class="panel" id="a3">
+      <p>El streaming con herramientas añade eventos <strong><code>input_json_delta</code></strong>, con <code>partial_json</code> (el trozo) y <code>snapshot</code> (la suma acumulada).</p>
+      <p><strong>Por defecto</strong>, el API almacena los trozos en búfer hasta tener un par clave-valor completo y <strong>valida el JSON contra el esquema</strong> antes de enviarlos. Resultado: retrasos seguidos de ráfagas.</p>
+      <div class="tw" style="margin:0"><table>
+        <thead><tr><th></th><th>Por defecto</th><th><code>fine_grained: true</code></th></tr></thead>
+        <tbody>
+          <tr><td>Velocidad</td><td>Más lento</td><td><strong>Más rápido</strong></td></tr>
+          <tr><td>JSON</td><td><strong>Validado</strong></td><td>Puede ser inválido</td></tr>
+          <tr><td>Manejo de errores</td><td>Del API</td><td><strong>Tuyo, en el cliente</strong></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="a4">
+      <p>Herramienta integrada para operaciones de fichero: leer, escribir, crear, reemplazar, deshacer.</p>
+      <div class="box trap"><div class="bh">⚠ Lo que viene y lo que no</div><p style="margin:0"><strong>Solo el JSON Schema viene integrado en Claude. La implementación la escribes tú</strong> — las operaciones reales sobre el sistema de ficheros no vienen dadas.</p></div>
+      <p style="margin:0">Envías un <strong>stub mínimo</strong> (nombre + tipo) que <strong>Claude expande internamente</strong> al esquema completo. ⚠ El string de tipo <strong>varía según la versión del modelo</strong>: 3.5 y 3.7 llevan fechas distintas.</p>
+    </div>
+
+    <div class="panel" id="a5">
+      <p>Búsqueda web para información actualizada o especializada.</p>
+      <div class="box tip"><div class="bh">✓ La diferencia con la text edit tool</div><p style="margin:0"><strong>No hace falta código propio: Claude ejecuta la búsqueda automáticamente.</strong></p></div>
+      <div class="tw" style="margin-bottom:12px"><table>
+        <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"web_search_20250305"</code></td></tr>
+          <tr><td><code>max_uses</code></td><td>Límite de búsquedas. <strong>Por defecto 5</strong></td></tr>
+          <tr><td><code>allowed_domains</code></td><td>Restringir a dominios concretos</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin:0">La respuesta trae bloques de texto, de tool use (las consultas), de resultado (título y URL) y <strong>de cita</strong> (el texto que respalda cada afirmación).<br><br><strong>Ejemplo:</strong> restringir a <code>NIH.gov</code> para consejo médico garantiza respaldo científico.</p>
+    </div>
+  </div>
+  <div class="readbar" data-read="c5"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 6 ═══ -->
+<section id="c6" data-title="rag chunking embeddings coseno bm25 reciprocal rank fusion reranking contextual retrieval">
+  <div class="chead"><span class="pill">Extender</span><span class="pill acc">Capítulo 6</span></div>
+  <h2>RAG</h2>
+  <p class="lede">Cómo extraer información concreta de un documento de 100-1000+ páginas sin chocar con los límites de contexto.</p>
+
+  <div class="ad">
+    <div class="no"><h5>✗ Opción 1 · meter el documento entero</h5><ul>
+      <li>Choca con los <strong>límites de tokens</strong></li>
+      <li><strong>Pierde eficacia</strong> con prompts largos</li>
+      <li>Más caro y más lento</li>
+    </ul></div>
+    <div class="yes"><h5>✓ Opción 2 · RAG</h5><ul>
+      <li>El modelo <strong>se centra en lo relevante</strong></li>
+      <li>Escala a documentos grandes y múltiples</li>
+      <li>Prompts pequeños, menos coste, más rápido</li>
+    </ul></div>
+  </div>
+  <blockquote>RAG cambia simplicidad por escalabilidad y eficiencia. El reto está en definir qué es "relevante" y cuál es la estrategia de troceado.</blockquote>
+
+  <h3>Troceado</h3>
+  <div class="box trap">
+    <div class="bh">⚠ Por qué importa tanto</div>
+    <p style="margin:0"><strong>La calidad del troceado impacta directamente en el rendimiento.</strong> El ejemplo del curso: texto médico sobre un "bug" recuperado para una consulta de ingeniería de software sobre bugs.</p>
+  </div>
+  <div class="widget">
+    <div class="widget-t">Interactivo · las tres estrategias</div>
+    <div class="chips" id="chunkChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="ch1">Por tamaño</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="ch2">Por estructura</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="ch3">Semántico</button>
+    </div>
+    <div class="panel on" id="ch1">
+      <p>Dividir en cadenas de igual longitud. <strong>Fácil de implementar y la más común en producción.</strong></p>
+      <p>✗ Corta palabras a la mitad y pierde contexto.</p>
+      <p style="margin:0"><strong>Solución: solapamiento</strong> — incluir caracteres de los trozos vecinos. Duplica texto, pero mejora el significado de cada trozo.</p>
+    </div>
+    <div class="panel" id="ch2">
+      <p>Dividir según encabezados, párrafos o secciones. Mejor para <strong>markdown y HTML</strong>.</p>
+      <p style="margin:0">✗ <strong>Requiere que el formato esté garantizado.</strong> Ejemplo: partir por <code>##</code> para crear trozos por sección.</p>
+    </div>
+    <div class="panel" id="ch3">
+      <p style="margin:0">Usar NLP para agrupar frases y secciones relacionadas por <strong>similitud semántica</strong>. La técnica más avanzada, y la de implementación más compleja.</p>
+    </div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Granularidad</th><th>Cuándo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Por carácter</strong></td><td>El recurso más fiable: funciona con cualquier documento</td></tr>
+      <tr><td><strong>Por frase</strong></td><td>Buen término medio, si la detección funciona bien</td></tr>
+      <tr><td><strong>Por sección</strong></td><td>Resultados óptimos, pero exige entrada estructurada</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>No hay un método universalmente mejor.</strong> Depende de qué garantías tengas sobre el documento.</p>
+
+  <h3>Embeddings</h3>
+  <p>Representación numérica del <strong>significado</strong>. El modelo recibe texto y devuelve una lista larga de números en rango <strong>-1 a +1</strong>.</p>
+  <div class="box note"><div class="bh">ℹ El matiz honesto</div><p style="margin:0">Cada número puntúa <strong>cualidades desconocidas</strong>. En teoría cada uno mide un aspecto —alegría, relevancia temática— pero <strong>su significado real es desconocido</strong> para quien los usa.</p></div>
+  <p>Permiten emparejar por <strong>similitud semántica</strong> en vez de por palabras clave. Anthropic recomienda <strong>Voyage AI</strong>; cuenta aparte, gratis para empezar.</p>
+
+  <h3>El flujo completo</h3>
+  <div class="grid2">
+    <div class="mini"><h5>Preprocesado (1-4)</h5><p>Trocear → generar embeddings → <strong>normalizar</strong> (lo hacen las APIs solas) → guardar en base vectorial.</p></div>
+    <div class="mini"><h5>Tiempo real (5-7)</h5><p>Embedding de la consulta <strong>con el mismo modelo</strong> → búsqueda por similitud → ensamblar el prompt.</p></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Métrica</th><th>Rango</th><th>Interpretación</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Similitud coseno</strong></td><td>-1 a 1</td><td>Más cerca de <strong>1</strong> = más similar</td></tr>
+      <tr><td><strong>Distancia coseno</strong></td><td>1 − similitud</td><td>Más cerca de <strong>0</strong> = más similar</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box trap"><div class="bh">⚠ Al implementarlo</div><p style="margin:0"><strong>Guarda el texto original junto al embedding</strong> — <code>store.add_vector(embedding, {content: chunk})</code>. Sin los metadatos con el contenido, los resultados de la búsqueda no sirven de nada.</p></div>
+
+  <h3>Las cuatro mejoras sucesivas</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · cada una arregla un fallo de la anterior</div>
+    <div class="tl" id="tl6" role="tablist">
+      <button role="tab" aria-selected="true" data-p="r1"><span class="dot">①</span><span class="lab">BM25</span></button>
+      <button role="tab" aria-selected="false" data-p="r2"><span class="dot">②</span><span class="lab">Multi-índice</span></button>
+      <button role="tab" aria-selected="false" data-p="r3"><span class="dot">③</span><span class="lab">Reranking</span></button>
+      <button role="tab" aria-selected="false" data-p="r4"><span class="dot">④</span><span class="lab">Contextual</span></button>
+    </div>
+    <div class="panel on" id="r1">
+      <p><strong>El fallo que arregla:</strong> la búsqueda semántica sola <strong>puede pasar por alto coincidencias exactas</strong>, devolviendo resultados irrelevantes aunque un término específico aparezca mucho.</p>
+      <p><strong>BM25</strong> (<em>Best Match 25</em>) es búsqueda <strong>léxica</strong>: tokeniza la consulta, cuenta la frecuencia de cada término en todo el corpus, asigna importancia relativa y rankea.</p>
+      <div class="box key" style="margin:0"><div class="bh">◈ La idea</div><p style="margin:0"><strong>Los términos raros pesan más</strong> que los comunes. Un término que aparece en todo el corpus es menos relevante que uno específico.</p></div>
+    </div>
+    <div class="panel" id="r2">
+      <p><strong>El fallo que arregla:</strong> tener dos índices no sirve si no sabes fusionar sus resultados.</p>
+      <p>El <strong>Retriever</strong> reenvía la consulta a ambos índices y los fusiona con <strong>Reciprocal Rank Fusion</strong>:</p>
+      <pre style="margin-bottom:12px"><code>RRF_score = Σ 1 / (rank + 1)    por cada método</code></pre>
+      <p style="margin:0"><strong>Ejemplo:</strong> vectorial da <code>[doc2, doc7, doc6]</code>, BM25 da <code>[doc6, doc2, doc7]</code>. Tras RRF: <code>[doc2, doc6, doc7]</code> — porque <strong>doc2 salió alto en ambos</strong>.</p>
+    </div>
+    <div class="panel" id="r3">
+      <p><strong>El fallo que arregla:</strong> la recuperación inicial se pierde matices de la intención.</p>
+      <p>Un LLM <strong>reordena los resultados</strong> por relevancia después de recuperarlos. Usa <strong>IDs de documento, no el texto completo</strong>, por eficiencia. Pre-fill + stop sequence para salida JSON estructurada.</p>
+      <p><strong>Contrapartida:</strong> sube la precisión, <strong>añade latencia</strong> por la llamada extra.</p>
+      <div class="box tip" style="margin:0"><div class="bh">✓ El ejemplo</div><p style="margin:0">La consulta <em>"¿qué hizo el equipo de ingeniería con el incidente de 2023?"</em> priorizó correctamente la sección de ingeniería de software sobre la de ciberseguridad <strong>tras el reranking</strong>. El matiz era <em>"ENG team"</em> vs <em>"engineering team"</em>.</p></div>
+    </div>
+    <div class="panel" id="r4">
+      <p><strong>El fallo que arregla:</strong> al partir el documento, <strong>cada trozo pierde el contexto del original</strong>.</p>
+      <p>Antes de generar el embedding: envías el trozo + el documento fuente a Claude, que genera un <strong>contexto de situación</strong> breve; lo unes al trozo original = <strong>trozo contextualizado</strong>, y ese es el que indexas.</p>
+      <div class="box note" style="margin:0"><div class="bh">ℹ Si el documento no cabe en un prompt</div><p style="margin:0">Contexto selectivo: los <strong>trozos iniciales (1-3)</strong> para el resumen + los <strong>inmediatamente anteriores</strong> al objetivo para contexto local, <strong>saltándose los del medio</strong>.</p></div>
+    </div>
+  </div>
+  <div class="readbar" data-read="c6"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 7 ═══ -->
+<section id="c7" data-title="extended thinking imágenes pdf citations code execution files api">
+  <div class="chead"><span class="pill">Extender</span><span class="pill acc">Capítulo 7</span></div>
+  <h2>Funcionalidades de Claude</h2>
+  <p class="lede">Cinco capacidades que vienen dadas y no hay que construir.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · las cinco</div>
+    <div class="chips" id="featChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="f1">Extended thinking</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="f2">Imágenes</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="f3">PDF</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="f4">Citations</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="f5">Code execution</button>
+    </div>
+
+    <div class="panel on" id="f1">
+      <p>Permite a Claude <strong>razonar antes de generar la respuesta final</strong>, mostrando un proceso de pensamiento separado y visible.</p>
+      <div class="box trap"><div class="bh">⚠ Los dos números</div><p style="margin:0"><strong>Thinking budget mínimo: 1024 tokens.</strong><br><strong><code>max_tokens</code> debe superarlo</strong> — con budget 1024, <code>max_tokens</code> ≥ 1025.</p></div>
+      <p><strong>Cuándo activarlo:</strong> cuando <strong>optimizar el prompt no haya conseguido la precisión</strong> que buscas. Usa evals para decidirlo.</p>
+      <p style="margin:0"><strong>Coste:</strong> se cobran los tokens de pensamiento y añade latencia. El bloque de pensamiento lleva una <strong>firma criptográfica</strong> que impide manipularlo. Los <strong>bloques redactados</strong> son pensamiento cifrado que los sistemas de seguridad marcaron; se entregan igual para mantener la continuidad.</p>
+    </div>
+
+    <div class="panel" id="f2">
+      <p>Analizar, comparar, contar y describir imágenes dentro de mensajes de usuario.</p>
+      <p><strong>Límites:</strong> máximo <strong>100 imágenes por petición</strong>, restricciones de tamaño, y <strong>consumen tokens</strong> calculados según alto y ancho en píxeles.</p>
+      <div class="box trap"><div class="bh">⚠ El factor crítico</div><p style="margin:0"><strong>La precisión depende enteramente de lo sofisticado que sea el prompt, no de la calidad de la imagen.</strong> Los prompts simples fallan a menudo.</p></div>
+      <p style="margin:0"><strong>Técnicas:</strong> instrucciones paso a paso, ejemplos multi-shot <strong>alternando pares de imagen y texto</strong>, guidelines claras y pasos de verificación.</p>
+    </div>
+
+    <div class="panel" id="f3">
+      <p>Claude lee PDF <strong>directamente</strong>, con código casi idéntico al de imágenes.</p>
+      <div class="tw" style="margin-bottom:12px"><table>
+        <thead><tr><th></th><th>Imagen</th><th>PDF</th></tr></thead>
+        <tbody>
+          <tr><td>Tipo</td><td><code>"image"</code></td><td><strong><code>"document"</code></strong></td></tr>
+          <tr><td>Media type</td><td><code>"image/png"</code></td><td><strong><code>"application/pdf"</code></strong></td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin:0">Extrae <strong>texto + imágenes + gráficas + tablas</strong> y contenido mixto. Solución integral para análisis documental.</p>
+    </div>
+
+    <div class="panel" id="f4">
+      <p>Claude <strong>referencia los documentos fuente</strong> y muestra de dónde sale la información.</p>
+      <div class="tw" style="margin-bottom:12px"><table>
+        <thead><tr><th>Tipo</th><th>Para</th><th>Qué muestra</th></tr></thead>
+        <tbody>
+          <tr><td><code>citation_page_location</code></td><td>PDF</td><td>Índice, título, página inicial y final, texto citado</td></tr>
+          <tr><td><code>citation_char_location</code></td><td>Texto plano</td><td>Posición de caracteres en el bloque</td></tr>
+        </tbody>
+      </table></div>
+      <p>Se activa con <code>"citations": {"enabled": true}</code> más un campo <strong><code>title</code></strong> que identifique el documento.</p>
+      <p style="margin:0"><strong>Para qué sirve de verdad:</strong> transparencia. El usuario puede <strong>verificar las fuentes</strong> en vez de que parezca que Claude habla de memoria.</p>
+    </div>
+
+    <div class="panel" id="f5">
+      <p><strong>Files API:</strong> subes ficheros por adelantado y los referencias después <strong>por ID</strong>, en vez de incluir los datos crudos en cada petición.</p>
+      <p><strong>Code execution:</strong> Claude ejecuta Python en <strong>contenedores Docker aislados</strong>. No hace falta implementación, solo incluir el esquema predefinido.</p>
+      <div class="box trap"><div class="bh">⚠ La restricción que lo une todo</div><p style="margin:0"><strong>Los contenedores no tienen acceso a red.</strong> La entrada y salida de datos <strong>depende de la Files API</strong>. Por eso las dos cosas van en la misma lección.</p></div>
+      <p style="margin:0">Claude también puede <strong>generar ficheros</strong> dentro del contenedor —gráficas, informes— que se descargan con los IDs devueltos.</p>
+    </div>
+  </div>
+  <div class="readbar" data-read="c7"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 8 ═══ -->
+<section id="c8" data-title="prompt caching breakpoint ephemeral cache_control invalidación 1024 tokens">
+  <div class="chead"><span class="pill">Optimizar</span><span class="pill acc">Capítulo 8</span></div>
+  <h2>Prompt caching</h2>
+  <p class="lede">Acelera las respuestas y reduce el coste <strong>reutilizando el trabajo computacional</strong> de peticiones anteriores.</p>
+
+  <div class="widget">
+    <div class="widget-t">El problema</div>
+    <div class="msg" style="margin-bottom:0">
+      <div class="node"><h5>Petición 1</h5><p>Claude procesa la entrada, genera, y <strong>descarta todo el trabajo</strong></p></div>
+      <div class="link dead"><span class="ar">⇠</span>trabajo tirado</div>
+      <div class="node hl"><h5>Petición 2 · entrada idéntica</h5><p>Tiene que <strong>repetir todo el trabajo que acaba de tirar</strong></p></div>
+    </div>
+    <div class="cfg-hint">El caché almacena el resultado de procesar la entrada en vez de descartarlo. Cuando la misma entrada vuelve a aparecer, Claude <strong>recupera el trabajo cacheado</strong> en lugar de reprocesar.</div>
+  </div>
+
+  <h3>Las reglas</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Regla</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Duración</strong></td><td><strong>1 hora</strong> máximo</td></tr>
+      <tr><td><strong>Activación</strong></td><td>Manual — hay que añadir un <strong>cache breakpoint</strong></td></tr>
+      <tr><td><strong>Alcance</strong></td><td>Todo el contenido <strong>hasta el breakpoint, incluido</strong></td></tr>
+      <tr><td><strong>Invalidación</strong></td><td>Cualquier cambio <strong>antes</strong> del breakpoint invalida el caché <strong>entero</strong></td></tr>
+      <tr><td><strong>Orden de procesado</strong></td><td><strong>tools → system prompt → messages</strong></td></tr>
+      <tr><td><strong>Máximo de breakpoints</strong></td><td><strong>4</strong> por petición</td></tr>
+      <tr><td><strong>Umbral mínimo</strong></td><td><strong>1024 tokens</strong> para que se cachee</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box trap">
+    <div class="bh">⚠ El fallo más fácil de cometer</div>
+    <pre style="margin:8px 0 0;background:transparent;border:none;padding:0"><code># Forma corta — NO admite cache control
+content = "una cadena de texto"
+
+# Forma larga — OBLIGATORIA para cachear
+content = [{"type": "text", "text": "contenido", "cache_control": {...}}]</code></pre>
+  </div>
+
+  <h3>En la práctica</h3>
+  <div class="grid2">
+    <div class="mini"><h5>Cachear esquemas de herramienta</h5><p>Añade <code>cache_control</code> de tipo <code>"ephemeral"</code> a la <strong>última</strong> herramienta. <strong>Clona la lista antes</strong> para no modificar los esquemas originales.</p></div>
+    <div class="mini"><h5>Cachear el system prompt</h5><p>Envuélvelo en un diccionario de bloque de texto con <code>cache_control</code> de tipo <code>"ephemeral"</code>.</p></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Campo de uso</th><th>Qué mide</th></tr></thead>
+    <tbody>
+      <tr><td><code>cache_creation_input_tokens</code></td><td>Tokens <strong>escritos</strong> al caché en el primer uso</td></tr>
+      <tr><td><code>cache_read_input_tokens</code></td><td>Tokens <strong>recuperados</strong> en peticiones idénticas posteriores</td></tr>
+    </tbody>
+  </table></div>
+  <p>Varios breakpoints crean <strong>varias capas</strong>: son posibles los <strong>aciertos parciales</strong> si solo cambia el contenido posterior.</p>
+  <div class="box note"><div class="bh">ℹ Si no ves aciertos</div><p style="margin:0">Si estás iterando sobre el system prompt, <strong>cada cambio invalida el caché</strong> y fuerza una creación nueva. Es esperable.</p></div>
+  <div class="readbar" data-read="c8"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 9 ═══ -->
+<section id="c9" data-title="mcp model context protocol tools resources prompts inspector cliente servidor">
+  <div class="chead"><span class="pill">Integrar</span><span class="pill acc">Capítulo 9</span></div>
+  <h2>MCP</h2>
+  <p class="lede">Capa de comunicación que aporta a Claude <strong>contexto y herramientas</strong> sin obligarte a escribir código tedioso.</p>
+
+  <div class="box key">
+    <div class="bh">◈ El valor central</div>
+    <p style="margin:0"><strong>Traslada la carga de integración del desarrollador de la aplicación al mantenedor del servidor MCP.</strong> Un chatbot de GitHub exigiría implementar herramientas para repositorios, PRs, issues y proyectos. Con MCP, eso lo mantiene otro.</p>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Pregunta</th><th>Respuesta</th></tr></thead>
+    <tbody>
+      <tr><td>¿Quién crea los servidores MCP?</td><td><strong>Cualquiera.</strong> A menudo los proveedores hacen implementaciones oficiales (AWS, etc.)</td></tr>
+      <tr><td>¿En qué se diferencia de llamar al API?</td><td>Te ahorra <strong>escribir tú los esquemas y las funciones</strong></td></tr>
+      <tr><td>¿Y de tool use?</td><td><strong>Son complementarios.</strong> MCP decide <strong>quién</strong> hace el trabajo; en ambos casos hay herramientas</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Los tres componentes de un servidor</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · tools, resources y prompts</div>
+    <div class="chips" id="mcpChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="p1">Tools</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="p2">Resources</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="p3">Prompts</button>
+    </div>
+    <div class="panel on" id="p1">
+      <p>El decorador <strong><code>@mcp.tool</code></strong> <strong>auto-genera el JSON Schema</strong> a partir de la firma de la función Python. Usa <code>Field()</code> de pydantic para describir cada argumento.</p>
+      <div class="box tip" style="margin:0"><div class="bh">✓ Compara con el capítulo 4</div><p style="margin:0">Allí escribías el esquema a mano o se lo pedías a claude.ai. Aquí <strong>el SDK lo genera solo</strong>. Esa es la diferencia práctica de MCP.</p></div>
+    </div>
+    <div class="panel" id="p2">
+      <p>Mecanismo para que el servidor <strong>exponga datos al cliente</strong> para operaciones de lectura. Decorador <code>@mcp.resource</code> con URI y MIME type.</p>
+      <div class="tw" style="margin-bottom:12px"><table>
+        <thead><tr><th>Tipo</th><th>URI</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Directo</strong></td><td><code>docs://documents</code></td></tr>
+          <tr><td><strong>Con plantilla</strong></td><td><code>docs://documents/{doc_id}</code> — el SDK parsea los parámetros solo</td></tr>
+        </tbody>
+      </table></div>
+      <div class="box key" style="margin:0"><div class="bh">◈ Resources vs. tools</div><p style="margin:0"><strong>Resources = datos, proactivos</strong> — traer el contenido cuando se menciona con @.<br><strong>Tools = acciones, reactivas</strong> — cuando Claude decide llamarlas.</p></div>
+    </div>
+    <div class="panel" id="p3">
+      <p><strong>Plantillas de prompt predefinidas y ya probadas</strong> que el servidor expone al cliente.</p>
+      <p>En vez de que el usuario escriba prompts improvisados, <strong>el autor del servidor crea prompts de calidad, ya evaluados</strong>, adaptados a su dominio.</p>
+      <p style="margin:0">El decorador <code>@mcpserver.prompt</code> envuelve una función que <strong>devuelve una lista de mensajes</strong> lista para Claude. En el cliente aparecen como <strong>slash commands</strong> con autocompletado, piden los parámetros y ejecutan el flujo.</p>
+    </div>
+  </div>
+
+  <h3>El flujo cliente-servidor</h3>
+  <div class="steps">
+    <div class="st"><p>El usuario consulta a <b>tu servidor</b>.</p></div>
+    <div class="st"><p>Tu servidor pide la <b>lista de herramientas</b> al cliente MCP, que manda <code>list tools request</code> al servidor MCP.</p></div>
+    <div class="st"><p>Tu servidor envía <b>la consulta + las herramientas</b> a Claude.</p></div>
+    <div class="st"><p>Claude pide ejecutar una herramienta; el cliente MCP manda <code>call tool request</code>.</p></div>
+    <div class="st"><p>El servidor MCP <b>ejecuta</b> — p. ej. llama al API de GitHub — y el resultado <b>vuelve por toda la cadena</b> hasta el usuario.</p></div>
+  </div>
+  <p><strong>Agnóstico del transporte:</strong> stdio, HTTP o WebSockets. El montaje habitual es cliente y servidor en la misma máquina, por entrada/salida estándar.</p>
+
+  <div class="box tip">
+    <div class="bh">✓ El inspector</div>
+    <p style="margin:0"><code>mcp dev servidor.py</code> abre un <strong>depurador en el navegador</strong> para probar el servidor <strong>sin conectarlo a ninguna aplicación</strong>: conectar → tools → seleccionar → introducir parámetros → <em>run tool</em>.</p>
+  </div>
+  <div class="readbar" data-read="c9"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 10 ═══ -->
+<section id="c10" data-title="claude code computer use work trees init claude.md depuración automatizada docker">
+  <div class="chead"><span class="pill">Automatizar</span><span class="pill acc">Capítulo 10</span></div>
+  <h2>Claude Code y computer use</h2>
+  <p class="lede">Las dos aplicaciones desplegadas de Anthropic. Están aquí porque <strong>ejemplifican cómo funcionan los agentes</strong>, justo antes del capítulo de arquitectura.</p>
+
+  <blockquote>Claude Code no es un generador de código: es un ingeniero colaborador en el proyecto.</blockquote>
+
+  <h3>Arranque</h3>
+  <div class="steps">
+    <div class="st"><p>Instala <b>Node.js</b> (compruébalo con <code>npm help</code>), luego <code>npm install</code>, y ejecuta <code>claude</code> para iniciar sesión.</p></div>
+    <div class="st"><p>Abre el proyecto y pídele que <b>lea el README</b> y ejecute las instrucciones de montaje.</p></div>
+    <div class="st"><p>Ejecuta <b><code>init</code></b> → escanea el codebase buscando arquitectura y estilo, y crea <b><code>claude.md</code></b>, que se incluye <b>automáticamente como contexto</b> después.</p></div>
+  </div>
+  <p><strong>Memorias:</strong> de proyecto (compartida), local y de usuario. Usa <strong><code>#</code></strong> para añadir notas concretas; puedes editar <code>claude.md</code> a mano o relanzar <code>init</code>.</p>
+
+  <h3>Las dos estrategias de prompting</h3>
+  <div class="grid2">
+    <div class="mini"><h5>Método 1 · Tres pasos</h5><p>① Identifica los ficheros relevantes y pide análisis. ② Describe la funcionalidad y pide que <strong>planifique, sin código todavía</strong>. ③ Pide implementar el plan.</p></div>
+    <div class="mini"><h5>Método 2 · Guiado por tests</h5><p>① Aporta contexto. ② Pide que <strong>sugiera tests</strong>. ③ Selecciona e implementa. ④ Pide código <strong>hasta que los tests pasen</strong>.</p></div>
+  </div>
+  <div class="box key"><div class="bh">◈ El principio</div><p style="margin:0">Claude Code es un <strong>multiplicador de esfuerzo</strong>. Instrucciones más detalladas = resultados significativamente mejores.</p></div>
+
+  <h3>Ampliar, paralelizar, automatizar</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · tres formas de escalarlo</div>
+    <div class="chips" id="ccChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="cc1">Servidores MCP</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="cc2">Paralelizar</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="cc3">Depuración automatizada</button>
+    </div>
+    <div class="panel on" id="cc1">
+      <p>Claude Code lleva un <strong>cliente MCP embebido</strong>.</p>
+      <pre style="margin-bottom:12px"><code>claude mcp add [nombre-servidor] [comando-de-arranque]</code></pre>
+      <p style="margin:0">Los servidores <strong>añaden funciones en tiempo real</strong>, sin tocar el núcleo. Casos habituales: Sentry, Jira, Slack, herramientas propias del flujo.</p>
+    </div>
+    <div class="panel" id="cc2">
+      <p><strong>El problema:</strong> varias instancias modificando los mismos ficheros generan conflictos y código inválido.</p>
+      <p><strong>La solución: git work trees</strong> — copias completas del proyecto en directorios separados, cada una en su rama.</p>
+      <p>Automatízalo con comandos propios en <code>.claude/commands/*.md</code>, usando el marcador <strong><code>$ARGUMENTS</code></strong>.</p>
+      <div class="box tip" style="margin:0"><div class="bh">✓ El resultado</div><p style="margin:0">Un solo desarrollador comandando un <strong>equipo virtual de ingenieros</strong>. Claude resuelve los conflictos de merge y limpia el work tree al terminar.</p></div>
+    </div>
+    <div class="panel" id="cc3">
+      <p>Una <strong>GitHub Action diaria</strong> revisa producción, recupera los <strong>logs de CloudWatch</strong> de 24 h, Claude identifica y <strong>deduplica</strong> errores, genera correcciones y <strong>abre un pull request</strong>.</p>
+      <p style="margin:0"><strong>Lo que aporta:</strong> captura errores que <strong>solo pasan en producción</strong> — típicamente configuración entre entornos: IDs de modelo inválidos, claves de API que funcionan en local y fallan desplegadas.</p>
+    </div>
+  </div>
+
+  <h3>Computer use por dentro</h3>
+  <p>Claude toma capturas, hace clic, escribe y navega interfaces, siguiendo instrucciones multipaso de forma autónoma. Corre en un <strong>contenedor Docker aislado</strong>.</p>
+  <div class="box key">
+    <div class="bh">◈ Es exactamente el flujo de tool use del capítulo 4</div>
+    <p style="margin:0">Se envía un <strong>esquema especial</strong> que <strong>se expande</strong> por detrás, con acciones como mover ratón, clic izquierdo o captura. Claude envía la petición de tool use y <strong>el desarrollador debe cumplirla</strong> mediante el contenedor.</p>
+  </div>
+  <div class="box trap">
+    <div class="bh">⚠ Lo que hay que tener claro</div>
+    <p style="margin:0"><strong>Claude no manipula directamente ningún ordenador.</strong> Computer use = el sistema de herramientas + <strong>un entorno de computación que aportas tú</strong>. Anthropic da una implementación de referencia en Docker con el código de ratón y teclado ya hecho.</p>
+  </div>
+  <div class="readbar" data-read="c10"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 11 ═══ -->
+<section id="c11" data-title="agentes workflows paralelización chaining routing evaluador optimizador inspección entorno">
+  <div class="chead"><span class="pill">Arquitectura</span><span class="pill acc">Capítulo 11</span></div>
+  <h2>Agentes y workflows</h2>
+  <p class="lede">Dos estrategias para tareas que Claude no puede completar en una sola petición. Y el consejo final del curso, que va a contracorriente.</p>
+
+  <div class="box key">
+    <div class="bh">◈ La regla de decisión</div>
+    <p style="margin:0"><strong>Workflow</strong> cuando entiendas la tarea con precisión y sepas la secuencia exacta de pasos. <strong>Agente</strong> cuando los detalles no estén claros.</p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · ¿workflow o agente?</div>
+    <div id="decider">
+      <div class="q-step" data-q="0">
+        <p>¿Conoces la <strong>secuencia exacta de pasos</strong> para resolver la tarea?</p>
+        <div class="btn-row">
+          <button class="btn" data-a="wf">Sí, sé exactamente qué hay que hacer</button>
+          <button class="btn" data-a="next">No, depende de lo que se vaya encontrando</button>
+        </div>
+      </div>
+      <div class="q-step" data-q="1" style="display:none">
+        <p>¿Necesitas que el sistema <strong>funcione de forma fiable</strong> para usuarios reales?</p>
+        <div class="btn-row">
+          <button class="btn" data-a="wf2">Sí, es un producto</button>
+          <button class="btn" data-a="ag">La flexibilidad importa más que la tasa de éxito</button>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="btn-row" style="margin-top:12px"><button class="btn" id="decReset">Empezar de nuevo</button></div>
+    </div>
+  </div>
+
+  <h3>Los cuatro patrones de workflow</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · toca cada patrón</div>
+    <div class="chips" id="wfChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="w1">Evaluador-optimizador</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="w2">Paralelización</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="w3">Encadenado</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="w4">Enrutado</button>
+    </div>
+    <div class="panel on" id="w1">
+      <p><strong>El ejemplo: conversor de imagen a modelo 3D.</strong></p>
+      <div class="steps" style="margin-bottom:12px">
+        <div class="st"><p>Claude describe la imagen en detalle.</p></div>
+        <div class="st"><p>Claude modela el objeto con CADQuery desde la descripción.</p></div>
+        <div class="st"><p>Se genera un render.</p></div>
+        <div class="st"><p>Claude compara el render con la imagen original.</p></div>
+        <div class="st"><p>Si no es preciso, <b>vuelve al paso 2 con el feedback</b>.</p></div>
+      </div>
+      <p><strong>Productor</strong> genera · <strong>evaluador</strong> valora · el bucle sigue hasta que el evaluador acepta.</p>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ Ojo</div><p style="margin:0">Los patrones son <strong>formas de implementación</strong> que han funcionado a otros. <strong>Identificar el patrón no lo implementa por ti</strong> — sigues teniendo que escribir el código.</p></div>
+    </div>
+    <div class="panel" id="w2">
+      <p>Partir una tarea compleja en <strong>subtareas simultáneas</strong> y agregar resultados.</p>
+      <div class="ad" style="margin-bottom:12px">
+        <div class="no"><h5>✗ En vez de</h5><p style="margin:0;font-size:14px">Un prompt grande pidiendo elegir entre metal, polímero, cerámica y compuesto con todos los criterios a la vez.</p></div>
+        <div class="yes"><h5>✓ Haz</h5><p style="margin:0;font-size:14px">Peticiones paralelas, cada una evaluando <strong>un material</strong>, más un paso de agregación que compare.</p></div>
+      </div>
+      <p style="margin:0"><strong>Beneficios:</strong> foco (cada subtarea hace un análisis), modularidad (cada prompt se mejora por separado), escalabilidad (añadir subtareas no afecta a las existentes) y calidad.</p>
+    </div>
+    <div class="panel" id="w3">
+      <p>Partir la tarea en <strong>pasos secuenciales</strong> distintos en vez de un prompt complejo único.</p>
+      <div class="box key"><div class="bh">◈ El caso de uso menos obvio, y el más útil</div><p style="margin:0">Cuando <strong>Claude ignora sistemáticamente restricciones</strong> en prompts largos por mucho que las repitas — <em>no menciones la IA, sin emojis, tono profesional</em>— y viola algunas pase lo que pase.</p></div>
+      <p style="margin:0"><strong>Solución:</strong> ① envía el prompt y <strong>acepta la salida imperfecta</strong>; ② pide una reescritura <strong>señalando las violaciones concretas</strong>. Un workflow que parece trivial se vuelve imprescindible.</p>
+    </div>
+    <div class="panel" id="w4">
+      <p><strong>Categorizar la entrada</strong> para decidir qué pipeline aplicar.</p>
+      <div class="steps" style="margin-bottom:12px">
+        <div class="st"><p>El usuario introduce un tema — <em>"funciones de Python"</em>.</p></div>
+        <div class="st"><p>Claude lo categoriza — <em>"educativo"</em>.</p></div>
+        <div class="st"><p>El sistema usa <b>la plantilla específica</b> de esa categoría.</p></div>
+        <div class="st"><p>Claude genera con el tono y la estructura adecuados.</p></div>
+      </div>
+      <p style="margin:0">Los temas de programación reciben tratamiento educativo con definiciones; los de entretenimiento, lenguaje de tendencia y ganchos.</p>
+    </div>
+  </div>
+
+  <h3>Diseñar un agente</h3>
+  <div class="box key">
+    <div class="bh">◈ El principio de abstracción de herramientas</div>
+    <p style="margin:0"><strong>Da herramientas genéricas y abstractas, no hiperespecializadas.</strong></p>
+  </div>
+  <div class="ad">
+    <div class="yes"><h5>✓ Abstractas</h5><ul><li><code>bash</code></li><li><code>web_fetch</code></li><li><code>file_write</code></li></ul><p style="margin:8px 0 0;font-size:13.5px">Es lo que usa Claude Code.</p></div>
+    <div class="no"><h5>✗ Especializadas</h5><ul><li><code>refactor_tool</code></li><li><code>install_dependencies</code></li></ul><p style="margin:8px 0 0;font-size:13.5px">Limitan las combinaciones posibles.</p></div>
+  </div>
+  <p>Funciona mejor con <strong>un conjunto pequeño de herramientas flexibles</strong> que se pueden combinar de formas inesperadas.</p>
+
+  <h3>Inspección del entorno</h3>
+  <p>Tras cada acción, el agente necesita <strong>feedback más allá del valor que devuelve la herramienta</strong>, para entender el nuevo estado.</p>
+  <div class="grid2">
+    <div class="mini"><h5>Computer use</h5><p><strong>Captura después de cada acción</strong>, porque no puede predecir el resultado exacto de pulsar un botón.</p></div>
+    <div class="mini"><h5>Edición de código</h5><p><strong>Leer el fichero antes de modificarlo</strong>, para conocer el estado existente.</p></div>
+  </div>
+  <p>Permite al agente <strong>medir su progreso, detectar errores y adaptarse</strong> en vez de operar a ciegas.</p>
+
+  <h3>La comparación final</h3>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Workflows</th><th>Agentes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Pruebas</strong></td><td><strong>Más fáciles</strong>, la secuencia se conoce</td><td>Difíciles, ruta impredecible</td></tr>
+      <tr><td><strong>Entradas</strong></td><td>Requieren entradas específicas</td><td>Crean las suyas y <strong>pueden pedir más</strong></td></tr>
+      <tr><td><strong>Tasa de éxito</strong></td><td><strong>Más alta</strong>, enfoque estructurado</td><td>Más baja, complejidad delegada</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ La recomendación que cierra el curso</div>
+    <p><strong>Prioriza los workflows por fiabilidad. Usa agentes solo cuando la flexibilidad haga falta de verdad.</strong></p>
+    <p style="margin:0">Los usuarios quieren productos que funcionen al 100%, no agentes vistosos.</p>
+  </div>
+  <blockquote>Resuelve los problemas de forma fiable primero. Innova después.</blockquote>
+  <div class="readbar" data-read="c11"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ FLASHCARDS ═══ -->
+<section id="flash" data-title="flashcards repaso tarjetas chuleta">
+  <span class="pill acc">Repaso activo</span>
+  <h2 style="margin-top:12px">Flashcards</h2>
+  <p class="lede">Los hechos concretos del curso. Clic para girar.</p>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn" id="flipAll">Girar todas</button>
+    <button class="btn" id="shuffleCards">Barajar</button>
+  </div>
+  <div class="cards" id="cardGrid"></div>
+</section>
+
+<hr>
+
+<!-- ═══ QUIZ ═══ -->
+<section id="quiz" data-title="quiz autoevaluación evaluaciones oficiales pendientes final assessment">
+  <span class="pill acc">Autoevaluación</span>
+  <h2 style="margin-top:12px">Autoevaluación — 18 preguntas</h2>
+  <p class="lede">Preparación para las evaluaciones oficiales. Elige una respuesta y te digo al momento si es correcta y <strong>por qué</strong>.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ Las 8 evaluaciones oficiales están pendientes</div>
+    <p>El curso trae <strong>7 quizzes por bloque</strong> más una <strong>evaluación final</strong>. Están sin hacer a propósito: los harás tú al terminar de estudiar.</p>
+    <p style="margin:0"><strong>Cuando los hagas, pasa los resultados</strong> y se registran aquí las preguntas reales con su feedback, como en <code>claude-code-in-action</code>.</p>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Evaluación</th><th>Bloque</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Quiz on accessing Claude with the API</td><td>Cap. 01</td><td>⬜ pendiente</td></tr>
+      <tr><td>2</td><td>Quiz on prompt evaluation</td><td>Cap. 02</td><td>⬜ pendiente</td></tr>
+      <tr><td>3</td><td>Quiz on prompt engineering techniques</td><td>Cap. 03</td><td>⬜ pendiente</td></tr>
+      <tr><td>4</td><td>Quiz on tool use with Claude</td><td>Cap. 04-05</td><td>⬜ pendiente</td></tr>
+      <tr><td>5</td><td>Quiz on features of Claude</td><td>Cap. 07-08</td><td>⬜ pendiente</td></tr>
+      <tr><td>6</td><td>Quiz on Model Context Protocol</td><td>Cap. 09</td><td>⬜ pendiente</td></tr>
+      <tr><td>7</td><td>Quiz on Agents and Workflows</td><td>Cap. 11</td><td>⬜ pendiente</td></tr>
+      <tr><td>—</td><td><strong>Final Assessment</strong></td><td>Todo</td><td>⬜ pendiente</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="quiz-group">
+    <div id="quizBox"></div>
+    <div class="score" id="scoreBox">
+      <div><div class="big" id="scoreNum">0 / 18</div><div class="lab" id="scoreLab">Aún no has contestado</div></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="quizReset">Reiniciar</button>
+    </div>
+  </div>
+</section>
+
+<footer class="credits">
+  <p class="who"><strong>Resúmenes y proyecto:</strong> Juanma Quijada. Elaborados y publicados en español para <strong>facilitar a la comunidad hispanohablante el acceso al conocimiento sobre Claude Code y la inteligencia artificial</strong>. · <a href="https://github.com/juaquicar/claude-code-academy-spanish" target="_blank" rel="noopener">Repositorio</a></p>
+  <p class="src"><strong>El curso original es obra de Anthropic</strong> y la autoría de su contenido —temario, vídeos, ejemplos de código y evaluaciones— le pertenece íntegramente. Esta página es un resumen de estudio derivado de ese material, no lo sustituye. El curso es gratuito: <a href="https://anthropic.skilljar.com/claude-with-the-anthropic-api" target="_blank" rel="noopener">hazlo en la Anthropic Academy</a>.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("api1p1_"+k))??d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem("api1p1_"+k,JSON.stringify(v))}catch(e){}}
+};
+const root=document.documentElement;
+root.dataset.theme=LS.get("theme","light");
+$("#themeBtn").onclick=()=>{const t=root.dataset.theme==="light"?"dark":"light";root.dataset.theme=t;LS.set("theme",t);};
+
+function wireTabs(c){
+  const btns=$$('[role="tab"]',c);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    const scope=c.closest(".widget")||document;
+    btns.forEach(x=>{const p=$("#"+x.dataset.p,scope); if(p)p.classList.toggle("on",x===b);});
+  });
+}
+["#modChips","#tl1","#ctlChips","#gradChips","#tuChips","#advChips",
+ "#chunkChips","#tl6","#featChips","#mcpChips","#ccChips","#wfChips"]
+ .forEach(s=>{const e=$(s); if(e) wireTabs(e);});
+
+/* ══ cap 3 · laboratorio de puntuaciones ══ */
+(function(){
+  const host=$("#lab"); if(!host) return;
+  const PASOS=[
+    {t:"Prompt inicial",  sc:2.32, d:"Un borrador básico, sin técnica ninguna. Con modelos menos capaces, espera exactamente esto.",
+     ej:"Generate a meal plan.",
+     nota:"El punto de partida. Sin esta medición no sabrías si tus cambios mejoran algo o solo lo cambian."},
+    {t:"Claro y directo", sc:3.92, d:"<strong>Verbo de acción en la primera línea</strong> + tarea clara + especificación de la salida.",
+     ej:"Generate a one day meal plan for an athlete that meets their dietary restrictions.",
+     nota:"<strong>La primera línea es la parte más crítica del prompt</strong>: sienta la base de toda la respuesta. Estructura: verbo de acción + enunciado directo + detalles de la salida."},
+    {t:"Específico",      sc:7.86, d:"Añadir <strong>guidelines</strong>. Tipo A = <strong>atributos</strong> (longitud, estructura, formato). Tipo B = <strong>pasos</strong> de razonamiento.",
+     ej:"Generate a one day meal plan…\\n\\nGuidelines:\\n- Include macros per meal\\n- 4 meals, breakfast to dinner\\n- Respect all dietary restrictions",
+     nota:"<strong>El salto más grande del capítulo.</strong> Tipo A es recomendable en casi todos los prompts; tipo B solo para problemas complejos donde quieras que considere perspectivas que no tomaría por su cuenta. En prompts profesionales se combinan."}
+  ];
+  const MAX=10;
+  host.innerHTML='<div class="lab-steps">'+PASOS.map((p,i)=>
+      '<button role="tab" aria-selected="'+(i===0)+'" data-i="'+i+'"><span>'+p.t+'</span>'+
+      '<span class="sc">'+p.sc.toFixed(2)+'</span></button>').join("")+'</div>'+
+    '<div class="lab-view"></div>';
+  const view=$(".lab-view",host);
+  function show(i){
+    const p=PASOS[i], prev=i>0?PASOS[i-1].sc:null;
+    const delta=prev!==null?(p.sc-prev).toFixed(2):null;
+    view.innerHTML=
+      '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">'+
+        '<span class="lab-num">'+p.sc.toFixed(2)+'</span>'+
+        '<span style="font-size:13px;color:var(--muted)">/ 10</span>'+
+        (delta?'<span class="pill acc" style="margin-left:auto">+'+delta+'</span>':'')+
+      '</div>'+
+      '<div class="lab-bar"><i style="width:'+(p.sc/MAX*100)+'%"></i></div>'+
+      '<div class="lab-scale"><span>0</span><span>10</span></div>'+
+      '<p style="margin:14px 0 10px">'+p.d+'</p>'+
+      '<pre style="margin-bottom:12px"><code>'+p.ej.replace(/\\n/g,"\n")+'</code></pre>'+
+      '<div class="box '+(i===2?"key":"note")+'" style="margin:0"><div class="bh">'+
+      (i===2?"◈ Por qué sube tanto":"ℹ Nota")+'</div><p style="margin:0">'+p.nota+'</p></div>';
+  }
+  const btns=$$(".lab-steps button",host);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    show(+b.dataset.i);
+  });
+  show(0);
+})();
+
+/* ══ cap 11 · decisor ══ */
+(function(){
+  const box=$("#decider"); if(!box) return;
+  const steps=$$(".q-step",box), v=$("#verdict");
+  const V={
+    wf:["Workflow","Sabes la secuencia exacta → <strong>workflow</strong>. Divides en subtareas específicas, cada llamada se centra en una cosa, y el resultado es <strong>más fácil de probar y con mayor tasa de éxito</strong>. Elige el patrón: evaluador-optimizador, paralelización, encadenado o enrutado."],
+    wf2:["Workflow","Aunque los pasos no estén del todo claros, si es un <strong>producto para usuarios reales</strong>, la recomendación del curso es tajante: <strong>prioriza workflows por fiabilidad</strong>. Los agentes tienen menor tasa de éxito por la complejidad delegada, y <em>los usuarios quieren productos que funcionen al 100%, no agentes vistosos</em>."],
+    ag:["Agente","Pasos desconocidos y la flexibilidad pesa más que la tasa de éxito → <strong>agente</strong>. Dale <strong>herramientas abstractas</strong> (<code>bash</code>, <code>web_fetch</code>, <code>file_write</code>), no especializadas, y añade <strong>inspección del entorno</strong> para que no opere a ciegas. Asume que será más difícil de probar."]
+  };
+  function reset(){steps.forEach((s,i)=>s.style.display=i===0?"":"none");v.classList.remove("on");}
+  $$("button[data-a]",box).forEach(b=>b.onclick=()=>{
+    const a=b.dataset.a;
+    if(a==="next"){steps[0].style.display="none";steps[1].style.display="";return;}
+    const [t,d]=V[a];
+    v.innerHTML="<b>→ "+t+"</b>"+d; v.classList.add("on");
+    steps.forEach(s=>s.style.display="none");
+  });
+  $("#decReset").onclick=reset;
+})();
+
+/* ══ flashcards ══ */
+const CARDS=[
+ ["Los tres modelos","<strong>Opus</strong> = máxima inteligencia, tareas complejas multipaso · <strong>Sonnet</strong> = equilibrio, fuerte en código · <strong>Haiku</strong> = el más rápido, <strong>sin las capacidades de razonamiento</strong> de los otros dos."],
+ ["¿Un modelo o varios?","<strong>Varios en la misma aplicación</strong>, según lo que pida cada tarea. Es el enfoque habitual."],
+ ["¿Qué es <code>max_tokens</code>?","Un <strong>límite de seguridad</strong> de longitud, <strong>no una longitud objetivo</strong>."],
+ ["Las 4 etapas de generación","<strong>Tokenización → embedding → contextualización → generación.</strong>"],
+ ["¿Guarda el API mis mensajes?","<strong>No.</strong> Cada petición es independiente. El historial lo mantienes tú y lo envías entero cada vez."],
+ ["¿Qué controla un system prompt?","<strong>Cómo</strong> responde Claude, <strong>no qué</strong> responde. Si no hay, <strong>excluye el parámetro</strong> en vez de pasar <code>None</code>."],
+ ["Temperature 0 vs 1","<strong>0</strong> = determinista, siempre el token más probable (extracción de datos). <strong>Cerca de 1</strong> = creativo. Subirla <strong>no garantiza</strong> salida distinta, solo aumenta la probabilidad."],
+ ["El evento de streaming que importa","<strong><code>content_block_delta</code></strong>: contiene los trozos de texto reales. <code>text_stream</code> para el texto, <strong><code>get_final_message()</code></strong> para guardar."],
+ ["Pre-fill: el matiz","Claude continúa <strong>desde el final exacto</strong> del texto, <strong>no desde frases completas</strong>. Tendrás que unir el pre-fill con lo generado."],
+ ["Stop sequence: el matiz","<strong>El texto que la dispara NO se incluye</strong> en la salida final."],
+ ["El patrón de datos estructurados","Usuario pide → <strong>pre-fill</strong> con el delimitador de apertura (<code>```json</code>) → <strong>stop sequence</strong> con el de cierre (<code>```</code>). Funciona con cualquier dato estructurado."],
+ ["Las dos trampas de la evaluación","Probar una o dos veces y desplegar · retocar a ojo para casos límite. Lo correcto: <strong>pipeline de evaluación con puntuación objetiva</strong>."],
+ ["El núcleo de un pipeline de eval","<strong>dataset + prompt + LLM + grader.</strong>"],
+ ["Los tres tipos de grader","<strong>Código</strong> (validación programática) · <strong>modelo</strong> (llamada extra al API) · <strong>humano</strong> (el más flexible, el más lento)."],
+ ["El error que arruina un model grader","Pedirle <strong>solo la puntuación</strong>: tiende a valores mediocres. Pide <strong>fortalezas, debilidades, razonamiento y puntuación</strong>."],
+ ["La fórmula del grading por código","<code>(puntuación_del_modelo + puntuación_de_sintaxis) / 2</code> — mide que sea correcto <em>y</em> técnicamente válido."],
+ ["Las puntuaciones del prompt engineering","Básico <strong>2,32</strong> → claro y directo <strong>3,92</strong> → específico <strong>7,86</strong>."],
+ ["Ser claro y directo","<strong>Verbo de acción en la primera línea</strong> — la parte más crítica del prompt — + tarea clara + especificación de la salida."],
+ ["Los dos tipos de guideline","<strong>Tipo A = atributos</strong> (longitud, formato) — casi siempre. <strong>Tipo B = pasos</strong> de razonamiento — para problemas complejos."],
+ ["Nombrar etiquetas XML","<strong>Descriptivas y específicas</strong>: <code>sales_records</code> mejor que <code>data</code>. Funciona incluso con bloques cortos."],
+ ["De dónde sacar los mejores ejemplos","<strong>De los casos con mejor puntuación de tus evals.</strong> Y incluye el razonamiento de por qué son ideales."],
+ ["¿Quién lee los mensajes de error de tus herramientas?","<strong>Claude.</strong> Son visibles para él y puede <strong>reintentar con parámetros corregidos</strong>. Escríbelos pensando en eso."],
+ ["La description de un tool schema","<strong>3-4 frases</strong>: qué hace, cuándo usarla y qué datos devuelve."],
+ ["El truco para generar esquemas","Llevar la función a claude.ai <strong>adjuntando la página de tool use de la documentación</strong>. Envolver con <strong><code>ToolParam()</code></strong>."],
+ ["¿Qué añades al historial tras un tool use?","<strong><code>response.content</code> entero</strong> (todos los bloques), no solo el texto."],
+ ["Para qué sirve <code>tool_use_id</code>","Empareja cada petición con su resultado <strong>cuando Claude hace varias llamadas simultáneas</strong>."],
+ ["¿Dónde va el bloque de tool result?","En un <strong>mensaje de USUARIO</strong>, no de asistente. Y hay que <strong>incluir los esquemas originales</strong> en el seguimiento."],
+ ["La condición del bucle multi-turno","<strong><code>stop_reason == \"tool_use\"</code></strong>. Si no lo es, se sale del bucle."],
+ ["Añadir una herramienta nueva","Tres pasos: <strong>esquema + enrutado en <code>run_tool</code> + implementación</strong>."],
+ ["¿Qué resuelve la batch tool?","Claude <strong>puede</strong> mandar varios bloques <code>tool_use</code> pero <strong>rara vez lo hace</strong>. La batch tool le da una lista de <code>invocations</code> y así paraleliza."],
+ ["Datos estructurados por herramienta","Más fiable, más complejo. ⚠ Fuerza la llamada con <strong><code>tool_choice = {\"type\":\"tool\",\"name\":\"…\"}</code></strong>. Sale de <code>content[0].input</code>, <strong>sin tool result</strong>."],
+ ["Fine-grained tool calling","Desactiva la validación de JSON del API → <strong>más rápido pero JSON posiblemente inválido</strong>. Evento nuevo: <code>input_json_delta</code>."],
+ ["Text edit tool vs web search tool","<strong>Text edit:</strong> solo el esquema viene integrado, <strong>la implementación la escribes tú</strong>. <strong>Web search:</strong> <strong>no hace falta código</strong>, Claude busca solo (<code>max_uses</code> por defecto 5)."],
+ ["Las tres estrategias de troceado","<strong>Por tamaño</strong> (la más común, con solapamiento) · <strong>por estructura</strong> (requiere formato garantizado) · <strong>semántico</strong> (el más avanzado). <strong>No hay método universalmente mejor.</strong>"],
+ ["¿Qué significan los números de un embedding?","<strong>Se desconoce.</strong> Puntúan cualidades desconocidas; en teoría cada uno mide un aspecto, pero su significado real no lo sabe quien los usa. Rango <strong>-1 a +1</strong>."],
+ ["Similitud vs distancia coseno","<strong>Similitud</strong>: -1 a 1, cerca de <strong>1</strong> = similar. <strong>Distancia</strong> = 1 − similitud, cerca de <strong>0</strong> = similar."],
+ ["El fallo al implementar RAG","No guardar el <strong>texto original junto al embedding</strong>. Sin metadatos con el contenido, los resultados no sirven."],
+ ["¿Qué arregla BM25?","Que la búsqueda semántica sola <strong>se pierde coincidencias exactas de términos</strong>. En BM25, <strong>los términos raros pesan más</strong> que los comunes."],
+ ["Reciprocal Rank Fusion","<code>Σ 1/(rank+1)</code> por cada método de búsqueda. Los documentos que salen alto <strong>en ambos índices</strong> ganan."],
+ ["Reranking","Un LLM reordena los resultados tras recuperarlos. Usa <strong>IDs, no texto completo</strong>. Sube precisión, <strong>añade latencia</strong>."],
+ ["Contextual retrieval","Añadir contexto a cada trozo <strong>antes</strong> de generar su embedding, porque al trocear <strong>se pierde el contexto del documento</strong>."],
+ ["Extended thinking: los dos números","Budget mínimo <strong>1024 tokens</strong>, y <strong><code>max_tokens</code> debe superarlo</strong>. El bloque lleva <strong>firma criptográfica</strong> anti-manipulación."],
+ ["¿Cuándo activar extended thinking?","<strong>Cuando optimizar el prompt no haya conseguido la precisión</strong> que buscas. Usa evals para decidirlo."],
+ ["Imágenes: el factor crítico","<strong>La precisión depende del prompt, no de la calidad de la imagen.</strong> Máximo <strong>100 por petición</strong> y consumen tokens según píxeles."],
+ ["PDF: qué cambia respecto a imágenes","<code>type: \"document\"</code> y <code>media_type: \"application/pdf\"</code>. Lee texto, imágenes, gráficas y tablas."],
+ ["Los dos tipos de citation","<code>citation_page_location</code> para PDF (página inicial y final) · <code>citation_char_location</code> para texto plano (posición de caracteres)."],
+ ["La restricción de code execution","<strong>Los contenedores Docker no tienen acceso a red.</strong> La entrada y salida de datos depende de la <strong>Files API</strong>."],
+ ["Duración y umbral del caché","<strong>1 hora</strong> máximo · <strong>1024 tokens</strong> mínimo para que se cachee · <strong>4 breakpoints</strong> máximo por petición."],
+ ["El fallo más fácil del caché","Usar la <strong>forma corta</strong> (<code>content = \"texto\"</code>): <strong>no admite cache control</strong>. Hace falta la forma larga con lista de bloques."],
+ ["Orden de procesado del caché","<strong>tools → system prompt → messages.</strong> Se cachea todo hasta el breakpoint incluido."],
+ ["¿Qué invalida el caché?","<strong>Cualquier cambio en el contenido anterior al breakpoint</strong> invalida el caché entero."],
+ ["Los dos campos de uso del caché","<code>cache_creation_input_tokens</code> (escritura) y <code>cache_read_input_tokens</code> (lectura)."],
+ ["El valor central de MCP","<strong>Traslada la carga de integración del desarrollador de la aplicación al mantenedor del servidor MCP.</strong>"],
+ ["¿MCP sustituye a tool use?","<strong>No: son complementarios.</strong> MCP decide <strong>quién</strong> hace el trabajo; en ambos casos sigue habiendo herramientas."],
+ ["¿Qué hace <code>@mcp.tool</code>?","<strong>Auto-genera el JSON Schema</strong> a partir de la firma de la función Python. Adiós a escribirlo a mano."],
+ ["Resources vs tools en MCP","<strong>Resources = datos, proactivos</strong> (traer contenido al mencionar con @). <strong>Tools = acciones, reactivas</strong> (cuando Claude decide llamarlas)."],
+ ["Los dos tipos de resource","<strong>Directo</strong> (<code>docs://documents</code>) y <strong>con plantilla</strong> (<code>docs://documents/{doc_id}</code>), cuyos parámetros parsea el SDK solo."],
+ ["¿Qué son los MCP prompts?","<strong>Plantillas ya probadas</strong> que define el autor del servidor, no el usuario. En el cliente aparecen como <strong>slash commands</strong>."],
+ ["El inspector de MCP","<code>mcp dev servidor.py</code> → depurador <strong>en el navegador</strong> para probar el servidor <strong>sin integrar la aplicación</strong>."],
+ ["¿Qué hace <code>init</code> en Claude Code?","Escanea el codebase buscando arquitectura y estilo, y crea <strong><code>claude.md</code></strong>, que se incluye <strong>automáticamente como contexto</strong> después."],
+ ["Paralelizar Claude Code","<strong>Git work trees</strong>: un espacio aislado por instancia. Comandos propios en <code>.claude/commands/*.md</code> con <strong><code>$ARGUMENTS</code></strong>."],
+ ["¿Manipula Claude el ordenador directamente?","<strong>No.</strong> Computer use = <strong>tool use + un entorno de computación que aportas tú</strong>, normalmente un contenedor Docker."],
+ ["Workflow vs agente: la regla","<strong>Workflow</strong> si sabes la secuencia exacta de pasos. <strong>Agente</strong> si los detalles no están claros."],
+ ["Los cuatro patrones de workflow","<strong>Evaluador-optimizador</strong> · <strong>paralelización</strong> · <strong>encadenado</strong> · <strong>enrutado</strong>."],
+ ["El uso menos obvio del encadenado","Cuando <strong>Claude ignora restricciones</strong> en prompts largos: acepta la salida imperfecta y pide una reescritura <strong>señalando las violaciones concretas</strong>."],
+ ["Cómo diseñar las herramientas de un agente","<strong>Abstractas</strong> (<code>bash</code>, <code>web_fetch</code>, <code>file_write</code>), <strong>no especializadas</strong> (<code>refactor_tool</code>). Pocas y flexibles."],
+ ["Inspección del entorno","Feedback <strong>más allá del retorno de la herramienta</strong>: captura tras cada acción, leer el fichero antes de editarlo. Evita que el agente opere a ciegas."],
+ ["La recomendación final del curso","<strong>Prioriza workflows por fiabilidad.</strong> Los usuarios quieren productos que funcionen al 100%, no agentes vistosos. <strong>Resuelve de forma fiable primero; innova después.</strong>"]
+];
+(function(){
+  const grid=$("#cardGrid"); if(!grid) return;
+  function paint(list){
+    grid.innerHTML="";
+    list.forEach(([f,b])=>{
+      const el=document.createElement("button"); el.className="card";
+      el.innerHTML='<div class="inner"><div class="f">'+f+'</div><div class="b">'+b+'</div></div>';
+      el.onclick=()=>el.classList.toggle("flip");
+      grid.appendChild(el);
+    });
+  }
+  paint(CARDS);
+  $("#flipAll").onclick=()=>{
+    const any=$$(".card",grid).some(c=>!c.classList.contains("flip"));
+    $$(".card",grid).forEach(c=>c.classList.toggle("flip",any));
+  };
+  $("#shuffleCards").onclick=()=>{
+    const a=[...CARDS];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    paint(a);
+  };
+})();
+
+/* ══ quiz ══ */
+const QUIZ=[
+ {q:"Estás construyendo una aplicación web con Claude. ¿Dónde va la clave de API?",
+  o:["En el cliente, para reducir latencia evitando un salto",
+     "En tu servidor: el cliente nunca debe acceder al API directamente",
+     "En una variable de entorno del navegador",
+     "Da igual mientras uses HTTPS"],
+  a:1, e:"El paso 1 del flujo de acceso lo dice explícitamente: <strong>nunca accedas al API de Anthropic directamente desde una aplicación cliente</strong>, para que la clave permanezca secreta. El cliente habla con tu servidor y tu servidor con el API."},
+
+ {q:"Pones <code>max_tokens=1000</code> y la respuesta sale de 200 tokens. ¿Qué ha pasado?",
+  o:["Nada raro: <code>max_tokens</code> es un límite de seguridad, no una longitud objetivo",
+     "El modelo ha fallado y hay que reintentar",
+     "Hace falta subir la temperatura para que genere más",
+     "El <code>stop_reason</code> tuvo que ser <code>max_tokens</code>"],
+  a:0, e:"<code>max_tokens</code> es un <strong>límite de longitud de generación</strong>, no una petición de longitud. El modelo se detiene al alcanzarlo <em>o</em> al generar un token especial de fin de secuencia — que es lo que pasó aquí."},
+
+ {q:"Tu chatbot responde sin recordar nada de los mensajes anteriores. ¿Por qué?",
+  o:["Falta activar la memoria en el panel de Anthropic",
+     "El API no almacena mensajes: el historial completo lo envías tú en cada petición",
+     "Hay que subir <code>max_tokens</code> para que quepa el historial",
+     "El system prompt está sobrescribiendo el contexto"],
+  a:1, e:"<strong>El API de Anthropic no almacena ningún mensaje.</strong> Cada petición es independiente. La solución tiene dos partes: mantener la lista de mensajes a mano en tu código y <strong>enviar el historial completo</strong> con cada seguimiento."},
+
+ {q:"Necesitas extraer datos de facturas de forma consistente, sin variaciones entre ejecuciones. ¿Qué temperature?",
+  o:["Cerca de 1, para que considere más opciones",
+     "0,5 como término medio seguro",
+     "Cerca de 0: determinista, siempre el token más probable",
+     "La temperatura no afecta a tareas de extracción"],
+  a:2, e:"<strong>Temperature 0 = salida determinista</strong>, siempre el token de mayor probabilidad. Es lo recomendado para extracción de datos y tareas factuales que exigen consistencia. Cerca de 1 se reserva para brainstorming, escritura y marketing."},
+
+ {q:"Quieres que Claude devuelva JSON crudo, sin markdown ni comentarios alrededor. ¿Cuál es el patrón?",
+  o:["Pedirle en el prompt que no añada explicaciones y confiar",
+     "Bajar la temperature a 0",
+     "Pre-fill del asistente con <code>```json</code> + stop sequence <code>```</code>",
+     "Usar streaming y filtrar los bloques que no sean JSON"],
+  a:2, e:"Es el patrón de tres piezas: mensaje de usuario con la petición, <strong>pre-fill del asistente con el delimitador de apertura</strong> y <strong>stop sequence con el de cierre</strong>. Claude asume que ya empezó a responder, genera solo el contenido y se detiene. Funciona con cualquier dato estructurado."},
+
+ {q:"Has escrito un prompt, lo has probado dos veces y funciona. ¿Qué recomienda el curso?",
+  o:["Desplegarlo: si funciona en las pruebas, funciona",
+     "Probarlo con entradas propias y ajustarlo para casos límite",
+     "Pasarlo por un pipeline de evaluación para tener una puntuación objetiva",
+     "Subirlo a producción con un flag para revertir rápido"],
+  a:2, e:"Las opciones A y B son <strong>las dos trampas</strong> que el curso nombra explícitamente. El diagnóstico: los ingenieros infra-prueban los prompts. La salida recomendada es un pipeline de evaluación — <strong>dataset + prompt + LLM + grader</strong> — para tener puntuaciones objetivas antes de iterar."},
+
+ {q:"Montas un model grader y todas las respuestas sacan entre 5 y 6. ¿Qué falta en el prompt del grader?",
+  o:["Pedirle fortalezas, debilidades y razonamiento antes de la puntuación",
+     "Bajar la temperatura del grader a 0",
+     "Usar un modelo más capaz para puntuar",
+     "Ampliar la escala de 1-10 a 1-100"],
+  a:0, e:"Si le pides <strong>solo la puntuación</strong>, el modelo tiende a dar <strong>valores mediocres por defecto</strong>. El patrón correcto pide fortalezas, debilidades, razonamiento <em>y</em> puntuación, con salida JSON vía pre-fill y stop sequences."},
+
+ {q:"Estás evaluando un prompt que debe devolver Python válido. ¿Cómo se combina el grading?",
+  o:["Solo validación de sintaxis: si compila, está bien",
+     "Solo grading por modelo: la sintaxis es secundaria",
+     "(puntuación del modelo + puntuación de sintaxis) / 2",
+     "El máximo de ambas puntuaciones"],
+  a:2, e:"La fórmula del curso combina <strong>evaluación semántica y validación sintáctica</strong>: mide a la vez que la respuesta sea correcta y que sea técnicamente válida. <code>validate_python()</code> devuelve 10 si el AST parsea y 0 si no."},
+
+ {q:"De las técnicas de prompt engineering del curso, ¿cuál produjo el mayor salto de puntuación?",
+  o:["Ser claro y directo (2,32 → 3,92)",
+     "Ser específico con guidelines (3,92 → 7,86)",
+     "Estructurar con etiquetas XML",
+     "Dar ejemplos one-shot"],
+  a:1, e:"Añadir <strong>guidelines</strong> casi duplicó la puntuación. Tipo A = atributos (longitud, estructura, formato), recomendable en casi todos los prompts. Tipo B = pasos de razonamiento, para problemas complejos. En prompts profesionales se combinan."},
+
+ {q:"Claude te pide dos herramientas a la vez en un mismo mensaje. ¿Cómo emparejas cada resultado con su petición?",
+  o:["Por el orden en que aparecen los bloques",
+     "Por el <code>tool_use_id</code>, que cada resultado debe referenciar",
+     "Enviando un mensaje de seguimiento por cada herramienta",
+     "Por el nombre de la herramienta"],
+  a:1, e:"Cada bloque tool use recibe un <strong>ID único</strong> y cada <code>tool_result</code> debe referenciar el suyo. Ese es exactamente el problema que resuelve el campo cuando hay llamadas simultáneas."},
+
+ {q:"Ejecutas la herramienta que Claude pidió. ¿Dónde va el bloque con el resultado?",
+  o:["En un mensaje de asistente, junto al bloque tool use",
+     "En un mensaje de usuario",
+     "En el campo <code>system</code> de la petición",
+     "En un mensaje de tipo <code>tool</code>"],
+  a:1, e:"El bloque <code>tool_result</code> va en un <strong>mensaje de usuario</strong>. Y hay dos cosas más que se olvidan: incluir el <strong>historial completo</strong> y <strong>los esquemas originales</strong>, aunque no vayas a usar herramientas otra vez."},
+
+ {q:"¿Cuál es la condición para salir del bucle multi-turno de herramientas?",
+  o:["Que <code>stop_reason</code> deje de ser <code>tool_use</code>",
+     "Que el historial supere un número de mensajes",
+     "Que <code>run_tools</code> devuelva una lista vacía",
+     "Que Claude devuelva un bloque de texto, sea cual sea el <code>stop_reason</code>"],
+  a:0, e:"<code>run_conversation</code> comprueba <strong><code>stop_reason</code></strong> en cada vuelta: si no es <code>\"tool_use\"</code>, sale. No puedes predecir cuántas herramientas necesitará una consulta, así que el bucle debe manejar cadenas arbitrarias."},
+
+ {q:"Quieres extraer JSON estructurado de forma muy fiable usando una herramienta. ¿Qué es imprescindible?",
+  o:["Enviar un tool result de vuelta con el JSON validado",
+     "Forzar la llamada con <code>tool_choice</code>",
+     "Activar <code>fine_grained: true</code>",
+     "Usar pre-fill además del esquema"],
+  a:1, e:"Sin <code>tool_choice = {\"type\": \"tool\", \"name\": \"tu_herramienta\"}</code> Claude podría no llamarla. Y el dato sale directamente de <code>response.content[0].input</code>: <strong>no hace falta enviar un tool result</strong>."},
+
+ {q:"Tu búsqueda semántica no encuentra un documento aunque contiene el término exacto que buscas. ¿Qué añades?",
+  o:["Más solapamiento entre trozos",
+     "Reranking con un LLM",
+     "BM25, búsqueda léxica, en paralelo",
+     "Contextual retrieval"],
+  a:2, e:"Es exactamente el fallo que BM25 arregla: la búsqueda semántica sola <strong>puede pasar por alto coincidencias exactas</strong>. BM25 asigna <strong>más importancia a los términos raros</strong> que a los comunes. Se combinan en paralelo y se fusionan con Reciprocal Rank Fusion."},
+
+ {q:"Al partir un documento en trozos, cada uno pierde la referencia al conjunto y la recuperación empeora. ¿Qué técnica lo resuelve?",
+  o:["Contextual retrieval: añadir contexto a cada trozo antes de generar su embedding",
+     "Aumentar el tamaño de los trozos",
+     "Reranking con IDs de documento",
+     "Cambiar a troceado semántico"],
+  a:0, e:"Se envía el trozo + el documento fuente a Claude, que genera un <strong>contexto de situación</strong>; se une al trozo y ese <strong>trozo contextualizado</strong> es el que se indexa. Si el documento no cabe: trozos iniciales (1-3) + los inmediatamente anteriores, saltándose los del medio."},
+
+ {q:"Activas extended thinking con un budget de 1024 tokens y la petición falla. ¿Qué comprobarías primero?",
+  o:["Que el modelo sea Opus: los demás no lo soportan",
+     "Que <code>max_tokens</code> sea mayor que el thinking budget",
+     "Que la temperatura esté a 0",
+     "Que el prompt tenga menos de 1024 tokens"],
+  a:1, e:"<strong><code>max_tokens</code> debe superar el thinking budget</strong>: con budget 1024, <code>max_tokens</code> ≥ 1025. Si no, no queda capacidad para generar la respuesta. Y el budget mínimo es precisamente 1024."},
+
+ {q:"Has configurado prompt caching sobre tu system prompt y no ves ningún acierto de caché. ¿Cuál es la causa más probable?",
+  o:["El system prompt usa la forma corta de contenido, que no admite cache control",
+     "El caché solo funciona con herramientas, no con system prompts",
+     "Falta esperar una hora a que el caché se active",
+     "Hay que poner el breakpoint después de los messages"],
+  a:0, e:"La forma corta (<code>content = \"texto\"</code>) <strong>no admite cache control</strong>: hace falta la forma larga con lista de bloques. Otras causas posibles: no llegar a los <strong>1024 tokens</strong> mínimos, o estar iterando sobre el prompt — <strong>cualquier cambio antes del breakpoint invalida el caché entero</strong>."},
+
+ {q:"Tienes que construir un sistema para usuarios reales y sabes exactamente qué pasos hay que dar. ¿Qué recomienda el curso?",
+  o:["Un agente: es más flexible y podrá adaptarse a lo inesperado",
+     "Un agente con herramientas abstractas e inspección del entorno",
+     "Un workflow: más fácil de probar y con mayor tasa de éxito",
+     "Empezar con agente y migrar a workflow si falla"],
+  a:2, e:"La recomendación del curso es tajante: <strong>prioriza los workflows por fiabilidad</strong>; usa agentes solo cuando la flexibilidad haga falta de verdad. Los workflows son más fáciles de probar y tienen mayor tasa de completado. <em>Los usuarios quieren productos que funcionen al 100%, no agentes vistosos.</em>"}
+];
+function mountQuiz(boxSel,data,key,numSel,labSel,resetSel){
+  const box=$(boxSel); if(!box) return;
+  const KEYS="ABCD";
+  let answers=LS.get(key,{});
+  function render(){
+    box.innerHTML="";
+    data.forEach((q,i)=>{
+      const d=document.createElement("div"); d.className="quiz-q";
+      d.innerHTML='<div class="qn">Pregunta '+(i+1)+' / '+data.length+'</div><div class="qt">'+q.q+'</div>';
+      const ul=document.createElement("div"); ul.className="opts";
+      q.o.forEach((t,j)=>{
+        const b=document.createElement("button"); b.className="opt";
+        b.innerHTML='<span class="k">'+KEYS[j]+'</span><span>'+t+'</span>';
+        b.onclick=()=>{ if(answers[i]!==undefined) return; answers[i]=j; LS.set(key,answers); render(); score(); };
+        ul.appendChild(b);
+      });
+      d.appendChild(ul);
+      const ex=document.createElement("div"); ex.className="expl";
+      ex.innerHTML='<b>'+(answers[i]===q.a?"✓ Correcto. ":"✗ La correcta es "+KEYS[q.a]+". ")+'</b>'+q.e;
+      d.appendChild(ex);
+      if(answers[i]!==undefined){
+        [...ul.children].forEach((b,j)=>{
+          b.disabled=true;
+          if(j===q.a)b.classList.add("ok"); else if(j===answers[i])b.classList.add("ko");
+        });
+        ex.classList.add("on");
+      }
+      box.appendChild(d);
+    });
+  }
+  function score(){
+    const done=Object.keys(answers).length;
+    const ok=Object.entries(answers).filter(([i,v])=>data[i].a===+v).length;
+    $(numSel).textContent=ok+" / "+data.length;
+    const lab=$(labSel);
+    if(!done){lab.textContent="Aún no has contestado";return;}
+    const pct=Math.round(ok/done*100), full=done===data.length;
+    const thr=Math.ceil(data.length*0.85), mid=Math.ceil(data.length*0.65);
+    lab.innerHTML=done+" contestadas · "+pct+"% de acierto"+
+      (full?(ok>=thr?" · <b style='color:var(--good)'>listo para las evaluaciones oficiales</b>"
+        :ok>=mid?" · repasa las falladas y vuelve":" · vuelve a leer los capítulos de las falladas"):"");
+  }
+  $(resetSel).onclick=()=>{answers={};LS.set(key,answers);render();score();box.scrollIntoView({behavior:"smooth",block:"start"});};
+  render(); score();
+}
+mountQuiz("#quizBox",QUIZ,"quiz","#scoreNum","#scoreLab","#quizReset");
+
+/* ══ progreso ══ */
+(function(){
+  const CH=["c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11"];
+  let read=LS.get("read",{});
+  function sync(){
+    const n=CH.filter(c=>read[c]).length;
+    $("#meterBar").style.width=(n/CH.length*100)+"%";
+    $("#meterLab").textContent=n+" / "+CH.length;
+    CH.forEach(c=>{const a=$('[data-nav="'+c+'"]'); if(a)a.classList.toggle("done",!!read[c]);});
+    $$(".readbar[data-read]").forEach(bar=>{
+      const k=bar.dataset.read; if(!CH.includes(k))return;
+      const on=!!read[k];
+      bar.classList.toggle("done",on);
+      $(".txt",bar).textContent=on?"✓ Leído":"¿Capítulo asimilado?";
+      $(".btn",bar).textContent=on?"Desmarcar":"Marcar como leído";
+    });
+  }
+  $$(".readbar[data-read] .btn").forEach(b=>{
+    b.onclick=()=>{const k=b.closest(".readbar").dataset.read;read[k]=!read[k];LS.set("read",read);sync();};
+  });
+  $("#resetBtn").onclick=()=>{read={};LS.set("read",read);LS.set("quiz",{});sync();location.reload();};
+  sync();
+})();
+
+/* ══ scrollspy ══ */
+(function(){
+  const links=$$("#side a"), map={};
+  links.forEach(a=>map[a.dataset.nav]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const a=map[e.target.id]; if(a)a.classList.add("active");
+      }
+    });
+  },{rootMargin:"-70px 0px -70% 0px",threshold:0});
+  $$("main section").forEach(s=>obs.observe(s));
+})();
+
+/* ══ buscador ══ */
+(function(){
+  const inp=$("#search"), secs=$$("main section"), nores=$("#nores"), hrs=$$("main hr");
+  const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  inp.oninput=()=>{
+    const q=norm(inp.value.trim());
+    if(!q){secs.forEach(s=>s.classList.remove("hidden"));hrs.forEach(h=>h.style.display="");nores.classList.remove("on");return;}
+    let any=false;
+    secs.forEach(s=>{
+      const hay=norm((s.dataset.title||"")+" "+s.textContent).includes(q);
+      s.classList.toggle("hidden",!hay); if(hay)any=true;
+    });
+    hrs.forEach(h=>h.style.display="none");
+    nores.classList.toggle("on",!any);
+  };
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();inp.focus();inp.select();}
+    if(e.key==="Escape"&&document.activeElement===inp){inp.value="";inp.dispatchEvent(new Event("input"));inp.blur();}
+  });
+})();
+</script>
+</body>
+</html>

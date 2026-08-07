@@ -11,6 +11,7 @@ Cada curso trae **un `.md` por lección** para leer en el editor, y **un `curso-
 | **[Claude Code in Action](claude-code-in-action/)** | 9 | Dirigir sesiones largas · CLAUDE.md · Skills de verificación · Modos de permisos · Hooks · Routines y headless · GitHub Actions y Code Review · Verificar runs no supervisados · Plugins |
 | **[Introduction to Subagents](introduction-to-subagents/)** | 4 | Qué son · Crearlos · Diseñarlos bien · Usarlos con criterio |
 | **[MCP: Advanced Topics](model-context-protocol-advanced-topics/)** | 8 | Sampling · Log y progreso · Roots · Mensajes JSON · STDIO · StreamableHTTP · SSE en profundidad · stateless_http y json_response |
+| **[Claude with the Anthropic API](claude-with-the-anthropic-api/)** | 85 | API y modelos · Evals · Prompt engineering · Tool use · RAG · Funcionalidades · Prompt caching · MCP · Claude Code · Agentes y workflows |
 
 > **[▶ index.html](index.html)** — página de inicio para navegar entre los cursos, con tu progreso de cada uno. Ábrela con doble clic.
 
@@ -37,6 +38,16 @@ Este curso no tiene quiz oficial; el repo incluye una autoevaluación de 12 preg
 Las capacidades de MCP que van más allá de exponer herramientas. El eje: **sampling, notificaciones y roots son la misma cosa vista desde tres ángulos** — el servidor pidiéndole algo al cliente. STDIO da esa dirección gratis; HTTP no, y la rescata con un apaño de SSE que dos flags desmontan.
 
 Los tres walkthroughs de código de la plataforma están integrados: en el HTML se navegan paso a paso, con las líneas exactas resaltadas. La evaluación oficial de 10 preguntas está pendiente de hacer.
+
+### Claude with the Anthropic API
+
+[Curso original](https://anthropic.skilljar.com/claude-with-the-anthropic-api)
+
+El más grande de la academia: 85 lecciones desde la primera llamada al API hasta construir agentes. Enseña **una disciplina, no una lista de funcionalidades** — pide, mide antes de retocar, mejora con técnicas medidas (el curso puntúa cada una: **2,32 → 3,92 → 7,86**), extiende, optimiza, integra y elige la arquitectura.
+
+Cierra con un consejo que va a contracorriente: **prioriza workflows.** Los usuarios quieren productos que funcionen al 100%, no agentes vistosos.
+
+Las **8 evaluaciones oficiales** (7 quizzes de bloque + evaluación final) están pendientes de hacer.
 
 ## Estructura
 
