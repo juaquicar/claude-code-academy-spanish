@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introduction to Model Context Protocol — Curso interactivo</title>
+<style>
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --surface-2:#F4F2EC;
+  --ink:#1F1E1D; --ink-2:#4A4742; --muted:#7A756D;
+  --accent:#C15F3C; --accent-soft:#F6E7E0; --accent-ink:#8F3F24; --on-accent:#FFFFFF;
+  --border:#E4DFD6; --border-strong:#CFC8BC;
+  --good:#2E7D5B; --good-soft:#E3F1EA;
+  --warn:#9A6B08; --warn-soft:#FAF0DA;
+  --bad:#AE3323; --bad-soft:#FAE6E2;
+  --info:#2C5F8A; --info-soft:#E3EDF6;
+  --code-bg:#F1EEE7;
+  --shadow:0 1px 2px rgba(31,30,29,.05),0 8px 24px -12px rgba(31,30,29,.18);
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#171614; --surface:#201F1C; --surface-2:#2A2825;
+  --ink:#F2EFE7; --ink-2:#D3CEC4; --muted:#9A948A;
+  --accent:#E0876A; --accent-soft:#3A2A22; --accent-ink:#F0A98F; --on-accent:#1C1A17;
+  --border:#34322D; --border-strong:#47443E;
+  --good:#6DC49B; --good-soft:#1E322A;
+  --warn:#DFAE4E; --warn-soft:#332A18;
+  --bad:#E88476; --bad-soft:#372220;
+  --info:#7FB0DB; --info-soft:#1C2A36;
+  --code-bg:#26241F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px}
+#topbar .brand{font-weight:650;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+#topbar .brand small{color:var(--muted);font-weight:450;display:block;font-size:11.5px;letter-spacing:.02em}
+.tb-spacer{flex:1}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+#search{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;width:230px}
+#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#search::placeholder{color:var(--muted)}
+.meter-wrap{display:flex;align-items:center;gap:9px}
+.meter{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.meter-lab{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1420px;margin:0 auto;padding-top:60px}
+#side{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:24px 14px 60px 20px;border-right:1px solid var(--border)}
+#side::-webkit-scrollbar{width:8px}
+#side::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+.side-h{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:650;margin:18px 0 8px 10px}
+.side-h:first-child{margin-top:0}
+#side a{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:9px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.4;transition:.13s}
+#side a:hover{background:var(--surface-2);color:var(--ink)}
+#side a.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+#side a .num{flex:none;width:20px;height:20px;border-radius:6px;background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:2px;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+#side a.active .num{background:var(--accent);color:var(--on-accent);border-color:transparent}
+#side a.done .num{background:var(--good-soft);color:var(--good);border-color:transparent}
+#side a.done .num::after{content:"✓"}
+#side a.done .num span{display:none}
+main{padding:36px 44px 120px;max-width:900px;min-width:0}
+#shell>*{min-width:0}
+section{margin-bottom:14px;scroll-margin-top:80px}
+section.hidden{display:none}
+h1{font-family:var(--serif);font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px}
+h2{font-family:var(--serif);font-size:29px;line-height:1.2;letter-spacing:-.018em;margin:0 0 6px}
+h3{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;font-weight:650}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{color:var(--ink);font-weight:640}
+a.ext{color:var(--accent-ink)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);padding:.13em .38em;border-radius:5px;color:var(--accent-ink);border:1px solid var(--border)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:13.2px;line-height:1.6}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px;font-family:var(--serif)}
+.box{border-radius:var(--radius);padding:16px 18px;margin:0 0 18px;border:1px solid var(--border);background:var(--surface)}
+.box .bh{display:flex;align-items:center;gap:8px;font-weight:680;font-size:13.5px;margin-bottom:7px}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.box.key{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.box.key .bh{color:var(--accent-ink)}
+.box.trap{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.box.trap .bh{color:var(--bad)}
+.box.tip{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 28%,transparent)}
+.box.tip .bh{color:var(--good)}
+.box.note{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 26%,transparent)}
+.box.note .bh{color:var(--info)}
+.box.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.box.warn .bh{color:var(--warn)}
+blockquote{margin:0 0 18px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55}
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+th{font-weight:640;color:var(--ink);background:var(--surface-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.widget{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.widget-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:680;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.widget-t::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:560;cursor:pointer;transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--border-strong);color:var(--ink)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl{display:flex;gap:0;margin-bottom:18px;position:relative;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--border)}
+.tl button{position:relative;flex:1;min-width:96px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tl .dot{width:40px;height:40px;border-radius:99px;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:16px;transition:.2s;z-index:1}
+.tl button:hover .dot{border-color:var(--border-strong)}
+.tl button[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:scale(1.12)}
+.tl .lab{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+.tl button[aria-selected="true"] .lab{color:var(--accent-ink)}
+.ad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.ad{grid-template-columns:1fr}}
+.ad>div{border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.ad .yes{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.ad .no{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.ad h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.ad .yes h5{color:var(--good)}
+.ad .no h5{color:var(--bad)}
+.ad ul{margin:0;padding-left:18px;font-size:13.8px}
+.ad li{margin-bottom:4px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+.scale-labs{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:-8px 2px 16px}
+.btn{font-family:inherit;font-size:14px;font-weight:580;cursor:pointer;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--border-strong);background:var(--surface)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.q-step{margin-bottom:14px}
+.q-step p{font-weight:600;color:var(--ink);margin-bottom:9px}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:11px;border:1px solid var(--border);background:var(--surface-2);display:none}
+.verdict.on{display:block;animation:fade .3s}
+.verdict b{font-size:17px;display:block;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{perspective:1000px;height:155px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;overflow:auto}
+.card .f{background:var(--surface);color:var(--ink);font-weight:600}
+.card .b{background:var(--accent-soft);color:var(--accent-ink);transform:rotateY(180deg);font-size:13.5px;font-weight:500}
+.card .f::after{content:"clic para girar";position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);font-weight:400}
+.quiz-group{position:relative}
+.quiz-q{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin-bottom:14px}
+.quiz-q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.quiz-q .qt{font-weight:620;color:var(--ink);margin-bottom:13px;font-size:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;font-family:inherit;font-size:14.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:10px 13px;color:var(--ink-2);transition:.15s;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--border-strong);color:var(--ink)}
+.opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.ok .k{background:var(--good);color:var(--surface);border-color:transparent}
+.opt.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opt.ko .k{background:var(--bad);color:var(--surface);border-color:transparent}
+.opt:disabled{cursor:default}
+.expl{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:14px;color:var(--ink-2);display:none}
+.expl.on{display:block;animation:fade .25s}
+.expl b{color:var(--ink)}
+.score{position:sticky;bottom:16px;margin-top:20px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score .lab{font-size:13px;color:var(--muted);line-height:1.4}
+.readbar{display:flex;align-items:center;gap:12px;margin:30px 0 8px;padding:14px 16px;border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--surface);flex-wrap:wrap}
+.readbar.done{border-style:solid;background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.readbar .txt{font-size:14px;color:var(--muted);flex:1;min-width:160px}
+.readbar.done .txt{color:var(--good);font-weight:600}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.grid2>*{min-width:0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.mini{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.mini h5{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+.mini p{margin:0;font-size:14px}
+.vid{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:5px 13px;background:var(--surface);transition:.15s}
+.vid:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hero-stats{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 8px}
+.hero-stats div span{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.hero-stats div small{font-size:12.5px;color:var(--muted)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+.map a,.map .mini{text-decoration:none}
+.map a{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.18s;display:block}
+.map a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.map .t{font-weight:640;color:var(--ink);font-size:15px;line-height:1.35}
+.map .d{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── flow diagram ── */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:stretch;margin-bottom:16px}
+@media(max-width:700px){.flow{grid-template-columns:1fr}}
+.flow .col{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.flow .col.main{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft)}
+.flow .col h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.flow .col.main h5{color:var(--accent-ink)}
+.flow .arrow{display:grid;place-items:center;padding:0 14px;color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+@media(max-width:700px){.flow .arrow{padding:10px 0}}
+.flow ul{margin:0;padding-left:17px;font-size:13.5px}
+.flow li{margin-bottom:3px}
+.discard{text-decoration:line-through;color:var(--muted);opacity:.7}
+/* ── config builder ── */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.cfg-ctl,.cfg-out{min-width:0}
+@media(max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.cfg-ctl label:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:inherit;font-size:13px;font-weight:560;cursor:pointer;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);transition:.15s}
+.seg button:hover{border-color:var(--border-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.cfg-out pre{margin:0;height:100%}
+.cfg-hint{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;border-left:2px solid var(--border-strong);padding-left:12px}
+/* ── diagrama de flujo de mensajes ── */
+.msg{display:grid;grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);gap:0;align-items:center;margin-bottom:14px}
+@media(max-width:700px){.msg{grid-template-columns:minmax(0,1fr)}}
+.msg .node{border:1px solid var(--border);border-radius:12px;padding:13px 15px;background:var(--surface-2);min-width:0}
+.msg .node.hl{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.msg .node h5{margin:0 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.msg .node.hl h5{color:var(--accent-ink)}
+.msg .node p{margin:0;font-size:13.5px}
+.msg .link{display:grid;place-items:center;gap:3px;padding:0 8px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+.msg .link .ar{font-size:19px;color:var(--accent);line-height:1}
+.msg .link.dead .ar{color:var(--bad)}
+.msg .link.dead{color:var(--bad)}
+/* ── tabla comparativa de flags ── */
+.flags td.y{color:var(--good);font-weight:640}
+.flags td.n{color:var(--bad);font-weight:640}
+.flags td.c{text-align:center}
+/* ── flujo numerado ── */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.steps .st{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:11px;padding:12px 14px;background:var(--surface);min-width:0}
+.steps .st::before{counter-increment:s;content:counter(s);flex:none;width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.steps .st p{margin:0;font-size:14.3px}
+.steps .st b{color:var(--ink)}
+/* ── las tres primitivas ── */
+.prims{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.prims button{
+  font-family:inherit;text-align:left;cursor:pointer;border:1px solid var(--border);border-radius:13px;
+  padding:16px;background:var(--surface-2);transition:.18s;color:var(--ink);min-width:0;
+}
+.prims button:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+.prims button[aria-selected="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.prims .pn{display:block;font-size:19px;font-weight:680;letter-spacing:-.01em;margin-bottom:6px}
+.prims button[aria-selected="true"] .pn{color:var(--accent-ink)}
+.prims .pc{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:650}
+.prims button[aria-selected="true"] .pc{color:var(--accent-ink)}
+/* ── flujo cliente-servidor ── */
+.chain{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.chain .hop{display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:10px;padding:10px 13px;background:var(--surface-2);min-width:0;transition:.18s}
+.chain .hop.on{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.chain .hop.past{opacity:.5}
+.chain .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11px;font-weight:700;display:grid;place-items:center;color:var(--muted);font-family:var(--mono)}
+.chain .hop.on .k{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.chain .who{font-family:var(--mono);font-size:11.5px;color:var(--muted);flex:none;width:104px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chain .hop.on .who{color:var(--accent-ink)}
+.chain .txt2{font-size:14px;color:var(--ink-2);min-width:0}
+.chain .hop.on .txt2{color:var(--ink)}
+/* ── créditos ── */
+footer.credits{margin:60px 0 0;padding:24px 0 0;border-top:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.6}
+footer.credits strong{color:var(--ink-2);font-weight:640}
+footer.credits a{color:var(--accent-ink);text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);text-underline-offset:2px}
+footer.credits .who{font-size:14.5px;color:var(--ink-2);margin-bottom:10px}
+footer.credits .src{padding-left:13px;border-left:2px solid var(--border-strong)}
+
+.nores{padding:30px;text-align:center;color:var(--muted);display:none}
+.nores.on{display:block}
+@media(max-width:960px){
+  #shell{grid-template-columns:1fr}
+  #side{display:none}
+  main{padding:26px 20px 100px}
+  #search{width:140px}
+  .meter-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">Introduction to MCP<small>Anthropic Academy · resumen interactivo</small></div>
+  <div class="tb-spacer"></div>
+  <div class="meter-wrap"><div class="meter"><i id="meterBar"></i></div><span class="meter-lab" id="meterLab">0 / 7</span></div>
+  <input id="search" type="search" placeholder="Buscar… (⌘/Ctrl+K)" autocomplete="off">
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  <button class="icon-btn" id="resetBtn" title="Reiniciar progreso">↺</button>
+</div>
+
+<div id="shell">
+<nav id="side">
+  <div class="side-h">Inicio</div>
+  <a href="#intro" data-nav="intro"><span class="num"><span>★</span></span> Mapa del curso</a>
+  <div class="side-h">Fundamentos</div>
+  <a href="#c1" data-nav="c1"><span class="num"><span>1</span></span> Qué es MCP</a>
+  <a href="#c2" data-nav="c2"><span class="num"><span>2</span></span> Clientes MCP y el proyecto</a>
+  <div class="side-h">Las tres primitivas</div>
+  <a href="#c3" data-nav="c3"><span class="num"><span>3</span></span> Definir tools</a>
+  <a href="#c4" data-nav="c4"><span class="num"><span>4</span></span> Implementar un cliente</a>
+  <a href="#c5" data-nav="c5"><span class="num"><span>5</span></span> Resources</a>
+  <a href="#c6" data-nav="c6"><span class="num"><span>6</span></span> Prompts</a>
+  <a href="#c7" data-nav="c7"><span class="num"><span>7</span></span> Las tres primitivas</a>
+  <div class="side-h">Repaso</div>
+  <a href="#flash" data-nav="flash"><span class="num"><span>◆</span></span> Flashcards</a>
+  <a href="#quiz" data-nav="quiz"><span class="num"><span>?</span></span> Autoevaluación</a>
+</nav>
+
+<main>
+<div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
+
+<!-- ═══ INTRO ═══ -->
+<section id="intro" data-title="mapa del curso mcp introducción model context protocol">
+  <span class="pill acc">Anthropic Academy</span>
+  <h1 style="margin-top:14px">Introduction to Model Context&nbsp;Protocol</h1>
+  <p class="lede">MCP traslada el trabajo de escribir esquemas y funciones de herramienta <strong>del desarrollador de la aplicación al mantenedor del servidor MCP</strong>.</p>
+
+  <div class="hero-stats">
+    <div><span>3</span><small>primitivas</small></div>
+    <div><span>1</span><small>decorador por primitiva</small></div>
+    <div><span>10</span><small>pasos del flujo completo</small></div>
+    <div><span>1</span><small>evaluación pendiente</small></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ La idea que ordena todo el curso</div>
+    <p>Un servidor MCP tiene <strong>tres primitivas</strong> —tools, resources y prompts—, y la última lección las ordena con una idea que lo aclara de golpe:</p>
+    <p style="margin:0"><strong>Se distinguen por quién decide cuándo se usan.</strong></p>
+  </div>
+
+  <h3>Las tres primitivas</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · toca cada una</div>
+    <div class="prims" id="prims" role="tablist">
+      <button role="tab" aria-selected="true" data-v="0"><span class="pn">Tools</span><span class="pc">las controla el modelo</span></button>
+      <button role="tab" aria-selected="false" data-v="1"><span class="pn">Resources</span><span class="pc">las controla la app</span></button>
+      <button role="tab" aria-selected="false" data-v="2"><span class="pn">Prompts</span><span class="pc">los controla el usuario</span></button>
+    </div>
+    <div id="primsOut"></div>
+  </div>
+
+  <blockquote>¿Necesitas capacidades para Claude? → tools. ¿Necesitas datos para tu app? → resources. ¿Necesitas flujos para el usuario? → prompts.</blockquote>
+
+  <h3>Recorrido</h3>
+  <div class="map">
+    <a href="#c1"><div class="t">1 · Qué es MCP</div><div class="d">El problema que resuelve y en qué se diferencia de tool use</div></a>
+    <a href="#c2"><div class="t">2 · Clientes</div><div class="d">El flujo de 10 pasos y el proyecto del curso</div></a>
+    <a href="#c3"><div class="t">3 · Tools</div><div class="d"><code>@mcp.tool</code> y el inspector del servidor</div></a>
+    <a href="#c4"><div class="t">4 · El cliente</div><div class="d"><code>list_tools</code>, <code>call_tool</code> y la limpieza de recursos</div></a>
+    <a href="#c5"><div class="t">5 · Resources</div><div class="d">URIs, MIME types y datos sin herramientas</div></a>
+    <a href="#c6"><div class="t">6 · Prompts</div><div class="d">Plantillas del servidor como slash commands</div></a>
+    <a href="#c7"><div class="t">7 · Las tres primitivas</div><div class="d">La lección que lo ordena todo</div></a>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ Dónde encaja este curso</div>
+    <p style="margin:0">Cubre el <strong>mismo terreno que el bloque MCP de <em>Claude with the Anthropic API</em></strong>, pero con una lección por tema y añadiendo la de las tres primitivas. Para lo que viene <em>después</em> —sampling, roots, transportes y los flags que rompen el despliegue— sigue con <strong>MCP: Advanced Topics</strong>.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 1 ═══ -->
+<section id="c1" data-title="que es mcp problema que resuelve tool use complementarios servidor interfaz">
+  <div class="chead"><span class="pill acc">Lección 1</span></div>
+  <h2>Qué es MCP</h2>
+  <p class="lede"><strong>Capa de comunicación</strong> que aporta a Claude contexto y herramientas <strong>sin obligarte a escribir código tedioso</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">La arquitectura</div>
+    <div class="msg" style="margin-bottom:0">
+      <div class="node hl"><h5>Tu servidor</h5><p>Habla con Claude y con el cliente MCP</p></div>
+      <div class="link"><span class="ar">→</span>cliente MCP</div>
+      <div class="node"><h5>Servidor MCP</h5><p><strong>tools</strong> · <strong>resources</strong> · <strong>prompts</strong></p></div>
+    </div>
+  </div>
+
+  <h3>El problema que resuelve</h3>
+  <p>El enfoque tradicional te obliga a <strong>escribir a mano los esquemas y las funciones de cada integración</strong>.</p>
+  <div class="box trap">
+    <div class="bh">⚠ El coste</div>
+    <p style="margin:0">Un chatbot de GitHub exigiría implementar herramientas para repositorios, pull requests, issues y proyectos. <strong>Eso crea una carga de mantenimiento</strong> en servicios complejos con muchas funcionalidades.</p>
+  </div>
+  <p>MCP <strong>traslada la definición y la ejecución de herramientas</strong> de tu servidor a un servidor MCP dedicado. Un servidor MCP es <strong>una interfaz a un servicio externo</strong> que envuelve su funcionalidad en <strong>herramientas ya construidas</strong>.</p>
+  <div class="box tip">
+    <div class="bh">✓ El beneficio</div>
+    <p style="margin:0">Elimina la necesidad de que escribas y mantengas esquemas e implementaciones. <strong>Otro las escribe y las empaqueta en el servidor MCP.</strong></p>
+  </div>
+
+  <h3>Las tres preguntas frecuentes</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Pregunta</th><th>Respuesta</th></tr></thead>
+    <tbody>
+      <tr><td>¿Quién escribe los servidores MCP?</td><td><strong>Cualquiera</strong> — pero a menudo los propios proveedores del servicio crean implementaciones oficiales</td></tr>
+      <tr><td>¿En qué se diferencia de llamar al API?</td><td>Te <strong>ahorra tiempo</strong>: te da esquemas y funciones ya hechos en vez de tener que escribirlos</td></tr>
+      <tr><td>¿Y de tool use?</td><td><strong>Son complementarios, no lo mismo.</strong> MCP se centra en <strong>quién hace el trabajo</strong> de crear las herramientas</td></tr>
+    </tbody>
+  </table></div>
+  <div class="readbar" data-read="c1"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 2 ═══ -->
+<section id="c2" data-title="clientes mcp transporte agnóstico list tools call tool flujo proyecto cli">
+  <div class="chead"><span class="pill acc">Lección 2</span></div>
+  <h2>Clientes MCP y el proyecto</h2>
+  <p class="lede"><strong>Interfaz de comunicación</strong> entre tu servidor y el servidor MCP, que te da acceso a sus herramientas.</p>
+
+  <div class="grid2">
+    <div class="mini"><h5>Agnóstico del transporte</h5><p>Pueden hablar por <strong>stdin/stdout, HTTP o WebSockets</strong>. Lo habitual: ambos en la misma máquina por stdin/stdout.</p></div>
+    <div class="mini"><h5>Los cuatro mensajes</h5><p><code>list tools request/result</code> para pedir la lista · <code>call tool request/result</code> para ejecutar.</p></div>
+  </div>
+
+  <h3>El flujo completo</h3>
+  <p>Diez saltos, del usuario a la respuesta. Avanza paso a paso:</p>
+  <div class="widget">
+    <div class="widget-t">Interactivo · sigue la cadena</div>
+    <div class="chain" id="chain"></div>
+    <div class="btn-row"><button class="btn" id="chainPrev">← Anterior</button><button class="btn" id="chainNext">Siguiente →</button><button class="btn" id="chainAll">Ver todo</button></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ El papel del cliente MCP</div>
+    <p style="margin:0"><strong>No ejecuta las herramientas él mismo.</strong> Actúa de <strong>intermediario</strong>: solo facilita la comunicación entre tu servidor y el servidor MCP, que es quien las ejecuta de verdad.</p>
+  </div>
+
+  <h3>El proyecto del curso</h3>
+  <p>Un <strong>chatbot de línea de comandos</strong> que implementa <strong>cliente y servidor</strong>, con documentos falsos guardados <strong>solo en memoria</strong> y dos herramientas: leer y actualizar el contenido de un documento.</p>
+  <div class="box note">
+    <div class="bh">ℹ Aviso de contexto real</div>
+    <p style="margin:0">Normalmente un proyecto implementa <strong>el cliente O el servidor, no ambos</strong>. Aquí se hacen los dos para aprender.</p>
+  </div>
+  <p style="margin-bottom:0"><strong>Montaje:</strong> descarga <code>CLI_project.zip</code>, extráelo, configura el <code>.env</code> con tu clave e instala dependencias. <strong>Ejecución:</strong> <code>uv run main.py</code> o <code>python main.py</code>. Aparece el prompt de chat y responde a consultas básicas.</p>
+  <div class="readbar" data-read="c2"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 3 ═══ -->
+<section id="c3" data-title="definir tools mcp.tool decorador Field pydantic inspector mcp dev">
+  <div class="chead"><span class="pill acc">Lección 3</span></div>
+  <h2>Definir tools</h2>
+  <p class="lede">El SDK de Python <strong>auto-genera los JSON Schema</strong> a partir de tus funciones decoradas. Adiós a escribirlos a mano.</p>
+
+  <div class="box tip">
+    <div class="bh">✓ Lo que te ahorra el SDK</div>
+    <p style="margin:0">Genera el esquema desde la función, permite crear el servidor en <strong>una sola línea</strong> y <strong>elimina la escritura manual de esquemas</strong>.</p>
+  </div>
+
+  <h3>El patrón</h3>
+  <pre><code>decorador → definición de función → tipado de parámetros → validación → lógica</code></pre>
+  <ul>
+    <li>Decorador <strong><code>@mcp.tool</code></strong></li>
+    <li>Función con <strong>parámetros tipados</strong></li>
+    <li><strong><code>Field()</code></strong> de pydantic con <code>description</code> para describir cada argumento</li>
+  </ul>
+
+  <h3>Las dos herramientas del proyecto</h3>
+  <p>Almacenamiento: un <strong>diccionario en memoria</strong> con <code>doc_id</code> como clave y el contenido como valor.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Herramienta</th><th>Parámetros</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><code>read_doc_contents</code></td><td><code>doc_id</code></td><td>Devuelve el contenido. <strong>Lanza <code>ValueError</code> si no existe</strong></td></tr>
+      <tr><td><code>edit_document</code></td><td><code>doc_id</code>, <code>old_string</code>, <code>new_string</code></td><td>Buscar/reemplazar sobre el contenido, con validación de existencia</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Manejo de errores:</strong> valida que el documento existe <strong>antes</strong> de operar.</p>
+
+  <h3>El inspector del servidor</h3>
+  <div class="box key">
+    <div class="bh">◈ Depurar sin aplicación</div>
+    <p style="margin:0"><strong>MCP Inspector</strong> = depurador <strong>en el navegador</strong> para probar servidores MCP <strong>sin conectarlos a ninguna aplicación</strong>.</p>
+  </div>
+  <pre><code>mcp dev [fichero_servidor.py]</code></pre>
+  <p>Con el entorno de Python activado. Abre el servidor en un puerto y te da una dirección localhost.</p>
+  <div class="steps">
+    <div class="st"><p>Botón <b>Connect</b> en la barra lateral izquierda.</p></div>
+    <div class="st"><p>Barra superior con las secciones <b>Resources / Prompts / Tools</b>.</p></div>
+    <div class="st"><p>Clic en una herramienta → se abre el <b>panel derecho</b> para probarla a mano.</p></div>
+    <div class="st"><p>Introduce los parámetros → <b>Run Tool</b> → verifica la salida.</p></div>
+  </div>
+  <p style="margin-bottom:0">Aporta pruebas en vivo, simulación de invocación y feedback de éxito o fallo. <strong>Es esencial antes de desplegar.</strong> Está en desarrollo activo: la interfaz puede cambiar, la funcionalidad base no.</p>
+  <div class="readbar" data-read="c3"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 4 ═══ -->
+<section id="c4" data-title="implementar cliente client session list_tools call_tool limpieza recursos">
+  <div class="chead"><span class="pill acc">Lección 4</span></div>
+  <h2>Implementar un cliente</h2>
+  <p class="lede">Una clase envoltorio alrededor de la sesión, que <strong>expone la funcionalidad del servidor MCP al resto de tu código</strong>.</p>
+
+  <div class="grid2">
+    <div class="mini"><h5>Client Session</h5><p><strong>La conexión real</strong> al servidor MCP, del SDK de Python. <strong>Requiere limpieza de recursos al cerrar.</strong></p></div>
+    <div class="mini"><h5>MCP Client</h5><p><strong>Clase envoltorio</strong> que gestiona conexión y limpieza, con <code>connect</code>, <code>cleanup</code>, <code>async enter</code> y <code>async exit</code>.</p></div>
+  </div>
+  <div class="box note"><div class="bh">ℹ Práctica habitual</div><p style="margin:0">Envolver la client session en una clase mayor <strong>en vez de usarla directamente</strong>, para gestionar mejor los recursos.</p></div>
+
+  <pre><code>async def list_tools(self):
+    result = await self.session.list_tools()
+    return result.tools
+
+async def call_tool(self, tool_name, tool_input):
+    return await self.session.call_tool(tool_name, tool_input)</code></pre>
+
+  <h3>El flujo de implementación</h3>
+  <div class="steps">
+    <div class="st"><p>La aplicación pide la <b>lista de herramientas</b> para Claude.</p></div>
+    <div class="st"><p>El cliente llama a <b><code>list_tools()</code></b>.</p></div>
+    <div class="st"><p><b>Claude selecciona</b> una herramienta y aporta los parámetros.</p></div>
+    <div class="st"><p>El cliente llama a <b><code>call_tool()</code></b> para ejecutarla en el servidor.</p></div>
+    <div class="st"><p>Los resultados <b>vuelven a Claude</b>.</p></div>
+  </div>
+  <p style="margin-bottom:0"><strong>Probarlo:</strong> ejecuta <code>mcp client.py</code> directamente con un arnés de pruebas para verificar la conexión y el listado. Una vez implementado, lanza la CLI y prueba con algo como <em>"what is contents of report.pdf document"</em>.</p>
+  <div class="readbar" data-read="c4"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 5 ═══ -->
+<section id="c5" data-title="resources uri directo templated mime type read_resource AnyUrl deserializar">
+  <div class="chead"><span class="pill acc">Lección 5</span></div>
+  <h2>Resources</h2>
+  <p class="lede">Funcionalidad del servidor MCP que <strong>expone datos a los clientes para operaciones de lectura</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · los dos tipos</div>
+    <div class="chips" id="resChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="r1">Directo / estático</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="r2">Con plantilla</button>
+    </div>
+    <div class="panel on" id="r1">
+      <pre style="margin-bottom:12px"><code>docs://documents</code></pre>
+      <p style="margin:0">URI <strong>fija</strong>. Típico para <strong>listar</strong> los elementos disponibles.</p>
+    </div>
+    <div class="panel" id="r2">
+      <pre style="margin-bottom:12px"><code>documents/{doc_id}</code></pre>
+      <p style="margin:0">URI <strong>parametrizada con comodines</strong>. Los <strong>parámetros de la URI se convierten automáticamente en argumentos con nombre</strong> de la función. Típico para <strong>traer uno solo</strong>.</p>
+    </div>
+  </div>
+  <div class="box tip"><div class="bh">✓ Patrón habitual</div><p style="margin:0"><strong>Un resource por cada operación de lectura distinta</strong> — listar elementos vs. traer uno.</p></div>
+
+  <h3>El flujo</h3>
+  <div class="steps">
+    <div class="st"><p>El <b>cliente</b> envía una petición de lectura <b>con la URI</b>.</p></div>
+    <div class="st"><p>El <b>servidor MCP</b> empareja la URI con la función del resource.</p></div>
+    <div class="st"><p>El servidor <b>ejecuta la función</b> y devuelve el resultado.</p></div>
+    <div class="st"><p>El cliente <b>recibe los datos</b> en el mensaje de resultado.</p></div>
+  </div>
+
+  <h3>Definirlos y leerlos</h3>
+  <p>En el servidor: decorador <strong><code>@mcp.resource</code></strong> con la <strong>URI</strong> —una dirección tipo ruta— y el <strong>MIME type</strong>. <strong>El SDK serializa automáticamente</strong> los valores devueltos a cadenas.</p>
+  <div class="box key">
+    <div class="bh">◈ Para qué sirve el MIME type</div>
+    <p style="margin:0">Es una <strong>pista para el cliente</strong> sobre el formato devuelto, para que sepa <strong>cómo deserializarlo</strong>. Por eso la lógica del cliente lo consulta.</p>
+  </div>
+  <pre><code>async def read_resource(self, uri):
+    result = await self.session.read_resource(AnyUrl(uri))
+    resource = result.contents[0]
+    if resource.mime_type == "application/json":
+        return json.loads(resource.text)
+    return resource.text</code></pre>
+  <p>Dependencias: el módulo <code>json</code> y <strong><code>AnyUrl</code></strong> de pydantic para el tipado.</p>
+
+  <div class="box tip">
+    <div class="bh">✓ El resultado que importa</div>
+    <p>Permite <strong>seleccionar documentos desde la CLI</strong> con las flechas y la barra espaciadora, y <strong>el contenido seleccionado se incluye automáticamente en los prompts</strong>.</p>
+    <p style="margin:0"><strong>Ya no hacen falta herramientas para leer el contenido durante el chat.</strong> Los datos llegan por otra vía — y ese contraste es justo lo que ordena el capítulo 7.</p>
+  </div>
+  <div class="readbar" data-read="c5"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 6 ═══ -->
+<section id="c6" data-title="prompts slash commands plantillas servidor list_prompts get_prompt interpolación">
+  <div class="chead"><span class="pill acc">Lección 6</span></div>
+  <h2>Prompts</h2>
+  <p class="lede"><strong>Instrucciones ya escritas y probadas</strong> que los servidores MCP exponen a los clientes para tareas especializadas.</p>
+
+  <div class="box key">
+    <div class="bh">◈ El beneficio</div>
+    <p style="margin:0">Los <strong>autores del servidor</strong> crean prompts <strong>optimizados y probados</strong> para su dominio, en vez de <strong>dejar la calidad del prompt en manos del usuario final</strong>.</p>
+  </div>
+  <p>Los clientes los invocan mediante <strong>slash commands</strong> — por ejemplo <code>/format</code>.</p>
+
+  <h3>Definirlos en el servidor</h3>
+  <pre><code>@prompt(name="format", description="rewrites document in markdown")
+def format_document(doc_id: str) -> list[messages]:
+    return [base.user_message(prompt_text)]</code></pre>
+  <p>Decorador <strong><code>@prompt</code></strong> con nombre y descripción · la función <strong>recibe argumentos</strong> · <strong>devuelve una lista de mensajes</strong> en formato usuario/asistente, que <strong>se envían directamente a Claude</strong>.</p>
+
+  <h3>Invocarlos desde el cliente</h3>
+  <pre><code>async def list_prompts(self):
+    result = await self.session.list_prompts()
+    return result.prompts
+
+async def get_prompt(self, prompt_name, arguments):
+    result = await self.session.get_prompt(prompt_name, arguments)
+    return result.messages</code></pre>
+  <div class="box note">
+    <div class="bh">ℹ El flujo de los argumentos</div>
+    <p style="margin:0">Argumentos del cliente → <strong>argumentos con nombre</strong> de la función → <strong>interpolados en el texto</strong> de la plantilla → <strong>array de mensajes</strong> para el modelo.</p>
+  </div>
+
+  <h3>De punta a punta</h3>
+  <div class="steps">
+    <div class="st"><p>El usuario escribe <b><code>/format</code></b>.</p></div>
+    <div class="st"><p>Selecciona un documento.</p></div>
+    <div class="st"><p>El <b>servidor devuelve el prompt especializado</b> con el ID interpolado.</p></div>
+    <div class="st"><p>El <b>cliente lo envía a Claude</b>.</p></div>
+    <div class="st"><p><b>Claude usa las herramientas</b> para leer, reformatear y guardar el documento.</p></div>
+  </div>
+  <p style="margin-bottom:0"><strong>El propósito:</strong> encapsular la <strong>experiencia en prompt engineering del dominio</strong> dentro de servidores MCP especializados.</p>
+  <div class="readbar" data-read="c6"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 7 ═══ -->
+<section id="c7" data-title="las tres primitivas model-controlled app-controlled user-controlled regla de decisión">
+  <div class="chead"><span class="pill acc">Lección 7</span><span class="pill">la que lo ordena todo</span></div>
+  <h2>Las tres primitivas</h2>
+  <p class="lede">Tools, resources y prompts <strong>se distinguen por quién decide cuándo se usan</strong>. Con eso, elegir deja de ser una duda.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Primitiva</th><th>Quién controla</th><th>A quién sirve</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Tools</strong></td><td><strong>El modelo</strong> — Claude decide cuándo ejecutarlas</td><td>Al <strong>modelo</strong></td></tr>
+      <tr><td><strong>Resources</strong></td><td><strong>El código de la aplicación</strong> decide cuándo traer los datos</td><td>A la <strong>aplicación</strong></td></tr>
+      <tr><td><strong>Prompts</strong></td><td><strong>El usuario</strong>, con un clic o un slash command</td><td>Al <strong>usuario</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · ¿qué primitiva necesito?</div>
+    <div id="decider">
+      <div class="q-step" data-q="0">
+        <p>¿Quién debe decidir <strong>cuándo</strong> ocurre esto?</p>
+        <div class="btn-row">
+          <button class="btn" data-a="tools">Claude, según lo que haga falta</button>
+          <button class="btn" data-a="res">Mi código de aplicación</button>
+          <button class="btn" data-a="pr">El usuario, explícitamente</button>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="btn-row" style="margin-top:12px"><button class="btn" id="decReset">Empezar de nuevo</button></div>
+    </div>
+  </div>
+
+  <blockquote>El patrón de control determina el propósito. No elijas por lo que la primitiva <em>hace técnicamente</em>, sino por <strong>quién debe decidir cuándo pasa</strong>.</blockquote>
+
+  <h3>Ejemplos reales, del propio Claude</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Qué ves en Claude</th><th>Qué primitiva es</th></tr></thead>
+    <tbody>
+      <tr><td>Los <strong>botones de inicio de conversación</strong></td><td><strong>Prompts</strong> — los pulsa el usuario</td></tr>
+      <tr><td>La <strong>selección de documentos de Google Drive</strong></td><td><strong>Resources</strong> — los trae la aplicación</td></tr>
+      <tr><td>La <strong>ejecución de código</strong></td><td><strong>Tools</strong> — la decide el modelo</td></tr>
+    </tbody>
+  </table></div>
+  <div class="readbar" data-read="c7"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ FLASHCARDS ═══ -->
+<section id="flash" data-title="flashcards repaso tarjetas chuleta">
+  <span class="pill acc">Repaso activo</span>
+  <h2 style="margin-top:12px">Flashcards</h2>
+  <p class="lede">Los hechos concretos del curso. Clic para girar.</p>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn" id="flipAll">Girar todas</button>
+    <button class="btn" id="shuffleCards">Barajar</button>
+  </div>
+  <div class="cards" id="cardGrid"></div>
+</section>
+
+<hr>
+
+<!-- ═══ QUIZ ═══ -->
+<section id="quiz" data-title="quiz autoevaluación final assessment pendiente">
+  <span class="pill acc">Autoevaluación</span>
+  <h2 style="margin-top:12px">Autoevaluación — 14 preguntas</h2>
+  <p class="lede">Preparación para la evaluación oficial. Elige una respuesta y te digo al momento si es correcta y <strong>por qué</strong>.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ La evaluación oficial está pendiente</div>
+    <p style="margin:0">El curso trae un <strong>Final assessment on MCP</strong> que se hace en la plataforma. Está sin hacer a propósito: lo harás tú al terminar de estudiar. <strong>Cuando lo hagas, pasa los resultados</strong> y se registran aquí las preguntas reales con su feedback.</p>
+  </div>
+
+  <div class="quiz-group">
+    <div id="quizBox"></div>
+    <div class="score" id="scoreBox">
+      <div><div class="big" id="scoreNum">0 / 14</div><div class="lab" id="scoreLab">Aún no has contestado</div></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="quizReset">Reiniciar</button>
+    </div>
+  </div>
+</section>
+
+<footer class="credits">
+  <p class="who"><strong>Resúmenes y proyecto:</strong> Juanma Quijada. Elaborados y publicados en español para <strong>facilitar a la comunidad hispanohablante el acceso al conocimiento sobre Claude Code y la inteligencia artificial</strong>. · <a href="https://github.com/juaquicar/claude-code-academy-spanish" target="_blank" rel="noopener">Repositorio</a></p>
+  <p class="src"><strong>El curso original es obra de Anthropic</strong> y la autoría de su contenido —temario, vídeos, ejemplos de código y evaluaciones— le pertenece íntegramente. Esta página es un resumen de estudio derivado de ese material, no lo sustituye. El curso es gratuito: <a href="https://anthropic.skilljar.com/introduction-to-model-context-protocol" target="_blank" rel="noopener">hazlo en la Anthropic Academy</a>.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("mcpin1_"+k))??d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem("mcpin1_"+k,JSON.stringify(v))}catch(e){}}
+};
+const root=document.documentElement;
+root.dataset.theme=LS.get("theme","light");
+$("#themeBtn").onclick=()=>{const t=root.dataset.theme==="light"?"dark":"light";root.dataset.theme=t;LS.set("theme",t);};
+
+function wireTabs(c){
+  const btns=$$('[role="tab"]',c);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    const scope=c.closest(".widget")||document;
+    btns.forEach(x=>{const p=$("#"+x.dataset.p,scope); if(p)p.classList.toggle("on",x===b);});
+  });
+}
+["#resChips"].forEach(s=>{const e=$(s); if(e) wireTabs(e);});
+
+/* ══ intro · las tres primitivas ══ */
+(function(){
+  const host=$("#prims"), out=$("#primsOut"); if(!host) return;
+  const P=[
+    {n:"Tools", c:"Las controla el modelo",
+     d:"Primitivas donde <strong>Claude decide cuándo ejecutarlas</strong>.",
+     u:"Añadir <strong>capacidades a Claude</strong> — por ejemplo, ejecución de JavaScript para hacer cálculos.",
+     s:"Sirven al <strong>modelo</strong>.",
+     ej:"La <strong>ejecución de código</strong> en Claude."},
+    {n:"Resources", c:"Las controla la aplicación",
+     d:"Primitivas donde <strong>el código de tu aplicación decide cuándo traer los datos</strong>.",
+     u:"Meter <strong>datos en tu app</strong>, para mostrarlos en la interfaz o enriquecer el prompt — opciones de autocompletado, listados de documentos.",
+     s:"Sirven a la <strong>aplicación</strong>.",
+     ej:"La <strong>selección de documentos de Google Drive</strong>."},
+    {n:"Prompts", c:"Los controla el usuario",
+     d:"Primitivas <strong>disparadas por acciones del usuario</strong>: pulsar un botón, escribir un slash command.",
+     u:"<strong>Flujos de trabajo predefinidos</strong>.",
+     s:"Sirven al <strong>usuario</strong>.",
+     ej:"Los <strong>botones de inicio de conversación</strong> en la interfaz de Claude."}
+  ];
+  function render(i){
+    const p=P[i];
+    out.innerHTML=
+      '<p style="margin-bottom:10px">'+p.d+'</p>'+
+      '<div class="grid2" style="margin-bottom:14px">'+
+        '<div class="mini"><h5>Para qué se usan</h5><p>'+p.u+'</p></div>'+
+        '<div class="mini"><h5>Ejemplo real en Claude</h5><p>'+p.ej+'</p></div>'+
+      '</div>'+
+      '<div class="box key" style="margin:0"><div class="bh">◈ A quién sirven</div><p style="margin:0">'+p.s+'</p></div>';
+  }
+  $$('[role="tab"]',host).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',host).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ cap 2 · flujo cliente-servidor ══ */
+(function(){
+  const host=$("#chain"); if(!host) return;
+  const H=[
+    ["usuario","Consulta a tu servidor"],
+    ["tu servidor","Pide las herramientas al cliente MCP"],
+    ["cliente MCP","Manda <code>list tools request</code> al servidor MCP"],
+    ["servidor MCP","Responde con <code>list tools result</code>"],
+    ["tu servidor","Envía la consulta + las herramientas a Claude"],
+    ["Claude","Pide ejecutar una herramienta"],
+    ["tu servidor","Pide al cliente MCP que la ejecute"],
+    ["cliente MCP","Manda <code>call tool request</code>"],
+    ["servidor MCP","<strong>Ejecuta la herramienta</strong> — p. ej. llama al API de GitHub"],
+    ["← de vuelta","Los resultados suben por la cadena, Claude formula la respuesta y el usuario la recibe"]
+  ];
+  let cur=0, all=false;
+  function render(){
+    host.innerHTML=H.map((h,i)=>
+      '<div class="hop '+(all?"on":(i===cur?"on":(i<cur?"past":"")))+'">'+
+      '<span class="k">'+(i+1)+'</span><span class="who">'+h[0]+'</span>'+
+      '<span class="txt2">'+h[1]+'</span></div>').join("");
+  }
+  $("#chainNext").onclick=()=>{all=false;cur=Math.min(H.length-1,cur+1);render();};
+  $("#chainPrev").onclick=()=>{all=false;cur=Math.max(0,cur-1);render();};
+  $("#chainAll").onclick=()=>{all=!all;render();};
+  render();
+})();
+
+/* ══ cap 7 · decisor ══ */
+(function(){
+  const box=$("#decider"); if(!box) return;
+  const steps=$$(".q-step",box), v=$("#verdict");
+  const V={
+    tools:["Tools","Si <strong>Claude</strong> debe decidir cuándo ocurre, es una <strong>tool</strong>: primitivas <em>controladas por el modelo</em>, que <strong>añaden capacidades a Claude</strong>. Ejemplo real: la ejecución de código."],
+    res:["Resources","Si es <strong>tu código de aplicación</strong> el que decide cuándo traer los datos, es un <strong>resource</strong>: primitivas <em>controladas por la app</em>, para <strong>meter datos en tu interfaz o enriquecer el prompt</strong>. Ejemplo real: la selección de documentos de Google Drive."],
+    pr:["Prompts","Si lo dispara <strong>el usuario</strong> con un clic o un slash command, es un <strong>prompt</strong>: primitivas <em>controladas por el usuario</em>, para <strong>flujos de trabajo predefinidos</strong>. Ejemplo real: los botones de inicio de conversación de Claude."]
+  };
+  function reset(){steps.forEach(s=>s.style.display="");v.classList.remove("on");}
+  $$("button[data-a]",box).forEach(b=>b.onclick=()=>{
+    const [t,d]=V[b.dataset.a];
+    v.innerHTML="<b>→ "+t+"</b>"+d; v.classList.add("on");
+    steps.forEach(s=>s.style.display="none");
+  });
+  $("#decReset").onclick=reset;
+})();
+
+/* ══ flashcards ══ */
+const CARDS=[
+ ["¿Qué es MCP?","Una <strong>capa de comunicación</strong> que aporta a Claude contexto y herramientas <strong>sin obligarte a escribir código tedioso</strong>."],
+ ["El valor central de MCP","<strong>Traslada la creación de herramientas del desarrollador de la aplicación al mantenedor del servidor MCP.</strong>"],
+ ["¿Qué es un servidor MCP?","Una <strong>interfaz a un servicio externo</strong> que envuelve su funcionalidad en <strong>herramientas ya construidas</strong>. Contiene tools, resources y prompts."],
+ ["¿Quién escribe los servidores MCP?","<strong>Cualquiera</strong>, pero a menudo los <strong>propios proveedores del servicio</strong> crean implementaciones oficiales."],
+ ["¿MCP sustituye al tool use?","<strong>No: son complementarios.</strong> MCP se centra en <strong>quién hace el trabajo</strong> de crear las herramientas."],
+ ["¿Qué es un cliente MCP?","La <strong>interfaz de comunicación</strong> entre tu servidor y el servidor MCP, que te da acceso a sus herramientas."],
+ ["⚠ ¿Ejecuta el cliente MCP las herramientas?","<strong>No.</strong> Actúa de <strong>intermediario</strong>: facilita la comunicación entre tu servidor y el servidor MCP, que es quien las ejecuta."],
+ ["Transporte de MCP","<strong>Agnóstico:</strong> stdin/stdout, HTTP, WebSockets. Lo habitual es <strong>misma máquina por stdin/stdout</strong>."],
+ ["Los cuatro mensajes clave","<code>list tools request</code> / <code>list tools result</code> · <code>call tool request</code> / <code>call tool result</code>."],
+ ["¿Qué genera el SDK a partir de tu función?","<strong>El JSON Schema</strong>, automáticamente, desde la función decorada con <code>@mcp.tool</code>. Elimina escribirlo a mano."],
+ ["El patrón de definición de una tool","<strong>decorador → función → tipado de parámetros → validación → lógica.</strong> Con <code>Field()</code> de pydantic para describir argumentos."],
+ ["Las dos tools del proyecto","<code>read_doc_contents</code> (recibe <code>doc_id</code>) y <code>edit_document</code> (<code>doc_id</code>, <code>old_string</code>, <code>new_string</code>). Ambas <strong>lanzan <code>ValueError</code></strong> si el documento no existe."],
+ ["¿Cómo pruebas un servidor MCP sin aplicación?","Con el <strong>MCP Inspector</strong>: <code>mcp dev fichero_servidor.py</code> abre un <strong>depurador en el navegador</strong>."],
+ ["El flujo del inspector","<strong>Connect</strong> → secciones <strong>Resources / Prompts / Tools</strong> → clic en la herramienta → parámetros → <strong>Run Tool</strong> → verificar salida."],
+ ["Client Session vs MCP Client","<strong>Client Session</strong> = la conexión real del SDK, <strong>requiere limpieza al cerrar</strong>. <strong>MCP Client</strong> = clase envoltorio que gestiona conexión y limpieza."],
+ ["Las dos funciones del cliente","<code>list_tools()</code> → <code>result.tools</code> · <code>call_tool(nombre, entrada)</code>."],
+ ["¿Qué son los resources?","Funcionalidad del servidor que <strong>expone datos al cliente para operaciones de lectura</strong>."],
+ ["Los dos tipos de resource","<strong>Directo/estático</strong> con URI fija (<code>docs://documents</code>) y <strong>con plantilla</strong> con comodines (<code>documents/{doc_id}</code>)."],
+ ["Resources con plantilla","Los <strong>parámetros de la URI se convierten automáticamente en argumentos con nombre</strong> de la función."],
+ ["¿Para qué sirve el MIME type?","Es una <strong>pista para el cliente</strong> sobre el formato devuelto, <strong>para saber cómo deserializarlo</strong>."],
+ ["Cómo lee un resource el cliente","<code>read_resource(AnyUrl(uri))</code> → el dato está en <strong><code>result.contents[0]</code></strong>. Si <code>mime_type == \"application/json\"</code> → <code>json.loads</code>; si no → texto plano."],
+ ["Patrón habitual de resources","<strong>Uno por cada operación de lectura distinta</strong> — listar elementos vs. traer uno solo."],
+ ["El resultado clave de los resources","<strong>Ya no hacen falta herramientas para leer el contenido de los documentos durante el chat</strong>: se incluye solo en el prompt."],
+ ["¿Qué son los prompts en MCP?","<strong>Instrucciones ya escritas y probadas</strong> que el servidor expone al cliente, invocables con <strong>slash commands</strong> (<code>/format</code>)."],
+ ["El beneficio de los MCP prompts","Los <strong>autores del servidor</strong> crean prompts <strong>optimizados y probados</strong> para su dominio, en vez de dejar la calidad en manos del usuario final."],
+ ["Cómo se define un prompt","Decorador <code>@prompt</code> con nombre y descripción; la función recibe argumentos y <strong>devuelve una lista de mensajes</strong> usuario/asistente."],
+ ["Las dos funciones de prompts del cliente","<code>list_prompts()</code> → <code>result.prompts</code> · <code>get_prompt(nombre, argumentos)</code> → <code>result.messages</code>."],
+ ["El flujo de los argumentos de un prompt","Cliente → <strong>argumentos con nombre</strong> de la función → <strong>interpolados en la plantilla</strong> → <strong>array de mensajes</strong> para el modelo."],
+ ["⭐ Tools: quién las controla","<strong>El modelo.</strong> Claude decide cuándo ejecutarlas. <strong>Sirven al modelo</strong>, añadiéndole capacidades."],
+ ["⭐ Resources: quién los controla","<strong>El código de la aplicación</strong> decide cuándo traer los datos. <strong>Sirven a la app</strong>, para la interfaz o el prompt."],
+ ["⭐ Prompts: quién los controla","<strong>El usuario</strong>, con un clic o un slash command. <strong>Sirven al usuario</strong>, con flujos predefinidos."],
+ ["La regla de decisión del curso","<strong>¿Capacidades para Claude? → tools. ¿Datos para tu app? → resources. ¿Flujos para el usuario? → prompts.</strong>"],
+ ["Los tres ejemplos reales en Claude","<strong>Botones de inicio de chat</strong> = prompts · <strong>documentos de Google Drive</strong> = resources · <strong>ejecución de código</strong> = tools."],
+ ["El proyecto del curso","CLI que implementa <strong>cliente y servidor a la vez</strong> (algo que no se hace en la vida real, es didáctico), con documentos <strong>solo en memoria</strong>."]
+];
+(function(){
+  const grid=$("#cardGrid"); if(!grid) return;
+  function paint(list){
+    grid.innerHTML="";
+    list.forEach(([f,b])=>{
+      const el=document.createElement("button"); el.className="card";
+      el.innerHTML='<div class="inner"><div class="f">'+f+'</div><div class="b">'+b+'</div></div>';
+      el.onclick=()=>el.classList.toggle("flip");
+      grid.appendChild(el);
+    });
+  }
+  paint(CARDS);
+  $("#flipAll").onclick=()=>{
+    const any=$$(".card",grid).some(c=>!c.classList.contains("flip"));
+    $$(".card",grid).forEach(c=>c.classList.toggle("flip",any));
+  };
+  $("#shuffleCards").onclick=()=>{
+    const a=[...CARDS];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    paint(a);
+  };
+})();
+
+/* ══ quiz ══ */
+const QUIZ=[
+ {q:"En una frase, ¿qué carga te quita MCP de encima?",
+  o:["Tener que alojar tu propio servidor de aplicación",
+     "Escribir y mantener los esquemas y funciones de herramienta de cada integración",
+     "Pagar los tokens que consumen las llamadas a herramienta",
+     "Gestionar el historial de conversación con Claude"],
+  a:1, e:"El enfoque tradicional te obliga a <strong>escribir a mano los esquemas y las funciones</strong> de cada servicio — un chatbot de GitHub necesitaría herramientas para repos, PRs, issues y proyectos. MCP <strong>traslada ese trabajo al mantenedor del servidor MCP</strong>."},
+
+ {q:"Un compañero dice que MCP viene a sustituir al tool use. ¿Qué le respondes?",
+  o:["Que sí: con MCP ya no hay herramientas de por medio",
+     "Que son complementarios; MCP se centra en quién hace el trabajo de crear las herramientas",
+     "Que MCP solo sirve para resources y prompts, no para tools",
+     "Que MCP es una alternativa más lenta pero más segura"],
+  a:1, e:"Es una de las tres preguntas frecuentes que responde la lección 1. <strong>MCP y tool use son complementarios, no lo mismo.</strong> En ambos casos sigue habiendo herramientas: MCP decide <strong>quién las escribe y las mantiene</strong>."},
+
+ {q:"¿Quién ejecuta realmente una herramienta en el flujo de MCP?",
+  o:["El cliente MCP",
+     "Tu servidor de aplicación",
+     "El servidor MCP",
+     "Claude, directamente"],
+  a:2, e:"<strong>El servidor MCP</strong> — es quien hace la llamada real al API de GitHub, por ejemplo. El <strong>cliente MCP no ejecuta nada</strong>: actúa de <strong>intermediario</strong> que facilita la comunicación."},
+
+ {q:"¿Sobre qué protocolos pueden comunicarse cliente y servidor MCP?",
+  o:["Solo stdin/stdout, por eso deben estar en la misma máquina",
+     "Solo HTTP, para permitir servidores remotos",
+     "Varios: es agnóstico del transporte (stdin/stdout, HTTP, WebSockets)",
+     "Solo WebSockets, porque necesita comunicación bidireccional"],
+  a:2, e:"MCP es <strong>agnóstico del transporte</strong>. El montaje habitual del curso es <strong>ambos en la misma máquina por stdin/stdout</strong>, pero no es la única opción."},
+
+ {q:"Defines una tool con <code>@mcp.tool</code> y parámetros tipados. ¿Qué te ahorra el SDK?",
+  o:["Escribir el JSON Schema a mano: lo auto-genera desde la función",
+     "Validar que los documentos existen antes de operar",
+     "Gestionar la limpieza de recursos de la sesión",
+     "Registrar la herramienta en el cliente"],
+  a:0, e:"El SDK de Python <strong>auto-genera los JSON Schema a partir de las funciones decoradas</strong>, permite crear el servidor en una línea y elimina la escritura manual. Usas <code>Field()</code> de pydantic para describir cada argumento."},
+
+ {q:"Quieres probar tu servidor MCP pero aún no tienes aplicación cliente. ¿Qué usas?",
+  o:["Un arnés de pruebas que llame a call_tool directamente",
+     "El MCP Inspector, con <code>mcp dev fichero_servidor.py</code>",
+     "El modo debug de Claude Code",
+     "Un servidor HTTP temporal que simule al cliente"],
+  a:1, e:"El <strong>MCP Inspector</strong> es un <strong>depurador en el navegador</strong> para probar servidores <strong>sin conectarlos a ninguna aplicación</strong>: Connect → sección Tools → parámetros → <em>Run Tool</em>. Es esencial antes de desplegar."},
+
+ {q:"¿Por qué se envuelve la Client Session en una clase mayor en vez de usarla directamente?",
+  o:["Para poder conectar con varios servidores a la vez",
+     "Para gestionar la limpieza de recursos al cerrar la conexión",
+     "Porque el SDK no expone la sesión públicamente",
+     "Para poder cambiar de transporte en caliente"],
+  a:1, e:"La <strong>Client Session es la conexión real y requiere limpieza al cerrar</strong>. La clase envoltorio la gestiona con <code>connect</code>, <code>cleanup</code>, <code>async enter</code> y <code>async exit</code>, y de paso <strong>expone la funcionalidad del servidor al resto de tu código</strong>."},
+
+ {q:"Defines un resource con la URI <code>documents/{doc_id}</code>. ¿Qué pasa con <code>doc_id</code>?",
+  o:["Hay que parsearlo a mano desde la cadena de la URI",
+     "El SDK lo convierte automáticamente en un argumento con nombre de la función",
+     "Se ignora: los resources con plantilla no reciben parámetros",
+     "Se pasa como parte del MIME type"],
+  a:1, e:"En los <strong>resources con plantilla</strong>, <strong>los parámetros de la URI se convierten automáticamente en argumentos con nombre</strong> de la función que los atiende. Es la diferencia con los directos, de URI fija como <code>docs://documents</code>."},
+
+ {q:"¿Qué función cumple el MIME type de un resource?",
+  o:["Restringe qué clientes pueden leerlo",
+     "Determina si el resource es directo o con plantilla",
+     "Es una pista para que el cliente sepa cómo deserializar los datos",
+     "Define el formato en que el servidor debe almacenarlos"],
+  a:2, e:"El SDK <strong>serializa a cadenas automáticamente</strong>, así que el cliente necesita saber qué está recibiendo. Por eso comprueba <code>resource.mime_type</code>: si es <code>application/json</code> hace <code>json.loads</code>, si no devuelve el texto plano."},
+
+ {q:"Implementas resources para los documentos. ¿Qué deja de hacer falta?",
+  o:["Herramientas para leer el contenido de los documentos durante el chat",
+     "El cliente MCP, porque los resources se leen directamente",
+     "El inspector, porque los resources no se pueden probar",
+     "El decorador @mcp.tool en todo el servidor"],
+  a:0, e:"Ese es el resultado clave de la lección: el usuario selecciona documentos desde la CLI y <strong>el contenido se incluye automáticamente en el prompt</strong>. Es también el contraste que ordena las primitivas: <strong>los resources traen datos, las tools ejecutan acciones</strong>."},
+
+ {q:"¿Quién escribe los prompts que expone un servidor MCP, y por qué importa?",
+  o:["El usuario final, porque conoce mejor su caso de uso",
+     "Los autores del servidor: son prompts optimizados y ya probados para ese dominio",
+     "Claude, generándolos dinámicamente según la petición",
+     "El cliente, que los cachea tras la primera invocación"],
+  a:1, e:"El beneficio es precisamente <strong>no dejar la calidad del prompt en manos del usuario final</strong>. Los autores del servidor <strong>encapsulan su experiencia en prompt engineering del dominio</strong>, y el cliente los invoca con slash commands como <code>/format</code>."},
+
+ {q:"En la clasificación del curso, ¿qué distingue a las tres primitivas entre sí?",
+  o:["El formato de los datos que devuelven",
+     "Quién decide cuándo se usan",
+     "Si requieren o no conexión de red",
+     "El decorador que las define en el SDK"],
+  a:1, e:"Es la idea que ordena todo el curso: <strong>tools = controladas por el modelo</strong> (sirven al modelo), <strong>resources = controlados por la aplicación</strong> (sirven a la app), <strong>prompts = controlados por el usuario</strong> (le sirven a él). <strong>El patrón de control determina el propósito.</strong>"},
+
+ {q:"Tu app necesita mostrar un desplegable con los documentos disponibles para que el usuario elija. ¿Qué primitiva?",
+  o:["Una tool, para que Claude liste los documentos cuando haga falta",
+     "Un resource: es tu código de aplicación el que decide cuándo traer los datos",
+     "Un prompt, porque lo dispara el usuario al abrir el desplegable",
+     "Una tool y un prompt combinados"],
+  a:1, e:"Es exactamente el ejemplo real que da el curso: <strong>la selección de documentos de Google Drive usa resources</strong>. La clave no es quién hace clic, sino <strong>quién decide cuándo se traen los datos</strong> — y aquí es tu código, para pintar la interfaz."},
+
+ {q:"Los botones de inicio de conversación en la interfaz de Claude, ¿qué primitiva son?",
+  o:["Tools, porque Claude ejecuta algo al pulsarlos",
+     "Resources, porque cargan contenido predefinido",
+     "Prompts, porque los dispara el usuario con un clic",
+     "No son ninguna primitiva de MCP"],
+  a:2, e:"Es uno de los tres ejemplos reales de la lección final. <strong>Prompts = primitivas controladas por el usuario</strong>, disparadas por acciones como pulsar un botón o escribir un slash command, y sirven para <strong>flujos de trabajo predefinidos</strong>."}
+];
+function mountQuiz(boxSel,data,key,numSel,labSel,resetSel){
+  const box=$(boxSel); if(!box) return;
+  const KEYS="ABCD";
+  let answers=LS.get(key,{});
+  function render(){
+    box.innerHTML="";
+    data.forEach((q,i)=>{
+      const d=document.createElement("div"); d.className="quiz-q";
+      d.innerHTML='<div class="qn">Pregunta '+(i+1)+' / '+data.length+'</div><div class="qt">'+q.q+'</div>';
+      const ul=document.createElement("div"); ul.className="opts";
+      q.o.forEach((t,j)=>{
+        const b=document.createElement("button"); b.className="opt";
+        b.innerHTML='<span class="k">'+KEYS[j]+'</span><span>'+t+'</span>';
+        b.onclick=()=>{ if(answers[i]!==undefined) return; answers[i]=j; LS.set(key,answers); render(); score(); };
+        ul.appendChild(b);
+      });
+      d.appendChild(ul);
+      const ex=document.createElement("div"); ex.className="expl";
+      ex.innerHTML='<b>'+(answers[i]===q.a?"✓ Correcto. ":"✗ La correcta es "+KEYS[q.a]+". ")+'</b>'+q.e;
+      d.appendChild(ex);
+      if(answers[i]!==undefined){
+        [...ul.children].forEach((b,j)=>{
+          b.disabled=true;
+          if(j===q.a)b.classList.add("ok"); else if(j===answers[i])b.classList.add("ko");
+        });
+        ex.classList.add("on");
+      }
+      box.appendChild(d);
+    });
+  }
+  function score(){
+    const done=Object.keys(answers).length;
+    const ok=Object.entries(answers).filter(([i,v])=>data[i].a===+v).length;
+    $(numSel).textContent=ok+" / "+data.length;
+    const lab=$(labSel);
+    if(!done){lab.textContent="Aún no has contestado";return;}
+    const pct=Math.round(ok/done*100), full=done===data.length;
+    const thr=Math.ceil(data.length*0.85), mid=Math.ceil(data.length*0.65);
+    lab.innerHTML=done+" contestadas · "+pct+"% de acierto"+
+      (full?(ok>=thr?" · <b style='color:var(--good)'>listo para la evaluación oficial</b>"
+        :ok>=mid?" · repasa las falladas y vuelve":" · vuelve a leer los capítulos de las falladas"):"");
+  }
+  $(resetSel).onclick=()=>{answers={};LS.set(key,answers);render();score();box.scrollIntoView({behavior:"smooth",block:"start"});};
+  render(); score();
+}
+mountQuiz("#quizBox",QUIZ,"quiz","#scoreNum","#scoreLab","#quizReset");
+
+/* ══ progreso ══ */
+(function(){
+  const CH=["c1","c2","c3","c4","c5","c6","c7"];
+  let read=LS.get("read",{});
+  function sync(){
+    const n=CH.filter(c=>read[c]).length;
+    $("#meterBar").style.width=(n/CH.length*100)+"%";
+    $("#meterLab").textContent=n+" / "+CH.length;
+    CH.forEach(c=>{const a=$('[data-nav="'+c+'"]'); if(a)a.classList.toggle("done",!!read[c]);});
+    $$(".readbar[data-read]").forEach(bar=>{
+      const k=bar.dataset.read; if(!CH.includes(k))return;
+      const on=!!read[k];
+      bar.classList.toggle("done",on);
+      $(".txt",bar).textContent=on?"✓ Leído":"¿Capítulo asimilado?";
+      $(".btn",bar).textContent=on?"Desmarcar":"Marcar como leído";
+    });
+  }
+  $$(".readbar[data-read] .btn").forEach(b=>{
+    b.onclick=()=>{const k=b.closest(".readbar").dataset.read;read[k]=!read[k];LS.set("read",read);sync();};
+  });
+  $("#resetBtn").onclick=()=>{read={};LS.set("read",read);LS.set("quiz",{});sync();location.reload();};
+  sync();
+})();
+
+/* ══ scrollspy ══ */
+(function(){
+  const links=$$("#side a"), map={};
+  links.forEach(a=>map[a.dataset.nav]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const a=map[e.target.id]; if(a)a.classList.add("active");
+      }
+    });
+  },{rootMargin:"-70px 0px -70% 0px",threshold:0});
+  $$("main section").forEach(s=>obs.observe(s));
+})();
+
+/* ══ buscador ══ */
+(function(){
+  const inp=$("#search"), secs=$$("main section"), nores=$("#nores"), hrs=$$("main hr");
+  const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  inp.oninput=()=>{
+    const q=norm(inp.value.trim());
+    if(!q){secs.forEach(s=>s.classList.remove("hidden"));hrs.forEach(h=>h.style.display="");nores.classList.remove("on");return;}
+    let any=false;
+    secs.forEach(s=>{
+      const hay=norm((s.dataset.title||"")+" "+s.textContent).includes(q);
+      s.classList.toggle("hidden",!hay); if(hay)any=true;
+    });
+    hrs.forEach(h=>h.style.display="none");
+    nores.classList.toggle("on",!any);
+  };
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();inp.focus();inp.select();}
+    if(e.key==="Escape"&&document.activeElement===inp){inp.value="";inp.dispatchEvent(new Event("input"));inp.blur();}
+  });
+})();
+</script>
+</body>
+</html>

@@ -13,6 +13,7 @@ Cada curso trae **un `.md` por lección** para leer en el editor, y **un `curso-
 | **[MCP: Advanced Topics](model-context-protocol-advanced-topics/)** | 8 | Sampling · Log y progreso · Roots · Mensajes JSON · STDIO · StreamableHTTP · SSE en profundidad · stateless_http y json_response |
 | **[Claude with the Anthropic API](claude-with-the-anthropic-api/)** | 85 | API y modelos · Evals · Prompt engineering · Tool use · RAG · Funcionalidades · Prompt caching · MCP · Claude Code · Agentes y workflows |
 | **[Introduction to Agent Skills](introduction-to-agent-skills/)** | 6 | Qué son · Crearlas · Configuración y multi-fichero · Vs. otras funcionalidades · Compartir · Diagnóstico |
+| **[Introduction to Model Context Protocol](introduction-to-model-context-protocol/)** | 11 | Qué es MCP · Clientes · Tools e inspector · Implementar un cliente · Resources · Prompts · Las tres primitivas |
 
 > **[▶ index.html](index.html)** — página de inicio para navegar entre los cursos, con tu progreso de cada uno. Ábrela con doble clic.
 
@@ -59,6 +60,16 @@ Una skill es un fichero markdown que le enseña a Claude cómo hacer algo **una 
 Todo el curso gravita sobre un campo, la **`description`**: decide si la skill se activa —por coincidencia semántica— y es donde está el problema cuando algo falla.
 
 Este curso no tiene quiz oficial; el repo incluye una autoevaluación de 14 preguntas.
+
+### Introduction to Model Context Protocol
+
+[Curso original](https://anthropic.skilljar.com/introduction-to-model-context-protocol)
+
+MCP traslada el trabajo de escribir esquemas y funciones de herramienta **del desarrollador de la aplicación al mantenedor del servidor MCP**. Un servidor tiene tres primitivas, y la lección final las ordena con una idea que lo aclara todo: **se distinguen por quién decide cuándo se usan** — el modelo (tools), la aplicación (resources) o el usuario (prompts).
+
+La **evaluación final oficial** está pendiente de hacer.
+
+> **Orden sugerido:** este curso primero, y luego [MCP: Advanced Topics](model-context-protocol-advanced-topics/) para sampling, roots, transportes y los flags que rompen el despliegue.
 
 ## Estructura
 
