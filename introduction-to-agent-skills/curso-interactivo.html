@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introduction to Agent Skills — Curso interactivo</title>
+<style>
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --surface-2:#F4F2EC;
+  --ink:#1F1E1D; --ink-2:#4A4742; --muted:#7A756D;
+  --accent:#C15F3C; --accent-soft:#F6E7E0; --accent-ink:#8F3F24; --on-accent:#FFFFFF;
+  --border:#E4DFD6; --border-strong:#CFC8BC;
+  --good:#2E7D5B; --good-soft:#E3F1EA;
+  --warn:#9A6B08; --warn-soft:#FAF0DA;
+  --bad:#AE3323; --bad-soft:#FAE6E2;
+  --info:#2C5F8A; --info-soft:#E3EDF6;
+  --code-bg:#F1EEE7;
+  --shadow:0 1px 2px rgba(31,30,29,.05),0 8px 24px -12px rgba(31,30,29,.18);
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#171614; --surface:#201F1C; --surface-2:#2A2825;
+  --ink:#F2EFE7; --ink-2:#D3CEC4; --muted:#9A948A;
+  --accent:#E0876A; --accent-soft:#3A2A22; --accent-ink:#F0A98F; --on-accent:#1C1A17;
+  --border:#34322D; --border-strong:#47443E;
+  --good:#6DC49B; --good-soft:#1E322A;
+  --warn:#DFAE4E; --warn-soft:#332A18;
+  --bad:#E88476; --bad-soft:#372220;
+  --info:#7FB0DB; --info-soft:#1C2A36;
+  --code-bg:#26241F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px}
+#topbar .brand{font-weight:650;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+#topbar .brand small{color:var(--muted);font-weight:450;display:block;font-size:11.5px;letter-spacing:.02em}
+.tb-spacer{flex:1}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+#search{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;width:230px}
+#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#search::placeholder{color:var(--muted)}
+.meter-wrap{display:flex;align-items:center;gap:9px}
+.meter{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.meter-lab{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1420px;margin:0 auto;padding-top:60px}
+#side{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:24px 14px 60px 20px;border-right:1px solid var(--border)}
+#side::-webkit-scrollbar{width:8px}
+#side::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+.side-h{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:650;margin:18px 0 8px 10px}
+.side-h:first-child{margin-top:0}
+#side a{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:9px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.4;transition:.13s}
+#side a:hover{background:var(--surface-2);color:var(--ink)}
+#side a.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+#side a .num{flex:none;width:20px;height:20px;border-radius:6px;background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:2px;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+#side a.active .num{background:var(--accent);color:var(--on-accent);border-color:transparent}
+#side a.done .num{background:var(--good-soft);color:var(--good);border-color:transparent}
+#side a.done .num::after{content:"✓"}
+#side a.done .num span{display:none}
+main{padding:36px 44px 120px;max-width:900px;min-width:0}
+#shell>*{min-width:0}
+section{margin-bottom:14px;scroll-margin-top:80px}
+section.hidden{display:none}
+h1{font-family:var(--serif);font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px}
+h2{font-family:var(--serif);font-size:29px;line-height:1.2;letter-spacing:-.018em;margin:0 0 6px}
+h3{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;font-weight:650}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{color:var(--ink);font-weight:640}
+a.ext{color:var(--accent-ink)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);padding:.13em .38em;border-radius:5px;color:var(--accent-ink);border:1px solid var(--border)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:13.2px;line-height:1.6}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px;font-family:var(--serif)}
+.box{border-radius:var(--radius);padding:16px 18px;margin:0 0 18px;border:1px solid var(--border);background:var(--surface)}
+.box .bh{display:flex;align-items:center;gap:8px;font-weight:680;font-size:13.5px;margin-bottom:7px}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.box.key{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.box.key .bh{color:var(--accent-ink)}
+.box.trap{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.box.trap .bh{color:var(--bad)}
+.box.tip{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 28%,transparent)}
+.box.tip .bh{color:var(--good)}
+.box.note{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 26%,transparent)}
+.box.note .bh{color:var(--info)}
+.box.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.box.warn .bh{color:var(--warn)}
+blockquote{margin:0 0 18px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55}
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+th{font-weight:640;color:var(--ink);background:var(--surface-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.widget{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.widget-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:680;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.widget-t::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:560;cursor:pointer;transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--border-strong);color:var(--ink)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl{display:flex;gap:0;margin-bottom:18px;position:relative;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--border)}
+.tl button{position:relative;flex:1;min-width:96px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tl .dot{width:40px;height:40px;border-radius:99px;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:16px;transition:.2s;z-index:1}
+.tl button:hover .dot{border-color:var(--border-strong)}
+.tl button[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:scale(1.12)}
+.tl .lab{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+.tl button[aria-selected="true"] .lab{color:var(--accent-ink)}
+.ad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.ad{grid-template-columns:1fr}}
+.ad>div{border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.ad .yes{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.ad .no{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.ad h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.ad .yes h5{color:var(--good)}
+.ad .no h5{color:var(--bad)}
+.ad ul{margin:0;padding-left:18px;font-size:13.8px}
+.ad li{margin-bottom:4px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+.scale-labs{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:-8px 2px 16px}
+.btn{font-family:inherit;font-size:14px;font-weight:580;cursor:pointer;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--border-strong);background:var(--surface)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.q-step{margin-bottom:14px}
+.q-step p{font-weight:600;color:var(--ink);margin-bottom:9px}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:11px;border:1px solid var(--border);background:var(--surface-2);display:none}
+.verdict.on{display:block;animation:fade .3s}
+.verdict b{font-size:17px;display:block;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{perspective:1000px;height:155px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;overflow:auto}
+.card .f{background:var(--surface);color:var(--ink);font-weight:600}
+.card .b{background:var(--accent-soft);color:var(--accent-ink);transform:rotateY(180deg);font-size:13.5px;font-weight:500}
+.card .f::after{content:"clic para girar";position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);font-weight:400}
+.quiz-group{position:relative}
+.quiz-q{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin-bottom:14px}
+.quiz-q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.quiz-q .qt{font-weight:620;color:var(--ink);margin-bottom:13px;font-size:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;font-family:inherit;font-size:14.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:10px 13px;color:var(--ink-2);transition:.15s;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--border-strong);color:var(--ink)}
+.opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.ok .k{background:var(--good);color:var(--surface);border-color:transparent}
+.opt.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opt.ko .k{background:var(--bad);color:var(--surface);border-color:transparent}
+.opt:disabled{cursor:default}
+.expl{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:14px;color:var(--ink-2);display:none}
+.expl.on{display:block;animation:fade .25s}
+.expl b{color:var(--ink)}
+.score{position:sticky;bottom:16px;margin-top:20px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score .lab{font-size:13px;color:var(--muted);line-height:1.4}
+.readbar{display:flex;align-items:center;gap:12px;margin:30px 0 8px;padding:14px 16px;border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--surface);flex-wrap:wrap}
+.readbar.done{border-style:solid;background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.readbar .txt{font-size:14px;color:var(--muted);flex:1;min-width:160px}
+.readbar.done .txt{color:var(--good);font-weight:600}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.grid2>*{min-width:0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.mini{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.mini h5{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+.mini p{margin:0;font-size:14px}
+.vid{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:5px 13px;background:var(--surface);transition:.15s}
+.vid:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hero-stats{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 8px}
+.hero-stats div span{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.hero-stats div small{font-size:12.5px;color:var(--muted)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+.map a,.map .mini{text-decoration:none}
+.map a{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.18s;display:block}
+.map a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.map .t{font-weight:640;color:var(--ink);font-size:15px;line-height:1.35}
+.map .d{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── flow diagram ── */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:stretch;margin-bottom:16px}
+@media(max-width:700px){.flow{grid-template-columns:1fr}}
+.flow .col{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.flow .col.main{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft)}
+.flow .col h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.flow .col.main h5{color:var(--accent-ink)}
+.flow .arrow{display:grid;place-items:center;padding:0 14px;color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+@media(max-width:700px){.flow .arrow{padding:10px 0}}
+.flow ul{margin:0;padding-left:17px;font-size:13.5px}
+.flow li{margin-bottom:3px}
+.discard{text-decoration:line-through;color:var(--muted);opacity:.7}
+/* ── config builder ── */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.cfg-ctl,.cfg-out{min-width:0}
+@media(max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.cfg-ctl label:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:inherit;font-size:13px;font-weight:560;cursor:pointer;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);transition:.15s}
+.seg button:hover{border-color:var(--border-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.cfg-out pre{margin:0;height:100%}
+.cfg-hint{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;border-left:2px solid var(--border-strong);padding-left:12px}
+/* ── diagrama de flujo de mensajes ── */
+.msg{display:grid;grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);gap:0;align-items:center;margin-bottom:14px}
+@media(max-width:700px){.msg{grid-template-columns:minmax(0,1fr)}}
+.msg .node{border:1px solid var(--border);border-radius:12px;padding:13px 15px;background:var(--surface-2);min-width:0}
+.msg .node.hl{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.msg .node h5{margin:0 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.msg .node.hl h5{color:var(--accent-ink)}
+.msg .node p{margin:0;font-size:13.5px}
+.msg .link{display:grid;place-items:center;gap:3px;padding:0 8px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+.msg .link .ar{font-size:19px;color:var(--accent);line-height:1}
+.msg .link.dead .ar{color:var(--bad)}
+.msg .link.dead{color:var(--bad)}
+/* ── tabla comparativa de flags ── */
+.flags td.y{color:var(--good);font-weight:640}
+.flags td.n{color:var(--bad);font-weight:640}
+.flags td.c{text-align:center}
+/* ── flujo numerado ── */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.steps .st{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:11px;padding:12px 14px;background:var(--surface);min-width:0}
+.steps .st::before{counter-increment:s;content:counter(s);flex:none;width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.steps .st p{margin:0;font-size:14.3px}
+.steps .st b{color:var(--ink)}
+/* ── constructor de SKILL.md ── */
+.sk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media(max-width:820px){.sk{grid-template-columns:minmax(0,1fr)}}
+.sk-ctl,.sk-out{min-width:0}
+.sk-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.sk-ctl label:first-child{margin-top:0}
+.sk-out pre{margin:0}
+.tree{font-family:var(--mono);font-size:12.8px;line-height:1.7;color:var(--ink-2);background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin:0 0 16px;overflow-x:auto}
+.tree b{color:var(--accent-ink);font-weight:600}
+.tree i{color:var(--muted);font-style:normal}
+/* ── jerarquía de prioridad ── */
+.prio{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.prio .lvl{display:flex;align-items:center;gap:12px;border:1px solid var(--border);border-radius:10px;padding:11px 14px;background:var(--surface-2);min-width:0}
+.prio .lvl.win{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.prio .lvl.lose{opacity:.55}
+.prio .n{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted);font-family:var(--mono)}
+.prio .lvl.win .n{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.prio .nm{font-weight:620;font-size:14.5px}
+.prio .lvl.win .nm{color:var(--accent-ink)}
+.prio .pa{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ── créditos ── */
+footer.credits{margin:60px 0 0;padding:24px 0 0;border-top:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.6}
+footer.credits strong{color:var(--ink-2);font-weight:640}
+footer.credits a{color:var(--accent-ink);text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);text-underline-offset:2px}
+footer.credits .who{font-size:14.5px;color:var(--ink-2);margin-bottom:10px}
+footer.credits .src{padding-left:13px;border-left:2px solid var(--border-strong)}
+
+.nores{padding:30px;text-align:center;color:var(--muted);display:none}
+.nores.on{display:block}
+@media(max-width:960px){
+  #shell{grid-template-columns:1fr}
+  #side{display:none}
+  main{padding:26px 20px 100px}
+  #search{width:140px}
+  .meter-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">Introduction to Agent Skills<small>Anthropic Academy · resumen interactivo</small></div>
+  <div class="tb-spacer"></div>
+  <div class="meter-wrap"><div class="meter"><i id="meterBar"></i></div><span class="meter-lab" id="meterLab">0 / 6</span></div>
+  <input id="search" type="search" placeholder="Buscar… (⌘/Ctrl+K)" autocomplete="off">
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  <button class="icon-btn" id="resetBtn" title="Reiniciar progreso">↺</button>
+</div>
+
+<div id="shell">
+<nav id="side">
+  <div class="side-h">Inicio</div>
+  <a href="#intro" data-nav="intro"><span class="num"><span>★</span></span> Mapa del curso</a>
+  <div class="side-h">Lecciones</div>
+  <a href="#c1" data-nav="c1"><span class="num"><span>1</span></span> ¿Qué son las skills?</a>
+  <a href="#c2" data-nav="c2"><span class="num"><span>2</span></span> Crear tu primera skill</a>
+  <a href="#c3" data-nav="c3"><span class="num"><span>3</span></span> Configuración y multi-fichero</a>
+  <a href="#c4" data-nav="c4"><span class="num"><span>4</span></span> Skills vs. otras funcionalidades</a>
+  <a href="#c5" data-nav="c5"><span class="num"><span>5</span></span> Compartir skills</a>
+  <a href="#c6" data-nav="c6"><span class="num"><span>6</span></span> Solución de problemas</a>
+  <div class="side-h">Repaso</div>
+  <a href="#flash" data-nav="flash"><span class="num"><span>◆</span></span> Flashcards</a>
+  <a href="#quiz" data-nav="quiz"><span class="num"><span>?</span></span> Quiz (14 preguntas)</a>
+</nav>
+
+<main>
+<div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
+
+<!-- ═══ INTRO ═══ -->
+<section id="intro" data-title="mapa del curso agent skills introducción">
+  <span class="pill acc">Anthropic Academy</span>
+  <h1 style="margin-top:14px">Introduction to Agent&nbsp;Skills</h1>
+  <p class="lede">Una skill es un fichero markdown que le enseña a Claude cómo hacer algo <strong>una vez</strong>, y que Claude aplica <strong>automáticamente</strong> cuando viene al caso.</p>
+
+  <div class="hero-stats">
+    <div><span>6</span><small>lecciones</small></div>
+    <div><span>2</span><small>campos obligatorios</small></div>
+    <div><span>4</span><small>niveles de prioridad</small></div>
+    <div><span>500</span><small>líneas máx. en SKILL.md</small></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ El problema que resuelven</div>
+    <p style="margin:0">Cada vez que le explicas a Claude los estándares de tu equipo, <strong>te estás repitiendo</strong>. En cada revisión de PR vuelves a describir cómo quieres el feedback. En cada commit le recuerdas tu formato.</p>
+  </div>
+
+  <blockquote>Si te encuentras explicándole lo mismo a Claude una y otra vez, eso es una skill esperando a ser escrita.</blockquote>
+
+  <h3>Lo que las hace distintas</h3>
+  <p>Claude Code tiene varias formas de personalizarse. Las skills son únicas porque son <strong>automáticas y específicas de una tarea</strong>.</p>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>Cuándo se carga</th><th>Quién la dispara</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CLAUDE.md</strong></td><td>En <strong>todas</strong> las conversaciones</td><td>Siempre está</td></tr>
+      <tr><td><strong>Skills</strong></td><td><strong>Bajo demanda</strong>, al coincidir con tu petición</td><td><strong>Claude</strong>, al reconocer la situación</td></tr>
+      <tr><td><strong>Slash commands</strong></td><td>Al invocarlos</td><td><strong>Tú, escribiéndolos</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box tip">
+    <div class="bh">✓ Por qué son baratas en contexto</div>
+    <p style="margin:0">Al arrancar, Claude <strong>solo carga el nombre y la descripción</strong>, no el contenido. Tu checklist de revisión de PR no tiene por qué estar en contexto mientras depuras: <strong>se carga cuando pides una revisión de verdad</strong>.</p>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ La descripción lo es todo</div>
+    <p>Es el campo del que depende absolutamente todo el curso: <strong>decide si la skill se activa</strong>, mediante <strong>coincidencia semántica</strong> contra tu petición. Y cuando algo falla, <strong>el problema casi siempre está ahí</strong> — la lección 6 lo confirma.</p>
+    <p style="margin:0">Una buena descripción responde <strong>dos preguntas: qué hace la skill y cuándo debe usarla Claude.</strong></p>
+  </div>
+
+  <h3>Recorrido</h3>
+  <div class="map">
+    <a href="#c1"><div class="t">1 · ¿Qué son?</div><div class="d">Dónde viven, y en qué se distinguen de CLAUDE.md y los slash commands</div></a>
+    <a href="#c2"><div class="t">2 · Crear la primera</div><div class="d">Frontmatter, emparejamiento semántico y jerarquía de prioridad</div></a>
+    <a href="#c3"><div class="t">3 · Configuración</div><div class="d"><code>allowed-tools</code>, divulgación progresiva y scripts</div></a>
+    <a href="#c4"><div class="t">4 · Vs. lo demás</div><div class="d">CLAUDE.md, subagentes, hooks y MCP: cuál para qué</div></a>
+    <a href="#c5"><div class="t">5 · Compartir</div><div class="d">Repo, plugins, enterprise — y el gotcha de los subagentes</div></a>
+    <a href="#c6"><div class="t">6 · Diagnóstico</div><div class="d">Checklist por síntoma y el validador</div></a>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ Sobre este resumen</div>
+    <p style="margin:0">A diferencia de otros cursos de la academia, <strong>este es de texto</strong>: cada lección tiene su vídeo pero también el contenido escrito completo, con objetivos, conclusiones clave y preguntas de reflexión. <strong>El curso no tiene quiz oficial</strong>; las 14 preguntas de aquí están construidas a partir del material.</p>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 1 ═══ -->
+<section id="c1" data-title="que son las skills SKILL.md frontmatter personales proyecto claude.md slash commands">
+  <div class="chead"><span class="pill acc">Lección 1</span><span class="pill">15 min</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=bjdBVZa66oU" target="_blank" rel="noopener">▶ Vídeo original</a></div>
+  <h2>¿Qué son las skills?</h2>
+  <p class="lede"><strong>Carpetas de instrucciones y recursos</strong> que Claude Code puede descubrir y usar para resolver tareas con más precisión. Cada una vive en un fichero <code>SKILL.md</code>.</p>
+
+  <pre><code>---
+name: pr-review
+description: Reviews pull requests for code quality. Use when reviewing PRs or checking code changes.
+---</code></pre>
+  <p>Bajo el frontmatter escribes las instrucciones reales: tu checklist de revisión, tus preferencias de formato, o lo que Claude necesite saber para esa tarea.</p>
+
+  <h3>Dónde viven</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · personal vs. proyecto</div>
+    <div class="chips" id="locChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="l1">Personales</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="l2">De proyecto</button>
+    </div>
+    <div class="panel on" id="l1">
+      <pre style="margin-bottom:12px"><code>~/.claude/skills/</code></pre>
+      <p><strong>Te siguen a todos tus proyectos:</strong> tu estilo de mensajes de commit, tu formato de documentación, cómo te gusta que te expliquen el código.</p>
+      <p style="margin:0">En Windows: <code>C:/Users/&lt;tu-usuario&gt;/.claude/skills</code></p>
+    </div>
+    <div class="panel" id="l2">
+      <pre style="margin-bottom:12px"><code>&lt;raíz-del-repo&gt;/.claude/skills/</code></pre>
+      <p><strong>Cualquiera que clone el repo las obtiene automáticamente.</strong> Aquí viven los estándares de equipo: guías de marca de tu empresa, tipografías y colores para diseño web.</p>
+      <p style="margin:0">Se <strong>versionan junto al código</strong>, así que todo el equipo las comparte.</p>
+    </div>
+  </div>
+
+  <h3>Cuándo usar skills</h3>
+  <p>Funcionan mejor para <strong>conocimiento especializado que aplica a tareas concretas</strong>:</p>
+  <ul>
+    <li>Estándares de revisión de código de tu equipo</li>
+    <li>Formatos de mensaje de commit que prefieres</li>
+    <li>Guías de marca de tu organización</li>
+    <li>Plantillas de documentación para tipos concretos de documento</li>
+    <li>Checklists de depuración para frameworks concretos</li>
+  </ul>
+  <div class="box key">
+    <div class="bh">◈ La regla de oro</div>
+    <p style="margin:0"><strong>Si te encuentras explicándole lo mismo a Claude una y otra vez, eso es una skill esperando a ser escrita.</strong></p>
+  </div>
+  <div class="readbar" data-read="c1"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 2 ═══ -->
+<section id="c2" data-title="crear primera skill mkdir emparejamiento semántico prioridad enterprise personal project plugins reiniciar">
+  <div class="chead"><span class="pill acc">Lección 2</span><span class="pill">20 min</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=Wx6_vjFFyHM" target="_blank" rel="noopener">▶ Vídeo original</a></div>
+  <h2>Crear tu primera skill</h2>
+  <p class="lede">Una skill personal que enseña a Claude a escribir descripciones de PR en un formato consistente, y que funciona en todos tus proyectos.</p>
+
+  <div class="steps">
+    <div class="st"><p><b>Crea el directorio.</b> El nombre debe coincidir con el de la skill:<br><code>mkdir -p ~/.claude/skills/pr-description</code></p></div>
+    <div class="st"><p><b>Crea el <code>SKILL.md</code> dentro</b>, con el frontmatter y las instrucciones.</p></div>
+    <div class="st"><p><b>Reinicia Claude Code</b> — las skills se cargan al arrancar.</p></div>
+    <div class="st"><p><b>Pruébala:</b> haz cambios en una rama y di <em>"write a PR description for my changes"</em>. El mismo formato siempre.</p></div>
+  </div>
+
+  <pre><code>---
+name: pr-description
+description: Writes pull request descriptions. Use when creating a PR, writing a PR, or when the user asks to summarize changes for a pull request.
+---
+
+When writing a PR description:
+
+1. Run `git diff main...HEAD` to see all changes on this branch
+2. Write a description following this format:
+
+## What
+One sentence explaining what this PR does.
+
+## Why
+Brief context on why this change is needed
+
+## Changes
+- Bullet points of specific changes made
+- Group related changes together
+- Mention any files deleted or renamed</code></pre>
+
+  <h3>Cómo funciona el emparejamiento</h3>
+  <div class="widget">
+    <div class="widget-t">Los cuatro pasos, del arranque a la activación</div>
+    <div class="tl" id="tl2" role="tablist">
+      <button role="tab" aria-selected="true" data-p="e1"><span class="dot">①</span><span class="lab">Escaneo</span></button>
+      <button role="tab" aria-selected="false" data-p="e2"><span class="dot">②</span><span class="lab">Coincidencia</span></button>
+      <button role="tab" aria-selected="false" data-p="e3"><span class="dot">③</span><span class="lab">Confirmación</span></button>
+      <button role="tab" aria-selected="false" data-p="e4"><span class="dot">④</span><span class="lab">Carga</span></button>
+    </div>
+    <div class="panel on" id="e1"><p style="margin:0">Al arrancar, Claude Code <strong>escanea cuatro ubicaciones</strong> buscando skills — pero <strong>solo carga el nombre y la descripción</strong>, no el contenido completo. Es un detalle importante.</p></div>
+    <div class="panel" id="e2">
+      <p>Cuando envías una petición, Claude la compara con las descripciones de todas las skills disponibles.</p>
+      <div class="box key" style="margin:0"><div class="bh">◈ Es coincidencia semántica, no de palabras exactas</div><p style="margin:0"><em>"explain what this function does"</em> emparejaría con una skill descrita como <em>"explain code with visual diagrams"</em>, porque <strong>la intención se solapa</strong>.</p></div>
+    </div>
+    <div class="panel" id="e3"><p style="margin:0">Encontrada la coincidencia, <strong>Claude te pide confirmación</strong> antes de cargarla. Ese paso te mantiene consciente de <strong>qué contexto está incorporando</strong>.</p></div>
+    <div class="panel" id="e4"><p style="margin:0">Tras confirmar, Claude lee el <strong><code>SKILL.md</code> completo</strong> y sigue sus instrucciones.</p></div>
+  </div>
+
+  <h3>Prioridad ante nombres iguales</h3>
+  <p>Si clonas un repositorio con una skill que se llama igual que una tuya personal, ¿cuál gana? Toca cada nivel:</p>
+  <div class="widget">
+    <div class="widget-t">Interactivo · la jerarquía</div>
+    <div class="chips" id="prioChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-v="0">Enterprise</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="1">Personal</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="2">Project</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="3">Plugins</button>
+    </div>
+    <div class="prio" id="prioOut"></div>
+    <div id="prioNote"></div>
+  </div>
+  <div class="box tip">
+    <div class="bh">✓ Cómo evitar conflictos</div>
+    <p style="margin:0"><strong>Usa nombres descriptivos.</strong> En vez de <code>review</code>, algo como <code>frontend-review</code> o <code>backend-review</code>.</p>
+  </div>
+
+  <div class="box trap">
+    <div class="bh">⚠ El ciclo de vida, resumido</div>
+    <p style="margin:0"><strong>Actualizar</strong> → edita el <code>SKILL.md</code>. <strong>Eliminar</strong> → borra el directorio. <strong>En ambos casos, reinicia Claude Code</strong> para que surta efecto.</p>
+  </div>
+  <div class="readbar" data-read="c2"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 3 ═══ -->
+<section id="c3" data-title="configuración allowed-tools model divulgación progresiva scripts references assets 500 líneas">
+  <div class="chead"><span class="pill acc">Lección 3</span><span class="pill">20 min</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=98KaK_rn5rQ" target="_blank" rel="noopener">▶ Vídeo original</a></div>
+  <h2>Configuración y skills multi-fichero</h2>
+  <p class="lede">Los campos del frontmatter, cómo escribir descripciones que disparen de verdad, restringir herramientas, y organizar skills grandes sin llenar el contexto.</p>
+
+  <h3>Constructor de <code>SKILL.md</code></h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · toca las opciones y mira el fichero</div>
+    <div class="sk">
+      <div class="sk-ctl">
+        <label>Tipo de skill</label>
+        <div class="seg" data-g="kind">
+          <button aria-pressed="true" data-v="review">Revisión de PR</button>
+          <button aria-pressed="false" data-v="onboard">Onboarding (solo lectura)</button>
+          <button aria-pressed="false" data-v="brand">Guía de marca</button>
+        </div>
+        <label>Restringir herramientas</label>
+        <div class="seg" data-g="tools">
+          <button aria-pressed="true" data-v="no">Sin <code>allowed-tools</code></button>
+          <button aria-pressed="false" data-v="si">Solo lectura</button>
+        </div>
+        <label>Fijar modelo</label>
+        <div class="seg" data-g="model">
+          <button aria-pressed="true" data-v="no">Heredar</button>
+          <button aria-pressed="false" data-v="sonnet">sonnet</button>
+          <button aria-pressed="false" data-v="haiku">haiku</button>
+        </div>
+        <div class="cfg-hint" id="skHint"></div>
+      </div>
+      <div class="sk-out"><pre><code id="skOut"></code></pre></div>
+    </div>
+  </div>
+
+  <h3>Los campos</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Campo</th><th>Obligatorio</th><th>Detalle</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td><strong>✅</strong></td><td>Solo <strong>minúsculas, números y guiones</strong>. <strong>Máx. 64 caracteres.</strong> Debe coincidir con el nombre del directorio</td></tr>
+      <tr><td><code>description</code></td><td><strong>✅</strong></td><td><strong>Máx. 1.024 caracteres.</strong> El campo más importante: es el que usa Claude para emparejar</td></tr>
+      <tr><td><code>allowed-tools</code></td><td>—</td><td>Restringe qué herramientas puede usar Claude con la skill activa</td></tr>
+      <tr><td><code>model</code></td><td>—</td><td>Qué modelo de Claude usar para la skill</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ Escribir descripciones eficaces</div>
+    <p>Si alguien te dijera <em>"tu trabajo es ayudar con la documentación"</em>, no sabrías qué hacer — <strong>Claude piensa igual</strong>. Una buena descripción responde dos preguntas:</p>
+    <p style="margin:0"><strong>① ¿Qué hace la skill? ② ¿Cuándo debe usarla Claude?</strong></p>
+  </div>
+  <p>Si tu skill no se dispara cuando lo esperas, <strong>añade más palabras clave que coincidan con cómo formulas realmente tus peticiones</strong>. El lenguaje importa.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ Si omites <code>allowed-tools</code></div>
+    <p style="margin:0"><strong>No restringe nada:</strong> Claude usa su modelo de permisos normal.</p>
+  </div>
+
+  <h3>Divulgación progresiva</h3>
+  <p>Las skills <strong>comparten la ventana de contexto</strong> con tu conversación. Meterlo todo en un fichero de 2.000 líneas tiene dos problemas: <strong>ocupa mucho contexto</strong> y <strong>es incómodo de mantener</strong>.</p>
+  <p>La solución: instrucciones esenciales en <code>SKILL.md</code>, y el material detallado en ficheros aparte que Claude lee <strong>solo cuando hacen falta</strong>.</p>
+  <div class="tree">mi-skill/
+├── <b>SKILL.md</b>          <i>bajo 500 líneas</i>
+├── <b>scripts/</b>          <i>código ejecutable</i>
+├── <b>references/</b>       <i>documentación adicional</i>
+└── <b>assets/</b>           <i>imágenes, plantillas, datos</i></div>
+  <p>En <code>SKILL.md</code> enlazas los ficheros de apoyo <strong>con instrucciones claras de cuándo cargarlos</strong>.</p>
+  <blockquote>Claude lee <code>architecture-guide.md</code> solo cuando alguien pregunta por el diseño del sistema. Es como tener un índice en la ventana de contexto en vez del documento entero.</blockquote>
+  <div class="box key"><div class="bh">◈ Regla del pulgar</div><p style="margin:0"><strong>Mantén <code>SKILL.md</code> por debajo de 500 líneas.</strong> Si lo superas, plantéate partir el contenido en ficheros de referencia.</p></div>
+
+  <h3>Scripts</h3>
+  <div class="box tip">
+    <div class="bh">✓ Los scripts no consumen contexto</div>
+    <p style="margin:0">Se <strong>ejecutan sin cargar su contenido</strong>: el script corre y <strong>solo la salida consume tokens</strong>.<br><br><strong>La instrucción clave</strong> que debes poner en tu <code>SKILL.md</code>: dile a Claude que <strong>ejecute</strong> el script, <strong>no que lo lea</strong>.</p>
+  </div>
+  <p>Especialmente útil para <strong>validación del entorno</strong>, <strong>transformaciones de datos</strong> que deben ser consistentes, y <strong>operaciones más fiables como código probado</strong> que como código generado.</p>
+  <div class="readbar" data-read="c3"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 4 ═══ -->
+<section id="c4" data-title="skills vs claude.md subagentes hooks mcp request-driven event-driven">
+  <div class="chead"><span class="pill acc">Lección 4</span><span class="pill">15 min</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=IgNN4v0BJdU" target="_blank" rel="noopener">▶ Vídeo original</a></div>
+  <h2>Skills vs. otras funcionalidades</h2>
+  <p class="lede">Claude Code ofrece cinco opciones de personalización. <strong>Resuelven problemas distintos</strong>, y saber cuándo usar cada una evita que construyas lo que no es.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Funcionalidad</th><th>Se activa por</th><th>Dónde vive el trabajo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CLAUDE.md</strong></td><td>Siempre — en cada conversación</td><td>El contexto actual</td></tr>
+      <tr><td><strong>Skills</strong></td><td><strong>Tu petición</strong> — <em>request-driven</em></td><td>El contexto actual</td></tr>
+      <tr><td><strong>Subagentes</strong></td><td>Delegación explícita</td><td><strong>Un contexto separado</strong></td></tr>
+      <tr><td><strong>Hooks</strong></td><td><strong>Eventos</strong> — <em>event-driven</em></td><td>Fuera de la conversación</td></tr>
+      <tr><td><strong>Servidores MCP</strong></td><td>Herramientas externas</td><td>Otra categoría entera</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · las tres comparaciones que importan</div>
+    <div class="chips" id="cmpChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="v1">vs. CLAUDE.md</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="v2">vs. subagentes</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="v3">vs. hooks</button>
+    </div>
+    <div class="panel on" id="v1">
+      <p><strong>CLAUDE.md se carga en todas las conversaciones, siempre.</strong> <strong>Las skills, bajo demanda.</strong></p>
+      <div class="ad" style="margin:0">
+        <div class="no" style="background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 25%,transparent)"><h5 style="color:var(--info)">Usa CLAUDE.md para</h5><ul>
+          <li>Estándares de proyecto que <strong>siempre</strong> aplican</li>
+          <li>Restricciones como <em>"nunca modifiques el esquema de la base de datos"</em></li>
+          <li>Preferencias de framework y estilo de código</li>
+        </ul></div>
+        <div class="yes"><h5>Usa skills para</h5><ul>
+          <li><strong>Experiencia específica de una tarea</strong></li>
+          <li>Conocimiento que <strong>solo a veces</strong> es relevante</li>
+          <li>Procedimientos que <strong>ensuciarían todas las conversaciones</strong></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="panel" id="v2">
+      <p><strong>Las skills añaden conocimiento a tu conversación actual.</strong> <strong>Los subagentes corren en un contexto separado</strong>: reciben una tarea, trabajan solos y devuelven resultados. Están <strong>aislados</strong>.</p>
+      <div class="ad" style="margin:0">
+        <div class="no" style="background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 25%,transparent)"><h5 style="color:var(--info)">Usa subagentes cuando</h5><ul>
+          <li>Quieres <strong>delegar</strong> a un contexto separado</li>
+          <li>Necesitas <strong>acceso a herramientas distinto</strong></li>
+          <li>Quieres <strong>aislamiento</strong> del trabajo delegado</li>
+        </ul></div>
+        <div class="yes"><h5>Usa skills cuando</h5><ul>
+          <li>Quieres <strong>mejorar el conocimiento</strong> para la tarea actual</li>
+          <li>La experiencia aplica <strong>a lo largo de la conversación</strong></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="panel" id="v3">
+      <p><strong>Los hooks disparan por eventos</strong> — un linter en cada guardado, validación antes de ciertas llamadas. <strong>Las skills disparan por peticiones.</strong></p>
+      <div class="ad" style="margin:0">
+        <div class="no" style="background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 25%,transparent)"><h5 style="color:var(--info)">Usa hooks para</h5><ul>
+          <li>Operaciones en <strong>cada guardado</strong></li>
+          <li><strong>Validación</strong> antes de llamadas concretas</li>
+          <li><strong>Efectos secundarios automáticos</strong></li>
+        </ul></div>
+        <div class="yes"><h5>Usa skills para</h5><ul>
+          <li>Conocimiento que <strong>informa cómo</strong> atiende las peticiones</li>
+          <li>Directrices que <strong>afectan a su razonamiento</strong></li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ Un montaje típico usa las cinco</div>
+    <p style="margin:0"><strong>CLAUDE.md</strong> estándares siempre activos · <strong>skills</strong> experiencia por tarea, bajo demanda · <strong>hooks</strong> operaciones por evento · <strong>subagentes</strong> contextos aislados · <strong>MCP</strong> herramientas externas.<br><br><strong>Cada una gestiona su especialidad. No fuerces todo dentro de las skills cuando otra opción encaja mejor.</strong></p>
+  </div>
+  <div class="readbar" data-read="c4"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 5 ═══ -->
+<section id="c5" data-title="compartir skills repositorio plugins marketplace enterprise managed settings subagentes campo skills">
+  <div class="chead"><span class="pill acc">Lección 5</span><span class="pill">20 min</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=OCBi3eScNLk" target="_blank" rel="noopener">▶ Vídeo original</a></div>
+  <h2>Compartir skills</h2>
+  <p class="lede">Una skill de revisión de PR que solo usas tú es útil. <strong>Esa misma skill compartida con todo tu equipo estandariza la revisión de código.</strong></p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · los tres métodos de distribución</div>
+    <div class="chips" id="shareChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="s1">Repositorio</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="s2">Plugins</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="s3">Enterprise</button>
+    </div>
+    <div class="panel on" id="s1">
+      <p>El método más simple: las pones en <code>.claude/skills</code> y <strong>cualquiera que clone el repo las obtiene automáticamente</strong>, sin instalación extra. Cuando publicas actualizaciones, todos las reciben en el siguiente pull.</p>
+      <p><strong>Funciona bien para:</strong> estándares de código del equipo · flujos específicos del proyecto · skills que <strong>referencian la estructura de tu codebase</strong>.</p>
+      <p style="margin:0">El directorio <code>.claude</code> contiene tus <strong>agentes, hooks, skills y settings</strong> — todo versionado y compartido por flujos de Git normales.</p>
+    </div>
+    <div class="panel" id="s2">
+      <p>En tu proyecto de plugin, crea un directorio <strong><code>skills</code></strong> que siga una estructura similar a la de <code>.claude</code>: <strong>cada skill en su propia carpeta con un <code>SKILL.md</code> dentro</strong>.</p>
+      <p style="margin:0">Tras distribuirlo a un marketplace, otros usuarios pueden descubrirlo e instalarlo. <strong>Es lo mejor cuando tus skills no son demasiado específicas del proyecto</strong> y pueden servir a gente más allá de tu equipo.</p>
+    </div>
+    <div class="panel" id="s3">
+      <p>Los administradores despliegan skills a toda la organización. <strong>Máxima prioridad:</strong> sobrescriben personales, de proyecto y de plugin con el mismo nombre.</p>
+      <p>El fichero de managed settings soporta <strong><code>strictKnownMarketplaces</code></strong>, para controlar desde dónde se instalan plugins:</p>
+      <pre style="margin-bottom:12px"><code>"strictKnownMarketplaces": [
+  {
+    "source": "github",
+    "repo": "acme-corp/approved-plugins"
+  },
+  {
+    "source": "npm",
+    "package": "@acme-corp/compliance-plugins"
+  }
+]</code></pre>
+      <div class="box key" style="margin:0"><div class="bh">◈ Cuándo</div><p style="margin:0">Estándares <strong>obligatorios</strong>, requisitos de seguridad, flujos de cumplimiento y prácticas que <strong>deben</strong> ser consistentes. <strong>La palabra clave es "deben".</strong></p></div>
+    </div>
+  </div>
+
+  <h3>Skills y subagentes</h3>
+  <div class="box trap">
+    <div class="bh">⚠ Esto sorprende a mucha gente</div>
+    <p style="margin:0"><strong>Los subagentes NO ven tus skills automáticamente.</strong> Cuando delegas una tarea a un subagente, <strong>arranca con un contexto limpio y nuevo</strong>.</p>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Tipo de agente</th><th>¿Puede usar skills?</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Integrados</strong> (Explorer, Plan, Verify)</td><td style="color:var(--bad);font-weight:640">✗ No pueden acceder a skills en absoluto</td></tr>
+      <tr><td><strong>Propios</strong>, definidos por ti</td><td style="color:var(--good);font-weight:640">✓ Sí, pero <strong>solo si las listas explícitamente</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>Y un matiz de comportamiento: <strong>en un subagente las skills se cargan al arrancar</strong>, no bajo demanda como en la conversación principal.</p>
+
+  <p>Añade un fichero markdown en <code>.claude/agents</code> — o usa <code>/agents</code> para crearlo de forma interactiva. El fichero incluye un campo <strong><code>skills</code></strong>:</p>
+  <pre><code>---
+name: frontend-security-accessibility-reviewer
+description: "Use this agent when you need to review frontend code for accessibility..."
+tools: Bash, Glob, Grep, Read, WebFetch, WebSearch, Skill...
+model: sonnet
+color: blue
+skills: accessibility-audit, performance-check
+---</code></pre>
+  <p><strong>El orden:</strong> primero asegúrate de que las skills existen en <code>.claude/skills</code>, luego crea el subagente o añade el campo a uno existente.</p>
+  <p style="margin-bottom:0">Este patrón va muy bien cuando quieres <strong>delegación aislada con experiencia concreta</strong>, cuando <strong>distintos subagentes necesitan distintas skills</strong> (revisor de frontend vs. de backend), y cuando quieres <strong>imponer estándares en el trabajo delegado sin depender de los prompts</strong>.</p>
+  <div class="readbar" data-read="c5"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ CAP 6 ═══ -->
+<section id="c6" data-title="troubleshooting solución de problemas validador no dispara no carga prioridad chmod claude --debug">
+  <div class="chead"><span class="pill acc">Lección 6</span><span class="pill">15 min</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=YBa1cwaG7is" target="_blank" rel="noopener">▶ Vídeo original</a></div>
+  <h2>Solución de problemas</h2>
+  <p class="lede">Cuando las skills no funcionan, el problema <strong>cae casi siempre en una de unas pocas categorías</strong>. La buena noticia: la mayoría de arreglos son directos.</p>
+
+  <div class="box tip">
+    <div class="bh">✓ Empieza siempre por el validador</div>
+    <p style="margin:0">El <strong>comando verificador de agent skills</strong> — se instala fácil con <code>uv</code>. <strong>Detecta problemas estructurales antes de que pierdas tiempo depurando otras cosas.</strong></p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · elige tu síntoma</div>
+    <div class="chips" id="dxChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-v="0">No se dispara</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="1">No se carga</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="2">Se usa la equivocada</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="3">La están tapando</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="4">Plugin sin skills</button>
+      <button class="chip" role="tab" aria-selected="false" data-v="5">Falla al ejecutar</button>
+    </div>
+    <div id="dxOut"></div>
+  </div>
+
+  <h3>Checklist rápida</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Síntoma</th><th>Arreglo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>¿No se dispara?</strong></td><td>Mejora la descripción y añade frases de disparo</td></tr>
+      <tr><td><strong>¿No se carga?</strong></td><td>Comprueba ruta, nombre de fichero y sintaxis YAML</td></tr>
+      <tr><td><strong>¿Se usa la equivocada?</strong></td><td>Haz las descripciones más distintas entre sí</td></tr>
+      <tr><td><strong>¿La están tapando?</strong></td><td>Revisa la jerarquía de prioridad y renombra</td></tr>
+      <tr><td><strong>¿Faltan skills de plugin?</strong></td><td>Limpia caché y reinstala</td></tr>
+      <tr><td><strong>¿Falla en ejecución?</strong></td><td>Comprueba dependencias, permisos y rutas</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ El cierre del curso</div>
+    <p style="margin:0"><strong>Las mejores skills salen de puntos de dolor reales.</strong> Empieza por las instrucciones que más te encuentras repitiendo.</p>
+  </div>
+  <div class="readbar" data-read="c6"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ FLASHCARDS ═══ -->
+<section id="flash" data-title="flashcards repaso tarjetas chuleta">
+  <span class="pill acc">Repaso activo</span>
+  <h2 style="margin-top:12px">Flashcards</h2>
+  <p class="lede">Los hechos concretos del curso. Clic para girar.</p>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn" id="flipAll">Girar todas</button>
+    <button class="btn" id="shuffleCards">Barajar</button>
+  </div>
+  <div class="cards" id="cardGrid"></div>
+</section>
+
+<hr>
+
+<!-- ═══ QUIZ ═══ -->
+<section id="quiz" data-title="quiz preguntas examen autoevaluación">
+  <span class="pill acc">Autoevaluación</span>
+  <h2 style="margin-top:12px">Quiz — 14 preguntas</h2>
+  <p class="lede">Elige una respuesta y te digo al momento si es correcta y <strong>por qué</strong>.</p>
+  <div class="box note">
+    <div class="bh">ℹ Este curso no tiene quiz oficial</div>
+    <p style="margin:0">Son 6 lecciones y se acaba: en Skilljar no hay evaluación al final. Estas 14 preguntas están construidas a partir del material.</p>
+  </div>
+  <div class="quiz-group">
+    <div id="quizBox"></div>
+    <div class="score" id="scoreBox">
+      <div><div class="big" id="scoreNum">0 / 14</div><div class="lab" id="scoreLab">Aún no has contestado</div></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="quizReset">Reiniciar</button>
+    </div>
+  </div>
+</section>
+
+<footer class="credits">
+  <p class="who"><strong>Resúmenes y proyecto:</strong> Juanma Quijada. Elaborados y publicados en español para <strong>facilitar a la comunidad hispanohablante el acceso al conocimiento sobre Claude Code y la inteligencia artificial</strong>. · <a href="https://github.com/juaquicar/claude-code-academy-spanish" target="_blank" rel="noopener">Repositorio</a></p>
+  <p class="src"><strong>El curso original es obra de Anthropic</strong> y la autoría de su contenido —temario, vídeos, ejemplos de código y evaluaciones— le pertenece íntegramente. Esta página es un resumen de estudio derivado de ese material, no lo sustituye. El curso es gratuito: <a href="https://anthropic.skilljar.com/introduction-to-agent-skills" target="_blank" rel="noopener">hazlo en la Anthropic Academy</a>.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("agsk1_"+k))??d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem("agsk1_"+k,JSON.stringify(v))}catch(e){}}
+};
+const root=document.documentElement;
+root.dataset.theme=LS.get("theme","light");
+$("#themeBtn").onclick=()=>{const t=root.dataset.theme==="light"?"dark":"light";root.dataset.theme=t;LS.set("theme",t);};
+
+function wireTabs(c){
+  const btns=$$('[role="tab"]',c);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    const scope=c.closest(".widget")||document;
+    btns.forEach(x=>{const p=$("#"+x.dataset.p,scope); if(p)p.classList.toggle("on",x===b);});
+  });
+}
+["#locChips","#tl2","#cmpChips","#shareChips"].forEach(s=>{const e=$(s); if(e) wireTabs(e);});
+
+/* ══ cap 2 · jerarquía de prioridad ══ */
+(function(){
+  const chips=$("#prioChips"), out=$("#prioOut"), note=$("#prioNote"); if(!chips) return;
+  const N=[
+    {n:"Enterprise", p:"managed settings", d:"Máxima prioridad. Permite a las organizaciones <strong>imponer estándares</strong>. Si tu empresa tiene una skill <code>code-review</code> y tú creas una personal con el mismo nombre, <strong>gana la de la empresa</strong>."},
+    {n:"Personal",   p:"~/.claude/skills", d:"Tus preferencias, en tu directorio home. <strong>Te siguen a todos tus proyectos</strong> y ganan sobre las del repositorio."},
+    {n:"Project",    p:".claude/skills",   d:"Las del repositorio, compartidas con quien lo clone. <strong>Ceden ante las personales</strong>: si tienes una tuya con el mismo nombre, se usa la tuya."},
+    {n:"Plugins",    p:"plugins instalados", d:"Mínima prioridad. Cualquier skill con el mismo nombre en los otros tres niveles <strong>la tapa</strong>."}
+  ];
+  function render(sel){
+    out.innerHTML=N.map((x,i)=>
+      '<div class="lvl '+(i===sel?"win":(i<sel?"lose":""))+'">'+
+      '<span class="n">'+(i+1)+'</span><span class="nm">'+x.n+'</span>'+
+      '<span class="pa">'+x.p+'</span></div>').join("");
+    note.innerHTML='<div class="box '+(sel===0?"key":sel===3?"trap":"note")+'" style="margin:0">'+
+      '<div class="bh">'+(sel===0?"◈ Gana siempre":sel===3?"⚠ Pierde siempre":"ℹ En medio")+'</div>'+
+      '<p style="margin:0">'+N[sel].d+'</p></div>';
+  }
+  $$('[role="tab"]',chips).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',chips).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ cap 3 · constructor de SKILL.md ══ */
+(function(){
+  const out=$("#skOut"), hint=$("#skHint"); if(!out) return;
+  const st={kind:"review",tools:"no",model:"no"};
+  const K={
+    review:{name:"pr-review",
+      desc:"Reviews pull requests for code quality. Use when reviewing PRs, checking code changes, or when the user asks for feedback on a diff.",
+      body:"When reviewing a pull request:\n\n1. Run `git diff main...HEAD` to see all changes\n2. Check against the team checklist in references/checklist.md\n3. Group findings by severity\n\nSee references/style-guide.md only when the change\ntouches formatting or naming.",
+      hint:"<strong>Revisión de PR:</strong> la description incluye <em>varias formas de pedirlo</em> — <code>reviewing PRs</code>, <code>checking code changes</code>, <code>feedback on a diff</code>. Cuantas más frases reales cubra, más fiable dispara."},
+    onboard:{name:"codebase-onboarding",
+      desc:"Helps new developers understand how the system works. Use when someone asks about architecture, where code lives, or how a feature is wired.",
+      body:"When onboarding someone to this codebase:\n\n1. Start with the module map in references/architecture-guide.md\n2. Trace the request path for the feature they asked about\n3. Never modify files — this is a read-only walkthrough\n\nRun scripts/check-env.sh to verify their setup.\nRun it, don't read it.",
+      hint:"<strong>Onboarding:</strong> caso de libro para <code>allowed-tools</code> de solo lectura. Fíjate en la última línea del cuerpo: <strong>dile a Claude que ejecute el script, no que lo lea</strong> — así solo la salida consume tokens."},
+    brand:{name:"brand-guidelines",
+      desc:"Applies company brand guidelines to web designs. Use when creating UI, choosing colors or fonts, or building a landing page.",
+      body:"When producing any user-facing design:\n\n1. Use only the palette in assets/palette.json\n2. Headings in Söhne, body in Tiempos\n3. Never introduce a new accent colour\n\nLoad references/voice-and-tone.md only when writing copy.",
+      hint:"<strong>Guía de marca:</strong> típica skill <em>de proyecto</em> (<code>.claude/skills</code>), versionada para que todo el equipo la comparta. Los <code>assets/</code> guardan la paleta; el <code>SKILL.md</code> solo apunta a ellos."}
+  };
+  const TOOLS="Read, Grep, Glob, Bash";
+  function render(){
+    const k=K[st.kind];
+    let fm="---\nname: "+k.name+"\ndescription: "+k.desc;
+    if(st.tools==="si") fm+="\nallowed-tools: "+TOOLS;
+    if(st.model!=="no") fm+="\nmodel: "+st.model;
+    fm+="\n---\n\n"+k.body;
+    out.textContent=fm;
+    const th=st.tools==="si"
+      ? "Con <code>allowed-tools: "+TOOLS+"</code>, Claude <strong>solo puede usar esas herramientas sin pedir permiso</strong>: nada de editar, nada de escribir."
+      : "Sin <code>allowed-tools</code>, la skill <strong>no restringe nada</strong>: Claude usa su modelo de permisos normal.";
+    const mh=st.model==="no"
+      ? "Sin <code>model</code>, hereda el de la conversación."
+      : "Con <code>model: "+st.model+"</code> fuerzas ese modelo para la skill.";
+    hint.innerHTML=k.hint+"<br><br>"+th+"<br><br>"+mh+
+      "<br><br><strong>Obligatorios:</strong> solo <code>name</code> (máx. 64 caracteres) y <code>description</code> (máx. 1.024).";
+  }
+  $$(".seg").forEach(seg=>{
+    const g=seg.dataset.g;
+    $$("button",seg).forEach(b=>b.onclick=()=>{
+      $$("button",seg).forEach(x=>x.setAttribute("aria-pressed",x===b));
+      st[g]=b.dataset.v; render();
+    });
+  });
+  render();
+})();
+
+/* ══ cap 6 · diagnosticador ══ */
+(function(){
+  const chips=$("#dxChips"), out=$("#dxOut"); if(!chips) return;
+  const DX=[
+    {t:"La skill no se dispara",
+     causa:"<strong>La causa es casi siempre la descripción.</strong> Claude usa <strong>coincidencia semántica</strong>: tu petición necesita solaparse con el significado de la descripción. Si no hay suficiente solape, no hay coincidencia.",
+     pasos:["Contrasta tu descripción con <strong>cómo formulas realmente las peticiones</strong>",
+            "Añade <strong>frases de disparo que los usuarios dirían de verdad</strong>",
+            "Prueba variaciones: <em>\"help me profile this\"</em>, <em>\"why is this slow?\"</em>, <em>\"make this faster\"</em>",
+            "<strong>Si alguna variación no dispara, añade esas palabras clave a la descripción</strong>"]},
+    {t:"La skill no se carga",
+     causa:"Si no aparece al preguntarle a Claude qué skills hay disponibles, es un <strong>problema estructural</strong>.",
+     pasos:["El <code>SKILL.md</code> debe estar <strong>dentro de un directorio con nombre</strong>, no en la raíz de skills",
+            "El nombre debe ser <strong>exactamente <code>SKILL.md</code></strong> — <code>SKILL</code> en mayúsculas, <code>md</code> en minúsculas",
+            "Ejecuta <strong><code>claude --debug</code></strong> y busca mensajes con el nombre de tu skill",
+            "Revisa la sintaxis YAML del frontmatter"]},
+    {t:"Se usa la skill equivocada",
+     causa:"Si Claude usa la que no es o parece confundido entre varias, <strong>tus descripciones son demasiado parecidas</strong>.",
+     pasos:["<strong>Hazlas distintas</strong> entre sí",
+            "Ser lo más específico posible no solo ayuda a decidir cuándo usar tu skill: <strong>también evita conflictos con otras de nombre parecido</strong>"]},
+    {t:"La están tapando",
+     causa:"Si tu skill personal se ignora, es posible que una <strong>enterprise o de mayor prioridad tenga el mismo nombre</strong>. Con una enterprise <code>code-review</code> y una personal <code>code-review</code>, <strong>gana la enterprise siempre</strong>.",
+     pasos:["<strong>Renombra la tuya</strong> a algo más distintivo — normalmente el camino más fácil",
+            "O habla con tu administrador sobre la skill enterprise"]},
+    {t:"Las skills del plugin no aparecen",
+     causa:"Instalaste un plugin pero sus skills no salen.",
+     pasos:["<strong>Limpia la caché</strong>","<strong>Reinicia Claude Code</strong>","<strong>Reinstala</strong>",
+            "Si aun así no aparecen, la estructura del plugin puede estar mal: <strong>aquí es donde el validador se gana el sueldo</strong>"]},
+    {t:"Falla durante la ejecución",
+     causa:"La skill carga pero <strong>falla al ejecutarse</strong>. Tres causas habituales.",
+     pasos:["<strong>Dependencias que faltan:</strong> deben estar instaladas. <strong>Añade la información de dependencias a la descripción</strong> para que Claude sepa qué hace falta",
+            "<strong>Permisos:</strong> los scripts necesitan permiso de ejecución — <code>chmod +x</code>",
+            "<strong>Separadores de ruta:</strong> usa <strong>barras normales (<code>/</code>) en todas partes, incluso en Windows</strong>"]}
+  ];
+  function render(i){
+    const d=DX[i];
+    out.innerHTML='<h4 style="margin:0 0 10px;font-size:18px">'+d.t+'</h4>'+
+      '<div class="box trap"><div class="bh">⚠ La causa</div><p style="margin:0">'+d.causa+'</p></div>'+
+      '<div class="box tip" style="margin:0"><div class="bh">✓ Qué hacer</div><ul style="margin:0">'+
+      d.pasos.map(p=>"<li>"+p+"</li>").join("")+'</ul></div>';
+  }
+  $$('[role="tab"]',chips).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',chips).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ flashcards ══ */
+const CARDS=[
+ ["¿Qué es una skill?","Una <strong>carpeta de instrucciones y recursos</strong> con un <code>SKILL.md</code> dentro, que Claude Code descubre y usa para resolver tareas con más precisión."],
+ ["La regla de oro","<strong>Si te encuentras explicándole lo mismo a Claude una y otra vez, eso es una skill esperando a ser escrita.</strong>"],
+ ["¿Qué carga Claude al arrancar?","<strong>Solo el nombre y la descripción</strong>, no el contenido. Por eso las skills no llenan la ventana de contexto."],
+ ["¿Cómo decide Claude si usar una skill?","Compara tu petición con la <strong><code>description</code></strong> mediante <strong>coincidencia semántica</strong> — basta con que la intención se solape, no las palabras exactas."],
+ ["¿Qué pasa antes de cargar el contenido?","<strong>Claude te pide confirmación.</strong> Ese paso te mantiene consciente de qué contexto está incorporando."],
+ ["Skills personales vs. de proyecto","<strong>Personales:</strong> <code>~/.claude/skills</code>, te siguen a todos tus proyectos. <strong>De proyecto:</strong> <code>.claude/skills</code> en el repo, se versionan y las obtiene quien lo clone."],
+ ["Skills en Windows","<code>C:/Users/&lt;tu-usuario&gt;/.claude/skills</code>"],
+ ["Skills vs. CLAUDE.md vs. slash commands","<strong>CLAUDE.md</strong> se carga siempre · <strong>skills</strong> bajo demanda, las dispara Claude · <strong>slash commands</strong> los escribes tú explícitamente."],
+ ["Los dos campos obligatorios","<strong><code>name</code></strong> (minúsculas, números y guiones, <strong>máx. 64 caracteres</strong>, coincidiendo con el directorio) y <strong><code>description</code></strong> (<strong>máx. 1.024 caracteres</strong>)."],
+ ["Los dos campos opcionales","<strong><code>allowed-tools</code></strong> (restringe herramientas) y <strong><code>model</code></strong> (qué modelo usar)."],
+ ["¿Qué responde una buena descripción?","<strong>① ¿Qué hace la skill? ② ¿Cuándo debe usarla Claude?</strong>"],
+ ["Si omites <code>allowed-tools</code>","<strong>No restringe nada:</strong> Claude usa su modelo de permisos normal."],
+ ["La jerarquía de prioridad","<strong>Enterprise → Personal → Project → Plugins.</strong> Enterprise gana siempre."],
+ ["¿Cómo evitar conflictos de nombre?","<strong>Nombres descriptivos.</strong> En vez de <code>review</code>, usa <code>frontend-review</code> o <code>backend-review</code>."],
+ ["Crear, actualizar o eliminar una skill","Crear: directorio + <code>SKILL.md</code>. Actualizar: edita el fichero. Eliminar: borra el directorio. <strong>En los tres casos, reinicia Claude Code.</strong>"],
+ ["El límite de <code>SKILL.md</code>","<strong>Bajo 500 líneas.</strong> Si lo superas, parte el contenido en ficheros de referencia."],
+ ["Los tres directorios de una skill grande","<strong><code>scripts/</code></strong> (código ejecutable) · <strong><code>references/</code></strong> (documentación) · <strong><code>assets/</code></strong> (imágenes, plantillas, datos)."],
+ ["¿Qué es la divulgación progresiva?","Dejar lo esencial en <code>SKILL.md</code> y el material detallado en ficheros aparte que Claude lee <strong>solo cuando hacen falta</strong>. Como tener un índice en contexto en vez del documento entero."],
+ ["La instrucción clave sobre scripts","Dile a Claude que <strong>ejecute</strong> el script, <strong>no que lo lea</strong>. Así el contenido no entra en contexto y <strong>solo la salida consume tokens</strong>."],
+ ["¿Para qué son especialmente útiles los scripts?","<strong>Validación del entorno</strong>, transformaciones de datos que deben ser consistentes, y operaciones <strong>más fiables como código probado</strong> que como código generado."],
+ ["Skills vs. subagentes","<strong>Skills:</strong> añaden conocimiento al contexto actual. <strong>Subagentes:</strong> corren en un contexto <strong>separado y aislado</strong>, reciben una tarea y devuelven resultados."],
+ ["Skills vs. hooks","<strong>Hooks: event-driven</strong> — disparan en guardados, llamadas a herramienta. <strong>Skills: request-driven</strong> — disparan según lo que pides."],
+ ["Las cinco funcionalidades de personalización","<strong>CLAUDE.md</strong> (siempre activo) · <strong>skills</strong> (por tarea, bajo demanda) · <strong>hooks</strong> (por evento) · <strong>subagentes</strong> (contexto aislado) · <strong>MCP</strong> (herramientas externas)."],
+ ["Los tres métodos para compartir","<strong>Repositorio</strong> (<code>.claude/skills</code>, por Git) · <strong>plugins</strong> (marketplace) · <strong>enterprise managed settings</strong> (toda la organización, máxima prioridad)."],
+ ["¿Cuándo enterprise managed settings?","Para lo que <strong>debe</strong> ser consistente: estándares obligatorios, seguridad, cumplimiento. <strong>La palabra clave es \"deben\".</strong>"],
+ ["<code>strictKnownMarketplaces</code>","Campo de los managed settings para <strong>controlar desde dónde se pueden instalar plugins</strong> (por repo de GitHub o paquete npm)."],
+ ["⚠ Subagentes y skills","<strong>Los subagentes NO ven tus skills automáticamente:</strong> arrancan con contexto limpio. Hay que listarlas en el campo <strong><code>skills</code></strong> del frontmatter del agente."],
+ ["Los agentes integrados y las skills","<strong>Explorer, Plan y Verify NO pueden acceder a skills en absoluto.</strong> Solo los subagentes propios definidos en <code>.claude/agents</code>."],
+ ["¿Cuándo se cargan las skills en un subagente?","<strong>Al arrancar</strong>, no bajo demanda como en la conversación principal."],
+ ["Lo primero al depurar una skill","<strong>El validador</strong> — el comando verificador de agent skills, que se instala fácil con <code>uv</code>. Detecta problemas estructurales antes de nada."],
+ ["La skill no se dispara. ¿Dónde miras?","<strong>En la descripción</strong>, la causa casi siempre. Añade frases de disparo reales y prueba variaciones."],
+ ["La skill no se carga. ¿Qué compruebas?","Que el <code>SKILL.md</code> esté <strong>dentro de un directorio con nombre</strong> y que se llame <strong>exactamente <code>SKILL.md</code></strong>. Luego <code>claude --debug</code>."],
+ ["Se usa la skill equivocada","<strong>Tus descripciones son demasiado parecidas.</strong> Hazlas distintas."],
+ ["Las tres causas de fallo en ejecución","<strong>Dependencias</strong> que faltan (añádelas a la descripción) · <strong>permisos</strong> (<code>chmod +x</code>) · <strong>separadores de ruta</strong> (barras normales <code>/</code> incluso en Windows)."]
+];
+(function(){
+  const grid=$("#cardGrid"); if(!grid) return;
+  function paint(list){
+    grid.innerHTML="";
+    list.forEach(([f,b])=>{
+      const el=document.createElement("button"); el.className="card";
+      el.innerHTML='<div class="inner"><div class="f">'+f+'</div><div class="b">'+b+'</div></div>';
+      el.onclick=()=>el.classList.toggle("flip");
+      grid.appendChild(el);
+    });
+  }
+  paint(CARDS);
+  $("#flipAll").onclick=()=>{
+    const any=$$(".card",grid).some(c=>!c.classList.contains("flip"));
+    $$(".card",grid).forEach(c=>c.classList.toggle("flip",any));
+  };
+  $("#shuffleCards").onclick=()=>{
+    const a=[...CARDS];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    paint(a);
+  };
+})();
+
+/* ══ quiz ══ */
+const QUIZ=[
+ {q:"Llevas tres semanas explicándole a Claude el formato de mensaje de commit que usa tu equipo. ¿Qué te dice el curso?",
+  o:["Que lo metas en CLAUDE.md, para que esté siempre disponible",
+     "Que eso es una skill esperando a ser escrita",
+     "Que crees un slash command y lo invoques cada vez",
+     "Que lo pongas en el system prompt del proyecto"],
+  a:1, e:"Es <strong>la regla de oro</strong> del curso: <em>si te encuentras explicándole lo mismo a Claude una y otra vez, eso es una skill esperando a ser escrita</em>. Y es específicamente una skill y no CLAUDE.md porque es <strong>conocimiento de una tarea concreta</strong>, no un estándar que aplique siempre."},
+
+ {q:"¿Qué carga Claude Code de tus skills al arrancar?",
+  o:["El contenido completo de cada SKILL.md",
+     "Solo el nombre y la descripción",
+     "Nada: las escanea cuando haces una petición",
+     "El frontmatter completo, incluidos allowed-tools"],
+  a:1, e:"Escanea cuatro ubicaciones pero <strong>solo carga nombre y descripción</strong>. Ese es el detalle que hace baratas a las skills: no llenan tu ventana de contexto. El contenido completo entra <strong>solo tras tu confirmación</strong>, cuando la skill se activa."},
+
+ {q:"Tu skill se describe como <em>\"explain code with visual diagrams\"</em> y pides <em>\"explain what this function does\"</em>. ¿Se activa?",
+  o:["Sí: Claude usa coincidencia semántica y la intención se solapa",
+     "No: la petición no contiene la palabra \"diagram\"",
+     "Solo si añades la palabra exacta a la descripción",
+     "Depende del modelo configurado en el campo model"],
+  a:0, e:"Claude empareja por <strong>coincidencia semántica</strong>, no por palabras exactas. Basta con que <strong>la intención se solape</strong>. Ese es justo el ejemplo que da la lección 2."},
+
+ {q:"Un compañero clona vuestro repositorio. ¿Qué skills obtiene?",
+  o:["Las tuyas personales y las del proyecto",
+     "Solo las del proyecto, en .claude/skills",
+     "Ninguna: tiene que instalarlas por separado",
+     "Solo las que tengan prioridad enterprise"],
+  a:1, e:"Las <strong>de proyecto</strong> (<code>.claude/skills</code>) se versionan junto al código y las obtiene automáticamente quien clone. Las <strong>personales</strong> (<code>~/.claude/skills</code>) solo te siguen a ti, entre tus proyectos."},
+
+ {q:"Has editado un SKILL.md pero Claude sigue con el comportamiento antiguo. ¿Qué falta?",
+  o:["Ejecutar el validador de skills",
+     "Volver a confirmar la carga de la skill",
+     "Reiniciar Claude Code",
+     "Renombrar el directorio para invalidar la caché"],
+  a:2, e:"Las skills <strong>se cargan al arrancar</strong>. Crear, editar o eliminar una exige <strong>reiniciar Claude Code</strong> para que el cambio surta efecto."},
+
+ {q:"Tu empresa tiene una skill enterprise llamada <code>code-review</code> y tú creas una personal con el mismo nombre. ¿Cuál se usa?",
+  o:["La personal: lo más específico al usuario gana",
+     "La enterprise: tiene la máxima prioridad",
+     "Se combinan las dos",
+     "Claude pregunta cuál usar cada vez"],
+  a:1, e:"El orden es <strong>Enterprise → Personal → Project → Plugins</strong>. Enterprise gana siempre — así las organizaciones imponen estándares. La salida más fácil es <strong>renombrar la tuya</strong> a algo más distintivo."},
+
+ {q:"Quieres una skill de onboarding que pueda leer y buscar por el código pero nunca modificarlo. ¿Cómo?",
+  o:["Con el campo allowed-tools en el frontmatter",
+     "Con un hook PreToolUse que bloquee las escrituras",
+     "Poniendo \"no modifiques ficheros\" en las instrucciones",
+     "Fijando model a haiku para limitar sus capacidades"],
+  a:0, e:"<code>allowed-tools: Read, Grep, Glob, Bash</code> hace que con esa skill activa Claude <strong>solo pueda usar esas herramientas</strong>: nada de editar ni escribir. Útil para flujos sensibles a la seguridad y tareas de solo lectura. Si <strong>omites el campo, no restringe nada</strong>."},
+
+ {q:"Tu SKILL.md ha llegado a 1.800 líneas de instrucciones, referencias y ejemplos. ¿Qué haces?",
+  o:["Nada: si funciona, el tamaño da igual",
+     "Dividirlo en varias skills con nombres parecidos",
+     "Aplicar divulgación progresiva: lo esencial en SKILL.md y el resto en ficheros aparte",
+     "Comprimir las instrucciones para que quepan en el límite de 1.024 caracteres"],
+  a:2, e:"Cramarlo todo en un fichero <strong>ocupa mucho contexto y es incómodo de mantener</strong>. La regla del pulgar es <strong>mantener SKILL.md bajo 500 líneas</strong> y mover el material a <code>references/</code>, <code>scripts/</code> y <code>assets/</code>, enlazándolo con instrucciones de <strong>cuándo</strong> cargarlo. (El límite de 1.024 caracteres es de la <em>description</em>, no del fichero.)"},
+
+ {q:"Tu skill incluye un script de validación del entorno. ¿Qué debes indicar en el SKILL.md?",
+  o:["Que lea el script para entender qué comprueba",
+     "Que ejecute el script, no que lo lea",
+     "Que copie el contenido del script a las instrucciones",
+     "Nada: los scripts se ejecutan automáticamente"],
+  a:1, e:"Los scripts <strong>se ejecutan sin cargar su contenido en contexto</strong>: solo la salida consume tokens. Por eso <strong>la instrucción clave es decirle que lo ejecute, no que lo lea</strong>. Especialmente útil para validación de entorno y operaciones más fiables como código probado."},
+
+ {q:"Quieres que Claude use siempre el modo estricto de TypeScript en tu proyecto. ¿Dónde va?",
+  o:["En una skill, para que se cargue solo cuando escribas TypeScript",
+     "En CLAUDE.md",
+     "En un hook PostToolUse que lo verifique tras cada edición",
+     "En el campo model del frontmatter"],
+  a:1, e:"Es un <strong>estándar de proyecto que siempre aplica</strong>, así que va en CLAUDE.md, que se carga en todas las conversaciones. Las skills son para <strong>experiencia específica de una tarea</strong> y conocimiento que solo a veces es relevante."},
+
+ {q:"¿Cuál es la diferencia de disparo entre hooks y skills?",
+  o:["Los hooks son event-driven; las skills son request-driven",
+     "Los hooks los invocas tú; las skills se activan solas",
+     "Los hooks corren en contexto aislado; las skills no",
+     "No hay diferencia: ambos reaccionan a las peticiones del usuario"],
+  a:0, e:"<strong>Hooks: disparan por eventos</strong> — un linter en cada guardado, validación antes de ciertas llamadas. <strong>Skills: disparan por peticiones</strong> — se activan según lo que estás pidiendo. Lo del contexto aislado son los <em>subagentes</em>."},
+
+ {q:"Delegas trabajo a un subagente propio y no aplica ninguna de tus skills. ¿Por qué?",
+  o:["Los subagentes no ven tus skills automáticamente: hay que listarlas en el campo skills",
+     "Las skills solo funcionan en la conversación principal, sin excepción",
+     "El subagente necesita permisos de enterprise para acceder a ellas",
+     "Falta reiniciar Claude Code tras crear el subagente"],
+  a:0, e:"Los subagentes <strong>arrancan con un contexto limpio</strong>. Los propios <em>sí</em> pueden usar skills, pero <strong>solo si las listas explícitamente</strong> en el campo <code>skills</code> del frontmatter. Y ojo: los <strong>integrados (Explorer, Plan, Verify) no pueden acceder a skills en absoluto</strong>."},
+
+ {q:"Tu skill existe, pasa el validador, pero Claude nunca la usa. ¿Dónde miras primero?",
+  o:["En el campo allowed-tools, que puede estar bloqueándola",
+     "En la descripción: añade frases de disparo que uses de verdad",
+     "En el nombre del directorio, que debe coincidir con el name",
+     "En la jerarquía de prioridad"],
+  a:1, e:"Si existe y valida, <strong>la causa es casi siempre la descripción</strong>. Claude usa coincidencia semántica: si no hay suficiente solape, no hay activación. Prueba variaciones de cómo lo pedirías —<em>\"help me profile this\"</em>, <em>\"why is this slow?\"</em>— y <strong>añade a la descripción las palabras clave de las que fallen</strong>."},
+
+ {q:"Preguntas a Claude qué skills hay disponibles y la tuya no aparece. ¿Qué compruebas?",
+  o:["Que la descripción tenga menos de 1.024 caracteres",
+     "Que el SKILL.md esté dentro de un directorio con nombre y se llame exactamente así",
+     "Que el modelo configurado soporte skills",
+     "Que hayas confirmado su carga en una sesión anterior"],
+  a:1, e:"Son los dos requisitos estructurales: el <code>SKILL.md</code> <strong>dentro de un directorio con nombre</strong>, no en la raíz de skills, y el nombre <strong>exactamente <code>SKILL.md</code></strong> — mayúsculas en <code>SKILL</code>, minúsculas en <code>md</code>. Luego, <code>claude --debug</code> para ver errores de carga."}
+];
+function mountQuiz(boxSel,data,key,numSel,labSel,resetSel){
+  const box=$(boxSel); if(!box) return;
+  const KEYS="ABCD";
+  let answers=LS.get(key,{});
+  function render(){
+    box.innerHTML="";
+    data.forEach((q,i)=>{
+      const d=document.createElement("div"); d.className="quiz-q";
+      d.innerHTML='<div class="qn">Pregunta '+(i+1)+' / '+data.length+'</div><div class="qt">'+q.q+'</div>';
+      const ul=document.createElement("div"); ul.className="opts";
+      q.o.forEach((t,j)=>{
+        const b=document.createElement("button"); b.className="opt";
+        b.innerHTML='<span class="k">'+KEYS[j]+'</span><span>'+t+'</span>';
+        b.onclick=()=>{ if(answers[i]!==undefined) return; answers[i]=j; LS.set(key,answers); render(); score(); };
+        ul.appendChild(b);
+      });
+      d.appendChild(ul);
+      const ex=document.createElement("div"); ex.className="expl";
+      ex.innerHTML='<b>'+(answers[i]===q.a?"✓ Correcto. ":"✗ La correcta es "+KEYS[q.a]+". ")+'</b>'+q.e;
+      d.appendChild(ex);
+      if(answers[i]!==undefined){
+        [...ul.children].forEach((b,j)=>{
+          b.disabled=true;
+          if(j===q.a)b.classList.add("ok"); else if(j===answers[i])b.classList.add("ko");
+        });
+        ex.classList.add("on");
+      }
+      box.appendChild(d);
+    });
+  }
+  function score(){
+    const done=Object.keys(answers).length;
+    const ok=Object.entries(answers).filter(([i,v])=>data[i].a===+v).length;
+    $(numSel).textContent=ok+" / "+data.length;
+    const lab=$(labSel);
+    if(!done){lab.textContent="Aún no has contestado";return;}
+    const pct=Math.round(ok/done*100), full=done===data.length;
+    const thr=Math.ceil(data.length*0.85), mid=Math.ceil(data.length*0.65);
+    lab.innerHTML=done+" contestadas · "+pct+"% de acierto"+
+      (full?(ok>=thr?" · <b style='color:var(--good)'>dominas el material</b>"
+        :ok>=mid?" · repasa las falladas y vuelve":" · vuelve a leer los capítulos de las falladas"):"");
+  }
+  $(resetSel).onclick=()=>{answers={};LS.set(key,answers);render();score();box.scrollIntoView({behavior:"smooth",block:"start"});};
+  render(); score();
+}
+mountQuiz("#quizBox",QUIZ,"quiz","#scoreNum","#scoreLab","#quizReset");
+
+/* ══ progreso ══ */
+(function(){
+  const CH=["c1","c2","c3","c4","c5","c6"];
+  let read=LS.get("read",{});
+  function sync(){
+    const n=CH.filter(c=>read[c]).length;
+    $("#meterBar").style.width=(n/CH.length*100)+"%";
+    $("#meterLab").textContent=n+" / "+CH.length;
+    CH.forEach(c=>{const a=$('[data-nav="'+c+'"]'); if(a)a.classList.toggle("done",!!read[c]);});
+    $$(".readbar[data-read]").forEach(bar=>{
+      const k=bar.dataset.read; if(!CH.includes(k))return;
+      const on=!!read[k];
+      bar.classList.toggle("done",on);
+      $(".txt",bar).textContent=on?"✓ Leído":"¿Capítulo asimilado?";
+      $(".btn",bar).textContent=on?"Desmarcar":"Marcar como leído";
+    });
+  }
+  $$(".readbar[data-read] .btn").forEach(b=>{
+    b.onclick=()=>{const k=b.closest(".readbar").dataset.read;read[k]=!read[k];LS.set("read",read);sync();};
+  });
+  $("#resetBtn").onclick=()=>{read={};LS.set("read",read);LS.set("quiz",{});sync();location.reload();};
+  sync();
+})();
+
+/* ══ scrollspy ══ */
+(function(){
+  const links=$$("#side a"), map={};
+  links.forEach(a=>map[a.dataset.nav]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const a=map[e.target.id]; if(a)a.classList.add("active");
+      }
+    });
+  },{rootMargin:"-70px 0px -70% 0px",threshold:0});
+  $$("main section").forEach(s=>obs.observe(s));
+})();
+
+/* ══ buscador ══ */
+(function(){
+  const inp=$("#search"), secs=$$("main section"), nores=$("#nores"), hrs=$$("main hr");
+  const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  inp.oninput=()=>{
+    const q=norm(inp.value.trim());
+    if(!q){secs.forEach(s=>s.classList.remove("hidden"));hrs.forEach(h=>h.style.display="");nores.classList.remove("on");return;}
+    let any=false;
+    secs.forEach(s=>{
+      const hay=norm((s.dataset.title||"")+" "+s.textContent).includes(q);
+      s.classList.toggle("hidden",!hay); if(hay)any=true;
+    });
+    hrs.forEach(h=>h.style.display="none");
+    nores.classList.toggle("on",!any);
+  };
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();inp.focus();inp.select();}
+    if(e.key==="Escape"&&document.activeElement===inp){inp.value="";inp.dispatchEvent(new Event("input"));inp.blur();}
+  });
+})();
+</script>
+</body>
+</html>

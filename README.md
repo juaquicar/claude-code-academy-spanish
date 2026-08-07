@@ -12,6 +12,7 @@ Cada curso trae **un `.md` por lección** para leer en el editor, y **un `curso-
 | **[Introduction to Subagents](introduction-to-subagents/)** | 4 | Qué son · Crearlos · Diseñarlos bien · Usarlos con criterio |
 | **[MCP: Advanced Topics](model-context-protocol-advanced-topics/)** | 8 | Sampling · Log y progreso · Roots · Mensajes JSON · STDIO · StreamableHTTP · SSE en profundidad · stateless_http y json_response |
 | **[Claude with the Anthropic API](claude-with-the-anthropic-api/)** | 85 | API y modelos · Evals · Prompt engineering · Tool use · RAG · Funcionalidades · Prompt caching · MCP · Claude Code · Agentes y workflows |
+| **[Introduction to Agent Skills](introduction-to-agent-skills/)** | 6 | Qué son · Crearlas · Configuración y multi-fichero · Vs. otras funcionalidades · Compartir · Diagnóstico |
 
 > **[▶ index.html](index.html)** — página de inicio para navegar entre los cursos, con tu progreso de cada uno. Ábrela con doble clic.
 
@@ -48,6 +49,16 @@ El más grande de la academia: 85 lecciones desde la primera llamada al API hast
 Cierra con un consejo que va a contracorriente: **prioriza workflows.** Los usuarios quieren productos que funcionen al 100%, no agentes vistosos.
 
 Las **8 evaluaciones oficiales** (7 quizzes de bloque + evaluación final) están pendientes de hacer.
+
+### Introduction to Agent Skills
+
+[Curso original](https://anthropic.skilljar.com/introduction-to-agent-skills)
+
+Una skill es un fichero markdown que le enseña a Claude cómo hacer algo **una vez**, y que aplica **automáticamente** cuando viene al caso. La regla de oro: *si te encuentras explicándole lo mismo a Claude una y otra vez, eso es una skill esperando a ser escrita*.
+
+Todo el curso gravita sobre un campo, la **`description`**: decide si la skill se activa —por coincidencia semántica— y es donde está el problema cuando algo falla.
+
+Este curso no tiene quiz oficial; el repo incluye una autoevaluación de 14 preguntas.
 
 ## Estructura
 
