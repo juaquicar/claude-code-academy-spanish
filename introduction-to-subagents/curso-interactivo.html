@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introduction to Subagents — Curso interactivo</title>
+<style>
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --surface-2:#F4F2EC;
+  --ink:#1F1E1D; --ink-2:#4A4742; --muted:#7A756D;
+  --accent:#C15F3C; --accent-soft:#F6E7E0; --accent-ink:#8F3F24; --on-accent:#FFFFFF;
+  --border:#E4DFD6; --border-strong:#CFC8BC;
+  --good:#2E7D5B; --good-soft:#E3F1EA;
+  --warn:#9A6B08; --warn-soft:#FAF0DA;
+  --bad:#AE3323; --bad-soft:#FAE6E2;
+  --info:#2C5F8A; --info-soft:#E3EDF6;
+  --code-bg:#F1EEE7;
+  --shadow:0 1px 2px rgba(31,30,29,.05),0 8px 24px -12px rgba(31,30,29,.18);
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#171614; --surface:#201F1C; --surface-2:#2A2825;
+  --ink:#F2EFE7; --ink-2:#D3CEC4; --muted:#9A948A;
+  --accent:#E0876A; --accent-soft:#3A2A22; --accent-ink:#F0A98F; --on-accent:#1C1A17;
+  --border:#34322D; --border-strong:#47443E;
+  --good:#6DC49B; --good-soft:#1E322A;
+  --warn:#DFAE4E; --warn-soft:#332A18;
+  --bad:#E88476; --bad-soft:#372220;
+  --info:#7FB0DB; --info-soft:#1C2A36;
+  --code-bg:#26241F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px}
+#topbar .brand{font-weight:650;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+#topbar .brand small{color:var(--muted);font-weight:450;display:block;font-size:11.5px;letter-spacing:.02em}
+.tb-spacer{flex:1}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+#search{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;width:230px}
+#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#search::placeholder{color:var(--muted)}
+.meter-wrap{display:flex;align-items:center;gap:9px}
+.meter{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.meter-lab{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1420px;margin:0 auto;padding-top:60px}
+#side{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:24px 14px 60px 20px;border-right:1px solid var(--border)}
+#side::-webkit-scrollbar{width:8px}
+#side::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+.side-h{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:650;margin:18px 0 8px 10px}
+.side-h:first-child{margin-top:0}
+#side a{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:9px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.4;transition:.13s}
+#side a:hover{background:var(--surface-2);color:var(--ink)}
+#side a.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+#side a .num{flex:none;width:20px;height:20px;border-radius:6px;background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:2px;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+#side a.active .num{background:var(--accent);color:var(--on-accent);border-color:transparent}
+#side a.done .num{background:var(--good-soft);color:var(--good);border-color:transparent}
+#side a.done .num::after{content:"✓"}
+#side a.done .num span{display:none}
+main{padding:36px 44px 120px;max-width:900px;min-width:0}
+#shell>*{min-width:0}
+section{margin-bottom:14px;scroll-margin-top:80px}
+section.hidden{display:none}
+h1{font-family:var(--serif);font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px}
+h2{font-family:var(--serif);font-size:29px;line-height:1.2;letter-spacing:-.018em;margin:0 0 6px}
+h3{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;font-weight:650}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{color:var(--ink);font-weight:640}
+a.ext{color:var(--accent-ink)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);padding:.13em .38em;border-radius:5px;color:var(--accent-ink);border:1px solid var(--border)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:13.2px;line-height:1.6}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px;font-family:var(--serif)}
+.box{border-radius:var(--radius);padding:16px 18px;margin:0 0 18px;border:1px solid var(--border);background:var(--surface)}
+.box .bh{display:flex;align-items:center;gap:8px;font-weight:680;font-size:13.5px;margin-bottom:7px}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.box.key{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.box.key .bh{color:var(--accent-ink)}
+.box.trap{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.box.trap .bh{color:var(--bad)}
+.box.tip{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 28%,transparent)}
+.box.tip .bh{color:var(--good)}
+.box.note{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 26%,transparent)}
+.box.note .bh{color:var(--info)}
+.box.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.box.warn .bh{color:var(--warn)}
+blockquote{margin:0 0 18px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55}
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+th{font-weight:640;color:var(--ink);background:var(--surface-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.widget{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.widget-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:680;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.widget-t::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:560;cursor:pointer;transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--border-strong);color:var(--ink)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl{display:flex;gap:0;margin-bottom:18px;position:relative;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--border)}
+.tl button{position:relative;flex:1;min-width:96px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tl .dot{width:40px;height:40px;border-radius:99px;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:16px;transition:.2s;z-index:1}
+.tl button:hover .dot{border-color:var(--border-strong)}
+.tl button[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:scale(1.12)}
+.tl .lab{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+.tl button[aria-selected="true"] .lab{color:var(--accent-ink)}
+.ad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.ad{grid-template-columns:1fr}}
+.ad>div{border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.ad .yes{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.ad .no{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.ad h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.ad .yes h5{color:var(--good)}
+.ad .no h5{color:var(--bad)}
+.ad ul{margin:0;padding-left:18px;font-size:13.8px}
+.ad li{margin-bottom:4px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+.scale-labs{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:-8px 2px 16px}
+.btn{font-family:inherit;font-size:14px;font-weight:580;cursor:pointer;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--border-strong);background:var(--surface)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.q-step{margin-bottom:14px}
+.q-step p{font-weight:600;color:var(--ink);margin-bottom:9px}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:11px;border:1px solid var(--border);background:var(--surface-2);display:none}
+.verdict.on{display:block;animation:fade .3s}
+.verdict b{font-size:17px;display:block;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{perspective:1000px;height:155px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;overflow:auto}
+.card .f{background:var(--surface);color:var(--ink);font-weight:600}
+.card .b{background:var(--accent-soft);color:var(--accent-ink);transform:rotateY(180deg);font-size:13.5px;font-weight:500}
+.card .f::after{content:"clic para girar";position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);font-weight:400}
+.quiz-group{position:relative}
+.quiz-q{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin-bottom:14px}
+.quiz-q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.quiz-q .qt{font-weight:620;color:var(--ink);margin-bottom:13px;font-size:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;font-family:inherit;font-size:14.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:10px 13px;color:var(--ink-2);transition:.15s;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--border-strong);color:var(--ink)}
+.opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.ok .k{background:var(--good);color:var(--surface);border-color:transparent}
+.opt.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opt.ko .k{background:var(--bad);color:var(--surface);border-color:transparent}
+.opt:disabled{cursor:default}
+.expl{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:14px;color:var(--ink-2);display:none}
+.expl.on{display:block;animation:fade .25s}
+.expl b{color:var(--ink)}
+.score{position:sticky;bottom:16px;margin-top:20px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score .lab{font-size:13px;color:var(--muted);line-height:1.4}
+.readbar{display:flex;align-items:center;gap:12px;margin:30px 0 8px;padding:14px 16px;border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--surface);flex-wrap:wrap}
+.readbar.done{border-style:solid;background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.readbar .txt{font-size:14px;color:var(--muted);flex:1;min-width:160px}
+.readbar.done .txt{color:var(--good);font-weight:600}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.grid2>*{min-width:0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.mini{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.mini h5{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+.mini p{margin:0;font-size:14px}
+.vid{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:5px 13px;background:var(--surface);transition:.15s}
+.vid:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hero-stats{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 8px}
+.hero-stats div span{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.hero-stats div small{font-size:12.5px;color:var(--muted)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+.map a,.map .mini{text-decoration:none}
+.map a{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.18s;display:block}
+.map a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.map .t{font-weight:640;color:var(--ink);font-size:15px;line-height:1.35}
+.map .d{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── flow diagram ── */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:stretch;margin-bottom:16px}
+@media(max-width:700px){.flow{grid-template-columns:1fr}}
+.flow .col{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.flow .col.main{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft)}
+.flow .col h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.flow .col.main h5{color:var(--accent-ink)}
+.flow .arrow{display:grid;place-items:center;padding:0 14px;color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+@media(max-width:700px){.flow .arrow{padding:10px 0}}
+.flow ul{margin:0;padding-left:17px;font-size:13.5px}
+.flow li{margin-bottom:3px}
+.discard{text-decoration:line-through;color:var(--muted);opacity:.7}
+/* ── config builder ── */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.cfg-ctl,.cfg-out{min-width:0}
+@media(max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.cfg-ctl label:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:inherit;font-size:13px;font-weight:560;cursor:pointer;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);transition:.15s}
+.seg button:hover{border-color:var(--border-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.cfg-out pre{margin:0;height:100%}
+.cfg-hint{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;border-left:2px solid var(--border-strong);padding-left:12px}
+.nores{padding:30px;text-align:center;color:var(--muted);display:none}
+.nores.on{display:block}
+@media(max-width:960px){
+  #shell{grid-template-columns:1fr}
+  #side{display:none}
+  main{padding:26px 20px 100px}
+  #search{width:140px}
+  .meter-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">Introduction to Subagents<small>Anthropic Academy · resumen interactivo</small></div>
+  <div class="tb-spacer"></div>
+  <div class="meter-wrap"><div class="meter"><i id="meterBar"></i></div><span class="meter-lab" id="meterLab">0 / 4</span></div>
+  <input id="search" type="search" placeholder="Buscar… (⌘/Ctrl+K)" autocomplete="off">
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  <button class="icon-btn" id="resetBtn" title="Reiniciar progreso">↺</button>
+</div>
+
+<div id="shell">
+<nav id="side">
+  <div class="side-h">Inicio</div>
+  <a href="#intro" data-nav="intro"><span class="num"><span>★</span></span> Mapa del curso</a>
+  <div class="side-h">Lecciones</div>
+  <a href="#c1" data-nav="c1"><span class="num"><span>1</span></span> ¿Qué son los subagentes?</a>
+  <a href="#c2" data-nav="c2"><span class="num"><span>2</span></span> Crear un subagente</a>
+  <a href="#c3" data-nav="c3"><span class="num"><span>3</span></span> Diseñar subagentes eficaces</a>
+  <a href="#c4" data-nav="c4"><span class="num"><span>4</span></span> Usar subagentes con criterio</a>
+  <div class="side-h">Repaso</div>
+  <a href="#flash" data-nav="flash"><span class="num"><span>◆</span></span> Flashcards</a>
+  <a href="#quiz" data-nav="quiz"><span class="num"><span>?</span></span> Quiz (12 preguntas)</a>
+</nav>
+
+<main>
+<div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
+
+<!-- ═══════ INTRO ═══════ -->
+<section id="intro" data-title="mapa del curso introducción subagentes">
+  <span class="pill acc">Anthropic Academy</span>
+  <h1 style="margin-top:14px">Introduction to&nbsp;Subagents</h1>
+  <p class="lede">Usar y crear subagentes en Claude Code para gestionar el contexto, delegar tareas y montar flujos especializados que mantengan <strong>limpia y enfocada</strong> la conversación principal.</p>
+
+  <div class="hero-stats">
+    <div><span>4</span><small>lecciones</small></div>
+    <div><span>3</span><small>subagentes integrados</small></div>
+    <div><span>4</span><small>claves de diseño</small></div>
+    <div><span>3</span><small>antipatrones</small></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ Todo el curso en una pregunta</div>
+    <p style="margin:0">Al decidir si delegas, pregúntate: <strong>¿importa el trabajo intermedio?</strong><br>
+    <strong>No</strong> — solo quieres el resultado → <strong>subagente</strong>. &nbsp;·&nbsp; <strong>Sí</strong> — necesitas ver y reaccionar por el camino → <strong>hilo principal</strong>.</p>
+  </div>
+
+  <h3>Qué pasa cuando delegas</h3>
+  <div class="widget">
+    <div class="widget-t">El ciclo de vida de un subagente</div>
+    <div class="flow">
+      <div class="col main">
+        <h5>Hilo principal</h5>
+        <ul>
+          <li>Tu pregunta</li>
+          <li>← el resumen</li>
+        </ul>
+        <p style="margin:10px 0 0;font-size:13px;color:var(--accent-ink)"><strong>Se queda limpio.</strong></p>
+      </div>
+      <div class="arrow">→<br><small>system prompt<br>+ descripción<br>de tarea</small><br>←<br><small>solo el<br>resumen</small></div>
+      <div class="col">
+        <h5>Contexto del subagente</h5>
+        <ul>
+          <li class="discard">15 ficheros leídos</li>
+          <li class="discard">6 búsquedas</li>
+          <li class="discard">llamadas a herramientas</li>
+          <li class="discard">razonamiento intermedio</li>
+        </ul>
+        <p style="margin:10px 0 0;font-size:13px;color:var(--muted)"><strong>Se descarta entero.</strong></p>
+      </div>
+    </div>
+    <div class="cfg-hint">Ese descarte es el beneficio <em>y</em> el precio: ganas contexto limpio, <strong>pierdes visibilidad</strong> de cómo llegó a la conclusión. Lo que no pidas explícitamente en el formato de salida, se pierde con el resto.</div>
+  </div>
+
+  <h3>Recorrido</h3>
+  <div class="map">
+    <a href="#c1"><div class="t">1 · ¿Qué son?</div><div class="d">Ventana de contexto aparte, el trato que aceptas, los 3 integrados</div></a>
+    <a href="#c2"><div class="t">2 · Crear uno</div><div class="d"><code>/agents</code>, ámbito, herramientas, modelo, frontmatter</div></a>
+    <a href="#c3"><div class="t">3 · Diseñarlo bien</div><div class="d">Description, formato de salida, obstáculos, herramientas</div></a>
+    <a href="#c4"><div class="t">4 · Usarlo con criterio</div><div class="d">Los 3 casos buenos, los 3 antipatrones, la regla</div></a>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 1 ═══════ -->
+<section id="c1" data-title="que son los subagentes ventana contexto explore plan general purpose">
+  <div class="chead">
+    <span class="pill acc">Lección 1</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=jKErNxuxPXg" target="_blank" rel="noopener">▶ Vídeo original</a>
+  </div>
+  <h2>¿Qué son los subagentes?</h2>
+  <p class="lede">Asistentes especializados a los que Claude Code puede delegar. Cada uno corre en <strong>su propia ventana de contexto</strong>, hace su trabajo y devuelve un <strong>resumen</strong> al hilo principal.</p>
+
+  <h3>Por qué importan</h3>
+  <p>Cada vez que hablas con Claude Code añades a la ventana de contexto principal: cada llamada a herramienta, cada fichero leído, cada resultado de búsqueda. Ese espacio <strong>es finito</strong> — y cuando se llena, Claude empieza a perder el hilo de lo anterior.</p>
+  <p>Los subagentes lo resuelven <strong>levantando una ventana de contexto separada</strong>. El subagente recibe <strong>exactamente dos cosas</strong>:</p>
+  <div class="grid2">
+    <div class="mini"><h5>① Un system prompt propio</h5><p>Desde tu fichero de configuración. Define <strong>su rol y su comportamiento</strong>.</p></div>
+    <div class="mini"><h5>② Una descripción de tarea</h5><p>Escrita por el <strong>agente padre</strong> a partir de lo que pediste.</p></div>
+  </div>
+  <p>A partir de ahí trabaja solo: lee ficheros, busca, edita código. Cuando termina, <strong>solo el resumen vuelve</strong> — y <strong>la conversación completa del subagente se descarta</strong>.</p>
+
+  <div class="box warn">
+    <div class="bh">⚠ El trato, explícito</div>
+    <div class="ad" style="margin:6px 0 0">
+      <div class="yes"><h5>✓ Ganas</h5><ul><li>Contexto principal limpio</li><li>La respuesta sin el ruido del viaje</li></ul></div>
+      <div class="no"><h5>✗ Pierdes</h5><ul><li><strong>Visibilidad</strong> de cómo llegó ahí</li><li>El detalle intermedio, comprimido</li></ul></div>
+    </div>
+  </div>
+
+  <h3>Ejemplo práctico</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · "¿qué servicio gestiona los reembolsos?"</div>
+    <div class="chips" id="exChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="x1">Sin subagente</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="x2">Con subagente</button>
+    </div>
+    <div class="panel on" id="x1">
+      <p>Claude podría <strong>leer 15 ficheros</strong>, lanzar varias búsquedas y rastrear múltiples llamadas a función.</p>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ El coste</div><p style="margin:0">Todo eso llena tu ventana de contexto — <strong>aunque solo necesitabas un dato</strong>.</p></div>
+    </div>
+    <div class="panel" id="x2">
+      <p>Preguntas, el subagente <strong>Explore</strong> se levanta, hace toda la excavación <strong>en su propio contexto</strong> y devuelve una respuesta enfocada.</p>
+      <div class="box tip" style="margin:0"><div class="bh">✓ El resultado</div><p style="margin:0">Tu ventana principal <strong>solo registra la pregunta y el resumen</strong> — no los 15 ficheros del camino.</p></div>
+    </div>
+  </div>
+
+  <h3>Los tres subagentes integrados</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Subagente</th><th>Para qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>General purpose</strong></td><td>Tareas multipaso que requieren <strong>exploración y acción</strong></td></tr>
+      <tr><td><strong>Explore</strong></td><td>Búsqueda y navegación <strong>rápidas</strong> por el codebase</td></tr>
+      <tr><td><strong>Plan</strong></td><td>Se usa en <strong>plan mode</strong>: investigación y análisis del codebase <em>antes</em> de presentar un plan</td></tr>
+    </tbody>
+  </table></div>
+  <p>Más allá de los integrados puedes crear los tuyos, con system prompt y acceso a herramientas a medida: un revisor de código, un escritor de tests, un generador de documentación.</p>
+
+  <div class="box key">
+    <div class="bh">◈ Tres beneficios</div>
+    <ol style="margin-bottom:8px">
+      <li><strong>Trocean el trabajo</strong> en piezas enfocadas.</li>
+      <li><strong>Mantienen limpio el contexto principal</strong> aislando el trabajo intermedio.</li>
+      <li><strong>Devuelven justo lo que necesitas</strong>, como resumen conciso.</li>
+    </ol>
+    <p style="margin:0">Cuanto menos ruido en tu contexto principal, <strong>más largo y más eficaz</strong> puede ser tu trabajo.</p>
+  </div>
+  <div class="readbar" data-read="c1"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 2 ═══════ -->
+<section id="c2" data-title="crear un subagente agents frontmatter yaml name description tools model color proactively">
+  <div class="chead">
+    <span class="pill acc">Lección 2</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=arD6qEWa2Xc" target="_blank" rel="noopener">▶ Vídeo original</a>
+  </div>
+  <h2>Crear un subagente</h2>
+  <p class="lede">Un subagente propio es un <strong>fichero markdown con frontmatter YAML</strong> que le dice a Claude <strong>cuándo</strong> usarlo y <strong>cómo</strong> debe comportarse.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · los 5 pasos de <code>/agents</code></div>
+    <div class="tl" id="tl2" role="tablist">
+      <button role="tab" aria-selected="true" data-p="s1"><span class="dot">①</span><span class="lab">Ámbito</span></button>
+      <button role="tab" aria-selected="false" data-p="s2"><span class="dot">②</span><span class="lab">Generación</span></button>
+      <button role="tab" aria-selected="false" data-p="s3"><span class="dot">③</span><span class="lab">Herramientas</span></button>
+      <button role="tab" aria-selected="false" data-p="s4"><span class="dot">④</span><span class="lab">Modelo</span></button>
+      <button role="tab" aria-selected="false" data-p="s5"><span class="dot">⑤</span><span class="lab">Color</span></button>
+    </div>
+    <div class="panel on" id="s1">
+      <p style="margin-bottom:10px">El slash command <code>/agents</code> abre la interfaz de gestión → <strong>Create new agent</strong>. Primero, el alcance:</p>
+      <div class="grid2" style="margin:0">
+        <div class="mini"><h5>Project-level</h5><p>Solo disponible en el <strong>proyecto actual</strong>.</p></div>
+        <div class="mini"><h5>User-level</h5><p>Compartido entre <strong>todos los proyectos</strong> de tu máquina.</p></div>
+      </div>
+    </div>
+    <div class="panel" id="s2">
+      <p>Puedes escribir la configuración a mano, pero <strong>lo recomendado es dejar que Claude la genere</strong>.</p>
+      <p style="margin:0">Describes qué quieres que haga el subagente y Claude produce el <code>name</code>, la <code>description</code> y el system prompt a partir de tu descripción.</p>
+    </div>
+    <div class="panel" id="s3">
+      <p>Categorías disponibles: <strong>read-only</strong>, <strong>edit</strong>, <strong>execution</strong>, <strong>MCP</strong> y <strong>other</strong>.</p>
+      <div class="box tip" style="margin:0"><div class="bh">✓ Piensa en lo que realmente necesita</div><p style="margin:0">Un <strong>revisor de código</strong> probablemente <strong>no necesita edit tools</strong> — debe leer y analizar, no cambiar. Aunque sí puede interesar dejarle <strong>execution tools</strong> activas, para que identifique más fácilmente los cambios pendientes.</p></div>
+    </div>
+    <div class="panel" id="s4">
+      <div class="tw" style="margin:0"><table>
+        <thead><tr><th>Modelo</th><th>Cuándo</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Haiku</strong></td><td>Tareas rápidas y ligeras</td></tr>
+          <tr><td><strong>Sonnet</strong></td><td>Buen término medio entre velocidad y profundidad</td></tr>
+          <tr><td><strong>Opus</strong></td><td>Análisis complejo</td></tr>
+          <tr><td><strong>Inherit</strong></td><td>El modelo que corra tu conversación principal</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="panel" id="s5">
+      <p style="margin:0">Aparece en la interfaz para que sepas <strong>de un vistazo qué subagente está activo</strong>. Detalle pequeño, pero ayuda cuando tienes varios corriendo.</p>
+    </div>
+  </div>
+
+  <h3>El fichero de configuración</h3>
+  <p>Al terminar, se guarda en <code>.claude/agents/tu-agente.md</code>. Juega con los campos y mira cómo cambia:</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · constructor de config</div>
+    <div class="cfg">
+      <div class="cfg-ctl">
+        <label>Tipo de subagente</label>
+        <div class="seg" data-g="kind">
+          <button aria-pressed="true" data-v="review">Revisor de código</button>
+          <button aria-pressed="false" data-v="research">Investigación</button>
+          <button aria-pressed="false" data-v="style">Estilos</button>
+        </div>
+        <label>Modelo</label>
+        <div class="seg" data-g="model">
+          <button aria-pressed="false" data-v="haiku">haiku</button>
+          <button aria-pressed="true" data-v="sonnet">sonnet</button>
+          <button aria-pressed="false" data-v="opus">opus</button>
+          <button aria-pressed="false" data-v="inherit">inherit</button>
+        </div>
+        <label>¿Delegación automática?</label>
+        <div class="seg" data-g="proactive">
+          <button aria-pressed="false" data-v="no">Solo si lo pido</button>
+          <button aria-pressed="true" data-v="si">Proactively</button>
+        </div>
+        <div class="cfg-hint" id="cfgHint"></div>
+      </div>
+      <div class="cfg-out"><pre><code id="cfgOut"></code></pre></div>
+    </div>
+  </div>
+
+  <h3>Los campos, uno a uno</h3>
+  <div class="tw"><table>
+    <thead><tr><th style="width:110px">Campo</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code></td><td>Identificador único. Así lo referencias: pidiéndoselo a Claude o escribiendo <strong><code>@agent code-quality-reviewer</code></strong> en tu mensaje.</td></tr>
+      <tr><td><code>description</code></td><td><strong>Controla cuándo decide Claude usarlo.</strong> Debe ser <strong>una sola línea</strong> — usa <code>\n</code> escapado si necesitas saltos. Puedes incluir conversaciones de ejemplo.</td></tr>
+      <tr><td><code>tools</code></td><td>Qué herramientas puede usar. Coincide con lo que elegiste al generarlo, pero <strong>editable a mano en cualquier momento</strong>.</td></tr>
+      <tr><td><code>model</code></td><td><code>sonnet</code>, <code>opus</code>, <code>haiku</code> o <code>inherit</code>.</td></tr>
+      <tr><td><code>color</code></td><td>Color de identificación en la interfaz.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ El cuerpo del markdown es el system prompt</div>
+    <p>Todo lo que hay <strong>bajo el frontmatter YAML</strong>. Ahí le das las instrucciones: en qué centrarse, cómo analizar y <strong>cómo reportar los hallazgos</strong> de vuelta al agente principal.</p>
+    <p style="margin:0">Un system prompt bien escrito es la diferencia entre un subagente útil y uno que no pilla el punto. Sé específico sobre <strong>qué debe buscar</strong> y <strong>cómo estructurar su salida</strong>.</p>
+  </div>
+
+  <h3>Que Claude lo use automáticamente</h3>
+  <p>Incluye la palabra <strong><code>proactively</code></strong> en el campo <code>description</code>:</p>
+  <pre><code>description: Proactively suggest running this agent after major code changes...</code></pre>
+  <p>También puedes añadir <strong>conversaciones de ejemplo</strong> a la description, para que Claude entienda escenarios concretos. <strong>Cuanto más concretos los ejemplos, mejor sabe cuándo delegar.</strong></p>
+
+  <div class="box trap">
+    <div class="bh">⚠ Si no se dispara cuando esperas…</div>
+    <p style="margin:0">El problema está en la <strong><code>description</code></strong>, no en el system prompt. Vuelve ahí y añade <strong>ejemplos más específicos y escenarios de disparo</strong>. Pruébalo haciendo cambios de código y pidiéndole a Claude que los revise.</p>
+  </div>
+  <div class="readbar" data-read="c2"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 3 ═══════ -->
+<section id="c3" data-title="diseñar subagentes eficaces description formato de salida obstáculos herramientas">
+  <div class="chead">
+    <span class="pill acc">Lección 3</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=WPxWKT_OaU4" target="_blank" rel="noopener">▶ Vídeo original</a>
+  </div>
+  <h2>Diseñar subagentes eficaces</h2>
+  <p class="lede">Un subagente mal configurado <strong>divaga, corre demasiado tiempo o produce una salida que el agente principal no puede usar</strong>. Los arreglos son cuatro.</p>
+
+  <div class="box key">
+    <div class="bh">◈ El dato que casi nadie conoce</div>
+    <p>El <code>name</code> y la <code>description</code> de <strong>cada subagente disponible</strong> se incluyen <strong>en el system prompt del agente principal</strong>. Así decide cuál lanzar y cuándo.</p>
+    <p style="margin:0">Y hay un <strong>segundo papel</strong>: cuando el agente principal lanza un subagente, <strong>escribe un prompt de entrada</strong> — y <strong>usa la description como guía para escribirlo</strong>. La description no controla solo <em>cuándo</em> corre: <strong>moldea lo que se le dice que haga</strong>.</p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · la misma description, dos prompts de entrada</div>
+    <div class="chips" id="descChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="d1">Description genérica</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="d2">Description dirigida</button>
+    </div>
+    <div class="panel on" id="d1">
+      <p style="margin-bottom:8px"><strong>Description:</strong> <em>"Use this agent to review code."</em></p>
+      <p style="margin-bottom:8px"><strong>Prompt de entrada que escribe el principal:</strong></p>
+      <pre style="margin-bottom:10px"><code>use git diff to find the current changes</code></pre>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ Vago</div><p style="margin:0">El subagente tiene que <strong>averiguar por su cuenta</strong> qué ficheros importan.</p></div>
+    </div>
+    <div class="panel" id="d2">
+      <p style="margin-bottom:8px"><strong>Description:</strong> <em>"…You must tell the agent precisely which files you want it to review."</em></p>
+      <p style="margin-bottom:8px"><strong>Prompt de entrada que escribe el principal:</strong></p>
+      <pre style="margin-bottom:10px"><code>Review these files: src/auth/session.ts,
+src/auth/token.ts, src/api/login.ts</code></pre>
+      <div class="box tip" style="margin:0"><div class="bh">✓ Dirigido</div><p style="margin:0">La misma técnica funciona en cualquier subagente. Ejemplo: añadir <em>"return sources that can be cited"</em> a un subagente de búsqueda web hace que el principal <strong>incluya esa instrucción al delegar</strong>.</p></div>
+    </div>
+  </div>
+
+  <h3>Las cuatro claves</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · toca cada clave</div>
+    <div class="tl" id="tl3" role="tablist">
+      <button role="tab" aria-selected="true" data-p="k1"><span class="dot">◈</span><span class="lab">Description específica</span></button>
+      <button role="tab" aria-selected="false" data-p="k2"><span class="dot">▤</span><span class="lab">Formato de salida</span></button>
+      <button role="tab" aria-selected="false" data-p="k3"><span class="dot">⚑</span><span class="lab">Obstáculos</span></button>
+      <button role="tab" aria-selected="false" data-p="k4"><span class="dot">⚙</span><span class="lab">Herramientas</span></button>
+    </div>
+
+    <div class="panel on" id="k1">
+      <p style="margin:0">Controla <strong>cuándo</strong> se lanza el subagente <strong>y qué instrucciones recibe</strong>. Escríbela para dirigir las dos cosas — no solo para que se dispare, sino para que se dispare <em>con el encargo correcto</em>.</p>
+    </div>
+
+    <div class="panel" id="k2">
+      <div class="box key" style="margin-top:0"><div class="bh">◈ La mejora individual más importante</div><p style="margin:0">Definir un <strong>formato de salida</strong> en el system prompt. Es <em>la</em> palanca del capítulo.</p></div>
+      <p>Hace dos cosas:</p>
+      <ol>
+        <li><strong>Crea puntos de parada naturales</strong> — el subagente sabe que ha terminado cuando ha rellenado cada sección.</li>
+        <li><strong>Evita que corra demasiado tiempo</strong> — sin salida definida, los subagentes no saben decidir cuánta investigación es suficiente y <strong>tienden a correr mucho más de lo necesario</strong>.</li>
+      </ol>
+      <pre style="margin-bottom:0"><code>Provide your review in a structured format:
+
+1. Summary: Brief overview of what you reviewed and overall assessment
+2. Critical Issues: Any security vulnerabilities, data integrity risks,
+   or logic errors that must be fixed immediately
+3. Major Issues: Quality problems, architecture misalignment, or
+   significant performance concerns
+4. Minor Issues: Style inconsistencies, documentation gaps, or
+   minor optimizations
+5. Recommendations: Suggestions for improvement, refactoring
+   opportunities, or best practices to apply
+6. Approval Status: Clear statement of whether the code is ready
+   to merge/deploy or requires changes</code></pre>
+    </div>
+
+    <div class="panel" id="k3">
+      <p>Cuando un subagente descubre un workaround —resolver un problema de dependencias, ver que cierto comando necesita flags concretos— <strong>eso tiene que aparecer en el resumen que devuelve</strong>.</p>
+      <div class="box trap"><div class="bh">⚠ Si no</div><p style="margin:0">El hilo principal tiene que <strong>redescubrir las mismas soluciones</strong>, gastando tiempo y tokens.</p></div>
+      <p>Lo que quieres que aflore: <strong>problemas de setup</strong> o rarezas del entorno · <strong>workarounds</strong> descubiertos · <strong>comandos con flags especiales</strong> · <strong>dependencias o imports problemáticos</strong>.</p>
+      <p><strong>La forma de conseguirlo es pedirlo explícitamente en el formato de salida:</strong></p>
+      <pre style="margin-bottom:0"><code>7. Obstacles Encountered: Report any obstacles encountered during the
+   review process. This can be: setup issues, workarounds discovered or
+   environment quirks. Report commands that needed a special flag or
+   configuration. Report dependencies or imports that caused problems.</code></pre>
+    </div>
+
+    <div class="panel" id="k4">
+      <p>Dale solo las herramientas que su trabajo requiere. Consigue dos cosas: <strong>evita efectos secundarios no deseados</strong> y <strong>clarifica el rol</strong> de cada subagente cuando tienes varios.</p>
+      <div class="tw" style="margin:0"><table>
+        <thead><tr><th>Tipo</th><th>Herramientas</th><th>Razón</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Investigación / solo lectura</strong></td><td><code>Glob</code> <code>Grep</code> <code>Read</code></td><td><strong>No puede modificar ficheros</strong> accidentalmente</td></tr>
+          <tr><td><strong>Revisor de código</strong></td><td>+ <code>Bash</code></td><td>Necesita <code>Bash</code> para <code>git diff</code> y ver qué cambió — pero <strong>sigue sin necesitar <code>Edit</code> ni <code>Write</code></strong></td></tr>
+          <tr><td><strong>Estilos / modificación</strong></td><td>+ <code>Edit</code> <code>Write</code></td><td>Aquí sí: su trabajo <em>es</em> cambiar tu código</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ Juntándolo todo</div>
+    <p style="margin:0">Cada patrón es simple por separado, pero juntos convierten un subagente de "algo que vagamente intenta ayudar" en <strong>un trabajador enfocado y predecible que termina a tiempo y reporta con claridad</strong>.</p>
+  </div>
+  <div class="readbar" data-read="c3"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ CAP 4 ═══════ -->
+<section id="c4" data-title="usar subagentes con criterio antipatrones experto pipeline test runner regla de decisión">
+  <div class="chead">
+    <span class="pill acc">Lección 4</span>
+    <a class="vid" href="https://www.youtube.com/watch?v=n5LoKZ8Oa-A" target="_blank" rel="noopener">▶ Vídeo original</a>
+  </div>
+  <h2>Usar subagentes con criterio</h2>
+  <p class="lede">¿Cuándo ayudan de verdad y cuándo estorban? La diferencia se reduce a una cosa: <strong>si el trabajo intermedio le importa o no a tu hilo principal</strong>.</p>
+
+  <p>Los subagentes funcionan mejor <strong>cuando la exploración está separada de la ejecución</strong>. Si cada paso depende de lo que descubrió el anterior, quieres ese trabajo en tu hilo principal. Si solo necesitas una respuesta y el viaje te da igual, delégalo.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · ¿delegar o no? Responde y te digo</div>
+    <div id="decider">
+      <div class="q-step" data-q="0">
+        <p>¿Necesitas <strong>ver y reaccionar</strong> a lo que va descubriendo por el camino?</p>
+        <div class="btn-row">
+          <button class="btn" data-a="main">Sí, cada paso depende del anterior</button>
+          <button class="btn" data-a="next">No, solo quiero el resultado</button>
+        </div>
+      </div>
+      <div class="q-step" data-q="1" style="display:none">
+        <p>¿Qué tipo de trabajo es?</p>
+        <div class="btn-row">
+          <button class="btn" data-a="ok">Investigar / revisar / escribir con un tono propio</button>
+          <button class="btn" data-a="tests">Correr los tests y contarme el resultado</button>
+          <button class="btn" data-a="expert">Que un "experto" en X me asesore</button>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="btn-row" style="margin-top:12px"><button class="btn" id="decReset">Empezar de nuevo</button></div>
+    </div>
+  </div>
+
+  <h3>Los tres casos donde brillan</h3>
+  <div class="widget">
+    <div class="widget-t">Interactivo · toca cada caso</div>
+    <div class="chips" id="useChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="u1">Investigación</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="u2">Revisión de código</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="u3">System prompt a medida</button>
+    </div>
+    <div class="panel on" id="u1">
+      <p>El caso de uso clásico. Investigar cómo funciona la autenticación en un codebase desconocido: tu hilo principal necesita saber <strong>dónde</strong> se valida el JWT, no ver cada fichero que se buscó.</p>
+      <p>El subagente lee decenas de ficheros, rastrea llamadas y explora rutas. <strong>Toda esa exploración se queda en su contexto.</strong> Tu hilo principal recibe:</p>
+      <pre style="margin-bottom:0"><code>JWT validation happens in middleware/auth.js line 42,
+called from the Express router in route/api.js</code></pre>
+    </div>
+    <div class="panel" id="u2">
+      <blockquote style="margin-top:0">Claude revisa código de forma más eficaz cuando el código se le presenta como escrito por otra persona.</blockquote>
+      <p>Si construiste una feature a lo largo de muchos turnos con tu hilo principal, pedirle a <em>ese mismo hilo</em> que la revise <strong>suele producir feedback flojo</strong>: estuvo implicado en crearla, le cuesta verla con ojos frescos.</p>
+      <p>Un subagente revisor ve los cambios <strong>en un contexto separado</strong>: ejecuta <code>git diff</code>, lee los ficheros modificados y aplica sus criterios <strong>sin el historial de cómo se escribió</strong>.</p>
+      <div class="box tip" style="margin:0"><div class="bh">✓ Ventaja de equipo</div><p style="margin:0">Esa separación te permite <strong>codificar los estándares de revisión del proyecto</strong> en su system prompt, garantizando <strong>criterios consistentes en todo el equipo</strong>.</p></div>
+    </div>
+    <div class="panel" id="u3">
+      <p>El system prompt por defecto de Claude Code <strong>enfatiza respuestas concisas y centradas en código</strong>. Perfecto para programar, no para todo.</p>
+      <div class="grid2" style="margin:0">
+        <div class="mini"><h5>Copywriting</h5><p>Instrucciones de <strong>tono, audiencia y estilo</strong>. El prompt por defecto tiende a escritura técnica concisa, que <strong>no es lo que quieres</strong> para una landing page o una campaña de email.</p></div>
+        <div class="mini"><h5>Estilos</h5><p>Lo apuntas a los ficheros de tu <strong>design system</strong>. Al ejecutarse <strong>se cargan solos en su contexto</strong>: conoce tus variables de color, espaciados y patrones de componente <strong>antes de escribir una línea de CSS</strong>.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Los tres antipatrones</h3>
+  <p>El coste de lanzar un subagente —<strong>perder visibilidad</strong> y <strong>comprimir los hallazgos en un resumen</strong>— solo compensa cuando hace algo que el hilo principal <strong>no puede</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">Interactivo · por qué falla cada uno</div>
+    <div class="chips" id="antiChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="a1">✗ Reclamos de experto</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="a2">✗ Pipelines secuenciales</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="a3">✗ Test runners</button>
+    </div>
+    <div class="panel on" id="a1">
+      <p>Prompts del tipo <em>"you are a Python expert"</em> o <em>"you are a Kubernetes specialist"</em>.</p>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ Por qué no aporta</div><p style="margin:0"><strong>Claude ya tiene ese conocimiento.</strong> No hay nada que un supuesto subagente experto pueda hacer que tu hilo principal no pueda hacer directamente.</p></div>
+    </div>
+    <div class="panel" id="a2">
+      <p>Un flujo de tres agentes: uno reproduce el bug, otro lo depura, otro lo arregla.</p>
+      <div class="box trap"><div class="bh">⚠ Cuándo fallan</div><p style="margin:0">Los pipelines funcionan <strong>cuando las tareas son realmente independientes</strong>. Fallan cuando <strong>cada paso depende de descubrimientos del anterior</strong> — y arreglar bugs casi siempre es así. <strong>La información se pierde en el traspaso</strong> entre agentes.</p></div>
+      <p style="margin:0">Ese trabajo va en el hilo principal.</p>
+    </div>
+    <div class="panel" id="a3">
+      <p>Un subagente que corre los tests <strong>oculta información que necesitas</strong>. Cuando fallan, quieres <strong>la salida completa</strong> para diagnosticar. Uno que devuelve <em>"tests failed"</em> te obliga a crear scripts de depuración adicionales para conseguir detalles <strong>que habrían estado visibles en la salida directa</strong>.</p>
+      <div class="box trap" style="margin:0"><div class="bh">⚠ El dato</div><p style="margin:0">Las pruebas mostraron que <strong>el patrón de test runner fue el que peor rendimiento dio de todas las configuraciones</strong>.</p></div>
+    </div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ La regla de decisión</div>
+    <p style="font-size:19px;font-family:var(--serif);color:var(--ink);margin-bottom:12px">¿Importa el trabajo intermedio?</p>
+    <div class="ad" style="margin:0">
+      <div class="yes"><h5>✓ Usa subagentes para</h5><ul><li>Investigación y exploración</li><li>Revisiones de código</li><li>Tareas que necesitan un system prompt a medida</li></ul></div>
+      <div class="no"><h5>✗ Evítalos para</h5><ul><li>Personas de "experto" que no añaden capacidad real</li><li>Pipelines multipaso donde cada paso depende del anterior</li><li>Ejecutar tests cuando necesitas la salida completa para depurar</li></ul></div>
+    </div>
+  </div>
+  <div class="readbar" data-read="c4"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══════ FLASHCARDS ═══════ -->
+<section id="flash" data-title="flashcards repaso tarjetas chuleta">
+  <span class="pill acc">Repaso activo</span>
+  <h2 style="margin-top:12px">Flashcards</h2>
+  <p class="lede">Los hechos concretos del curso. Clic para girar.</p>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn" id="flipAll">Girar todas</button>
+    <button class="btn" id="shuffleCards">Barajar</button>
+  </div>
+  <div class="cards" id="cardGrid"></div>
+</section>
+
+<hr>
+
+<!-- ═══════ QUIZ ═══════ -->
+<section id="quiz" data-title="quiz preguntas examen test autoevaluación">
+  <span class="pill acc">Autoevaluación</span>
+  <h2 style="margin-top:12px">Quiz — 12 preguntas</h2>
+  <p class="lede">Elige una respuesta y te digo al momento si es correcta y <strong>por qué</strong>.</p>
+  <div class="box note">
+    <div class="bh">ℹ Este curso no tiene quiz oficial</div>
+    <p style="margin:0">Son 4 lecciones y se acaba: en Skilljar no hay evaluación al final. Estas 12 preguntas están construidas a partir del material, con el mismo estilo de escenario que usa Anthropic en sus otros cursos.</p>
+  </div>
+  <div class="quiz-group">
+    <div id="quizBox"></div>
+    <div class="score" id="scoreBox">
+      <div><div class="big" id="scoreNum">0 / 12</div><div class="lab" id="scoreLab">Aún no has contestado</div></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="quizReset">Reiniciar</button>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("subag1_"+k))??d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem("subag1_"+k,JSON.stringify(v))}catch(e){}}
+};
+const root=document.documentElement;
+root.dataset.theme=LS.get("theme","light");
+$("#themeBtn").onclick=()=>{const t=root.dataset.theme==="light"?"dark":"light";root.dataset.theme=t;LS.set("theme",t);};
+
+/* tabs */
+function wireTabs(c){
+  const btns=$$('[role="tab"]',c);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    const scope=c.closest(".widget")||document;
+    btns.forEach(x=>{const p=$("#"+x.dataset.p,scope); if(p)p.classList.toggle("on",x===b);});
+  });
+}
+["#exChips","#tl2","#descChips","#tl3","#useChips","#antiChips"].forEach(s=>{const e=$(s);if(e)wireTabs(e);});
+
+/* cap 2 · config builder */
+(function(){
+  const out=$("#cfgOut"), hint=$("#cfgHint"); if(!out) return;
+  const state={kind:"review",model:"sonnet",proactive:"si"};
+  const K={
+    review:{name:"code-quality-reviewer",
+      desc:"review recently written or modified code for quality, security, and best practice compliance. You must tell the agent precisely which files you want it to review",
+      tools:"Bash, Glob, Grep, Read",
+      body:"You are an expert code reviewer specializing in quality assurance,\nsecurity best practices, and adherence to project standards.\n\nProvide your review in a structured format:\n1. Summary   2. Critical Issues   3. Major Issues\n4. Minor Issues   5. Recommendations   6. Approval Status\n7. Obstacles Encountered",
+      color:"purple",
+      hint:"<strong>Revisor:</strong> necesita <code>Bash</code> para ejecutar <code>git diff</code> y ver qué cambió, pero <strong>no</strong> <code>Edit</code> ni <code>Write</code> — su trabajo es analizar, no cambiar."},
+    research:{name:"codebase-researcher",
+      desc:"investigate how a feature works across an unfamiliar codebase and report where the relevant logic lives",
+      tools:"Glob, Grep, Read",
+      body:"You research unfamiliar code and report findings concisely.\n\nProvide your findings in a structured format:\n1. Answer (file + line)   2. Call path   3. Related files\n4. Obstacles Encountered",
+      color:"blue",
+      hint:"<strong>Investigación:</strong> solo <code>Glob</code>, <code>Grep</code> y <code>Read</code>. Así <strong>no puede modificar ficheros accidentalmente</strong>."},
+    style:{name:"design-system-styler",
+      desc:"apply CSS and component styling consistent with the project design system. Point the agent at the design tokens files",
+      tools:"Glob, Grep, Read, Edit, Write",
+      body:"You write CSS that follows the project design system.\nAlways read the design token files before writing any style.\n\nProvide your output in a structured format:\n1. Files changed   2. Tokens used   3. Deviations and why\n4. Obstacles Encountered",
+      color:"green",
+      hint:"<strong>Estilos:</strong> aquí sí van <code>Edit</code> y <code>Write</code>, porque su trabajo <em>es</em> cambiar tu código. Apúntalo a los ficheros del design system: <strong>se cargan solos en su contexto</strong> al ejecutarse."}
+  };
+  function render(){
+    const k=K[state.kind];
+    const desc=(state.proactive==="si"?"Proactively use this agent to ":"Use this agent when you need to ")+k.desc+".";
+    out.textContent=
+"---\nname: "+k.name+
+"\ndescription: "+desc+
+"\ntools: "+k.tools+
+"\nmodel: "+state.model+
+"\ncolor: "+k.color+
+"\n---\n\n"+k.body;
+    const mh={haiku:"<strong>haiku</strong> — tareas rápidas y ligeras.",
+      sonnet:"<strong>sonnet</strong> — término medio entre velocidad y profundidad.",
+      opus:"<strong>opus</strong> — análisis complejo.",
+      inherit:"<strong>inherit</strong> — el modelo que corra tu conversación principal."}[state.model];
+    const ph=state.proactive==="si"
+      ? "La palabra <strong><code>proactively</code></strong> en la description es lo que hace que Claude delegue <strong>sin que se lo pidas</strong>."
+      : "Sin <code>proactively</code>, Claude solo lo usará si se lo pides o si escribes <code>@agent "+k.name+"</code>.";
+    hint.innerHTML=k.hint+"<br><br>"+mh+"<br><br>"+ph;
+  }
+  $$(".seg").forEach(seg=>{
+    const g=seg.dataset.g;
+    $$("button",seg).forEach(b=>b.onclick=()=>{
+      $$("button",seg).forEach(x=>x.setAttribute("aria-pressed",x===b));
+      state[g]=b.dataset.v; render();
+    });
+  });
+  render();
+})();
+
+/* cap 4 · decider */
+(function(){
+  const box=$("#decider"); if(!box) return;
+  const steps=$$(".q-step",box), v=$("#verdict");
+  const V={
+    main:["Hilo principal","Cada paso depende del anterior, así que <strong>la información se perdería en el traspaso</strong>. Es exactamente el antipatrón del <em>pipeline secuencial</em>. Quédate en el hilo principal."],
+    ok:["Subagente","Caso de uso claro. Investigación, revisión de código y trabajo que necesita un system prompt propio son <strong>los tres sitios donde los subagentes brillan</strong>: el trabajo intermedio no te hace falta."],
+    tests:["Hilo principal","<strong>Antipatrón de test runner.</strong> Cuando los tests fallan quieres <strong>la salida completa</strong> para diagnosticar; un subagente que devuelve \"tests failed\" te obliga a scripts de depuración extra. Fue la configuración con <strong>peor rendimiento de todas las probadas</strong>."],
+    expert:["Hilo principal","<strong>Antipatrón de reclamo de experto.</strong> <em>\"You are a Python expert\"</em> no aporta nada: <strong>Claude ya tiene ese conocimiento</strong>. No hay nada que ese subagente pueda hacer que tu hilo principal no haga directamente."]
+  };
+  function reset(){steps.forEach((s,i)=>s.style.display=i===0?"":"none");v.classList.remove("on");}
+  $$("button[data-a]",box).forEach(b=>b.onclick=()=>{
+    const a=b.dataset.a;
+    if(a==="next"){steps[0].style.display="none";steps[1].style.display="";return;}
+    const [t,d]=V[a];
+    v.innerHTML="<b>→ "+t+"</b>"+d; v.classList.add("on");
+    steps.forEach(s=>s.style.display="none");
+  });
+  $("#decReset").onclick=reset;
+})();
+
+/* flashcards */
+const CARDS=[
+ ["¿Qué recibe un subagente al arrancar?","<strong>Dos cosas:</strong> un <strong>system prompt</strong> (de su fichero de config) y una <strong>descripción de tarea</strong> escrita por el agente padre."],
+ ["¿Qué pasa con la conversación del subagente al terminar?","<strong>Se descarta entera.</strong> Solo el resumen vuelve al hilo principal."],
+ ["El precio de delegar","<strong>Visibilidad.</strong> Pierdes ver cómo llegó a sus conclusiones; los hallazgos vuelven comprimidos."],
+ ["Los 3 subagentes integrados","<strong>General purpose</strong> (multipaso: exploración + acción) · <strong>Explore</strong> (búsqueda y navegación rápidas) · <strong>Plan</strong> (investigación en plan mode)."],
+ ["Comando para gestionar subagentes","<code>/agents</code> → <em>Create new agent</em>."],
+ ["Los dos ámbitos","<strong>Project-level</strong> (solo este proyecto) y <strong>user-level</strong> (todos los proyectos de tu máquina)."],
+ ["¿Escribir el config a mano o generarlo?","<strong>Lo recomendado es que lo genere Claude</strong> a partir de tu descripción: produce name, description y system prompt."],
+ ["Dónde se guarda el config","<code>.claude/agents/tu-agente.md</code>"],
+ ["Las 5 categorías de herramientas","Read-only · Edit · Execution · MCP · Other."],
+ ["Las 4 opciones de modelo","<code>haiku</code> (rápido/ligero) · <code>sonnet</code> (término medio) · <code>opus</code> (análisis complejo) · <code>inherit</code> (el de la conversación principal)."],
+ ["¿Cómo invocas un subagente por nombre?","<code>@agent nombre-del-agente</code> en tu mensaje."],
+ ["Restricción de formato de <code>description</code>","Debe ser <strong>una sola línea</strong>. Usa <code>\\n</code> escapado si necesitas saltos."],
+ ["¿Qué parte del fichero es el system prompt?","<strong>El cuerpo del markdown</strong>, todo lo que hay bajo el frontmatter YAML."],
+ ["Que Claude delegue sin pedírselo","Incluir la palabra <strong><code>proactively</code></strong> en la <code>description</code>."],
+ ["No se dispara cuando esperas. ¿Qué tocas?","La <strong><code>description</code></strong> — añade ejemplos concretos y escenarios de disparo."],
+ ["El doble papel de la description","(1) Va al system prompt del principal y decide <strong>cuándo</strong> se lanza. (2) El principal <strong>la usa como guía para escribir el prompt de entrada</strong> — decide <strong>qué</strong> se le manda hacer."],
+ ["La mejora individual más importante","<strong>Definir un formato de salida</strong> en el system prompt."],
+ ["¿Qué dos problemas resuelve el formato de salida?","Da <strong>puntos de parada naturales</strong> (sabe que terminó al rellenar cada sección) y <strong>evita que corra demasiado tiempo</strong>."],
+ ["Sección \"Obstacles Encountered\"","Setup, workarounds, comandos con flags especiales, dependencias problemáticas. Si no lo pides en el formato, <strong>el hilo principal lo redescubre</strong> gastando tiempo y tokens."],
+ ["Herramientas de un subagente de investigación","Solo <code>Glob</code>, <code>Grep</code>, <code>Read</code>. <strong>No puede modificar ficheros.</strong>"],
+ ["Herramientas de un revisor de código","Añade <code>Bash</code> (para <code>git diff</code>), pero <strong>sigue sin <code>Edit</code> ni <code>Write</code></strong>."],
+ ["¿Por qué revisa mejor un subagente que el hilo que escribió el código?","Claude revisa mejor cuando el código <strong>se le presenta como escrito por otro</strong>. El hilo que lo construyó da feedback flojo: le cuesta verlo con ojos frescos."],
+ ["Ventaja de equipo del subagente revisor","Puedes <strong>codificar los estándares de revisión del proyecto</strong> en su system prompt → criterios consistentes para todo el equipo."],
+ ["Subagente de estilos: el truco","Apuntarlo a los ficheros del <strong>design system</strong>. Se cargan <strong>solos en su contexto</strong> al ejecutarse, antes de escribir CSS."],
+ ["Antipatrón 1 · Reclamos de experto","<em>\"You are a Python expert\"</em> no aporta: <strong>Claude ya tiene ese conocimiento</strong>."],
+ ["Antipatrón 2 · Pipelines secuenciales","Funcionan solo si las tareas son <strong>realmente independientes</strong>. Reproducir→depurar→arreglar falla: <strong>la información se pierde en el traspaso</strong>."],
+ ["Antipatrón 3 · Test runners","<strong>Ocultan la salida</strong> que necesitas para diagnosticar. <strong>Fue la configuración con peor rendimiento de todas las probadas.</strong>"],
+ ["La regla de decisión","<strong>¿Importa el trabajo intermedio?</strong> No → delega. Sí → hilo principal."]
+];
+(function(){
+  const grid=$("#cardGrid"); if(!grid) return;
+  function paint(list){
+    grid.innerHTML="";
+    list.forEach(([f,b])=>{
+      const el=document.createElement("button"); el.className="card";
+      el.innerHTML='<div class="inner"><div class="f">'+f+'</div><div class="b">'+b+'</div></div>';
+      el.onclick=()=>el.classList.toggle("flip");
+      grid.appendChild(el);
+    });
+  }
+  paint(CARDS);
+  $("#flipAll").onclick=()=>{
+    const any=$$(".card",grid).some(c=>!c.classList.contains("flip"));
+    $$(".card",grid).forEach(c=>c.classList.toggle("flip",any));
+  };
+  $("#shuffleCards").onclick=()=>{
+    const a=[...CARDS];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    paint(a);
+  };
+})();
+
+/* quiz */
+const QUIZ=[
+ {q:"Un subagente arranca. ¿Qué recibe exactamente?",
+  o:["Todo el historial de la conversación principal",
+     "Un system prompt de su fichero de config y una descripción de tarea escrita por el agente padre",
+     "Solo la descripción de tarea; el system prompt lo hereda del hilo principal",
+     "Los ficheros que el agente padre ya había leído"],
+  a:1, e:"Son exactamente <strong>dos cosas</strong>: el system prompt que define su rol (de tu fichero de configuración) y la descripción de tarea que escribe el agente padre a partir de lo que pediste. No hereda el contexto del hilo principal — ese es todo el punto."},
+
+ {q:"Un subagente termina su trabajo. ¿Qué pasa con todo lo que hizo?",
+  o:["Su conversación se descarta; solo el resumen vuelve al hilo principal",
+     "Se fusiona con la conversación principal para no perder detalle",
+     "Se guarda en un fichero de log que el hilo principal puede consultar",
+     "Se conserva en memoria por si el hilo principal necesita ampliarlo"],
+  a:0, e:"<strong>La conversación completa del subagente se descarta.</strong> Solo vuelve el resumen. Por eso el contexto principal se queda limpio — y por eso <strong>lo que no pidas explícitamente en el formato de salida, se pierde</strong>."},
+
+ {q:"Exploras un codebase desconocido y necesitas navegarlo rápido. ¿Qué subagente integrado usas?",
+  o:["General purpose",
+     "Plan",
+     "Explore",
+     "Ninguno: los integrados no sirven para navegar"],
+  a:2, e:"<strong>Explore</strong> es el de búsqueda y navegación rápidas. <em>General purpose</em> es para multipaso que requiere exploración <strong>y</strong> acción; <em>Plan</em> es el que se usa en plan mode para investigar antes de presentar un plan."},
+
+ {q:"Creas un revisor de código con <code>/agents</code>. ¿Qué herramientas le das?",
+  o:["Todas, para que no le falte nada",
+     "Read-only más <code>Bash</code>, pero sin <code>Edit</code> ni <code>Write</code>",
+     "Solo <code>Glob</code>, <code>Grep</code> y <code>Read</code>",
+     "<code>Edit</code> y <code>Write</code>, para que pueda aplicar los arreglos que encuentre"],
+  a:1, e:"Necesita <code>Bash</code> para ejecutar <code>git diff</code> y ver qué cambió, pero <strong>no necesita <code>Edit</code> ni <code>Write</code></strong>: su trabajo es analizar, no cambiar. Limitar las herramientas evita efectos secundarios y clarifica el rol del subagente."},
+
+ {q:"Tu subagente revisor nunca se dispara solo, aunque el system prompt es excelente. ¿Qué haces?",
+  o:["Ampliar el system prompt con más detalle sobre cuándo actuar",
+     "Cambiar el modelo a opus para que razone mejor sobre cuándo intervenir",
+     "Editar la <code>description</code>: añadir <code>proactively</code> y ejemplos concretos de disparo",
+     "Bajar el subagente de user-level a project-level"],
+  a:2, e:"La decisión de delegar se toma leyendo el <code>name</code> y la <code>description</code>, que van al system prompt del agente principal. El system prompt del subagente <strong>solo se aplica una vez ya se ha lanzado</strong>. Si no se dispara, el problema está en la description."},
+
+ {q:"¿Qué campo del frontmatter debe ser obligatoriamente de una sola línea?",
+  o:["<code>name</code>",
+     "<code>description</code>",
+     "<code>tools</code>",
+     "<code>model</code>"],
+  a:1, e:"La <code>description</code> debe caber en una línea; si necesitas saltos, usa <code>\\n</code> escapado. Ahí es donde además puedes meter conversaciones de ejemplo para afinar cuándo delega Claude."},
+
+ {q:"Además de decidir <em>cuándo</em> se lanza un subagente, ¿qué otra cosa hace la <code>description</code>?",
+  o:["Nada más; el resto lo controla el system prompt",
+     "Define qué herramientas quedan habilitadas en tiempo de ejecución",
+     "El agente principal la usa como guía para escribir el prompt de entrada del subagente",
+     "Determina qué modelo se usa si el campo <code>model</code> es <code>inherit</code>"],
+  a:2, e:"Este es el matiz central de la lección 3. La description <strong>moldea lo que se le dice que haga</strong>. Por eso añadirle <em>\"You must tell the agent precisely which files you want it to review\"</em> hace que el prompt de entrada liste ficheros concretos en vez de un vago \"usa git diff\"."},
+
+ {q:"Tu subagente de investigación corre eternamente y devuelve informes inconsistentes. ¿Cuál es el arreglo de mayor impacto?",
+  o:["Definir un formato de salida estructurado en su system prompt",
+     "Cambiarlo a haiku para que sea más rápido",
+     "Quitarle herramientas hasta que no pueda explorar tanto",
+     "Dividirlo en tres subagentes más pequeños encadenados"],
+  a:0, e:"Es <strong>la mejora individual más importante</strong> que se puede hacer a un subagente. Resuelve las dos cosas a la vez: le da <strong>puntos de parada naturales</strong> (terminó cuando rellenó cada sección) y <strong>evita que corra de más</strong>, que es justo lo que pasa sin salida definida. Y ojo: la opción D es además un antipatrón."},
+
+ {q:"Un subagente descubrió que cierto comando necesitaba un flag raro para funcionar. ¿Cómo te aseguras de enterarte?",
+  o:["Revisando el log del subagente después de que termine",
+     "Añadiendo una sección \"Obstacles Encountered\" al formato de salida",
+     "Dándole permiso de escritura para que lo anote en un fichero",
+     "Preguntándoselo al hilo principal cuando reciba el resumen"],
+  a:1, e:"Hay que <strong>pedirlo explícitamente en el formato de salida</strong>: setup, workarounds, comandos con flags especiales, dependencias problemáticas. Si no, <strong>el hilo principal tiene que redescubrir las mismas soluciones</strong>, gastando tiempo y tokens. Y la opción A no existe: su conversación se descarta."},
+
+ {q:"Construiste una feature a lo largo de muchos turnos y ahora quieres que se revise. ¿Por qué delegar a un subagente revisor?",
+  o:["Porque el hilo principal ya no tiene contexto suficiente",
+     "Porque Claude revisa mejor cuando el código se le presenta como escrito por otra persona",
+     "Porque el subagente puede aplicar los arreglos automáticamente",
+     "Porque el subagente usa un modelo más capaz"],
+  a:1, e:"El hilo que construyó la feature estuvo implicado en crearla y <strong>le cuesta verla con ojos frescos</strong>: suele dar feedback flojo. El revisor la ve en un contexto separado, sin el historial de cómo se escribió. Bonus: puedes codificar los estándares del proyecto en su system prompt para tener criterios consistentes en el equipo."},
+
+ {q:"Quieres montar tres subagentes encadenados: uno reproduce el bug, otro lo depura, otro lo arregla. ¿Buena idea?",
+  o:["Sí, así cada uno se especializa y el contexto queda limpio",
+     "Sí, siempre que cada uno tenga un formato de salida definido",
+     "No: cada paso depende de descubrimientos del anterior y la información se pierde en el traspaso",
+     "No, pero solo porque tres subagentes consumen demasiados tokens"],
+  a:2, e:"Antipatrón de <strong>pipeline secuencial</strong>. Los pipelines funcionan cuando las tareas son <strong>realmente independientes</strong>, y arreglar bugs casi nunca lo es. Ese trabajo va en el hilo principal, donde puedes ver y reaccionar a lo que aparece."},
+
+ {q:"Estás decidiendo si delegar una tarea. ¿Cuál es la pregunta que lo resuelve?",
+  o:["¿Cuánto va a tardar la tarea?",
+     "¿Importa el trabajo intermedio?",
+     "¿Cuántos ficheros va a tener que leer?",
+     "¿Existe ya un subagente para esto?"],
+  a:1, e:"Toda la lección 4 se reduce a esto. <strong>No importa el intermedio</strong> — solo quieres el resultado → <strong>delega</strong>. <strong>Sí importa</strong> — necesitas ver y reaccionar por el camino → <strong>hilo principal</strong>."}
+];
+function mountQuiz(boxSel,data,key,numSel,labSel,resetSel){
+  const box=$(boxSel); if(!box) return;
+  const KEYS="ABCD";
+  let answers=LS.get(key,{});
+  function render(){
+    box.innerHTML="";
+    data.forEach((q,i)=>{
+      const d=document.createElement("div"); d.className="quiz-q";
+      d.innerHTML='<div class="qn">Pregunta '+(i+1)+' / '+data.length+'</div><div class="qt">'+q.q+'</div>';
+      const ul=document.createElement("div"); ul.className="opts";
+      q.o.forEach((t,j)=>{
+        const b=document.createElement("button"); b.className="opt";
+        b.innerHTML='<span class="k">'+KEYS[j]+'</span><span>'+t+'</span>';
+        b.onclick=()=>{ if(answers[i]!==undefined) return; answers[i]=j; LS.set(key,answers); render(); score(); };
+        ul.appendChild(b);
+      });
+      d.appendChild(ul);
+      const ex=document.createElement("div"); ex.className="expl";
+      ex.innerHTML='<b>'+(answers[i]===q.a?"✓ Correcto. ":"✗ La correcta es "+KEYS[q.a]+". ")+'</b>'+q.e;
+      d.appendChild(ex);
+      if(answers[i]!==undefined){
+        [...ul.children].forEach((b,j)=>{
+          b.disabled=true;
+          if(j===q.a)b.classList.add("ok"); else if(j===answers[i])b.classList.add("ko");
+        });
+        ex.classList.add("on");
+      }
+      box.appendChild(d);
+    });
+  }
+  function score(){
+    const done=Object.keys(answers).length;
+    const ok=Object.entries(answers).filter(([i,v])=>data[i].a===+v).length;
+    $(numSel).textContent=ok+" / "+data.length;
+    const lab=$(labSel);
+    if(!done){lab.textContent="Aún no has contestado";return;}
+    const pct=Math.round(ok/done*100), full=done===data.length;
+    const thr=Math.ceil(data.length*0.85), mid=Math.ceil(data.length*0.65);
+    lab.innerHTML=done+" contestadas · "+pct+"% de acierto"+
+      (full?(ok>=thr?" · <b style='color:var(--good)'>dominas el material</b>"
+        :ok>=mid?" · repasa las falladas y vuelve":" · vuelve a leer los capítulos de las falladas"):"");
+  }
+  $(resetSel).onclick=()=>{answers={};LS.set(key,answers);render();score();box.scrollIntoView({behavior:"smooth",block:"start"});};
+  render(); score();
+}
+mountQuiz("#quizBox",QUIZ,"quiz","#scoreNum","#scoreLab","#quizReset");
+
+/* progress */
+(function(){
+  const CH=["c1","c2","c3","c4"];
+  let read=LS.get("read",{});
+  function sync(){
+    const n=CH.filter(c=>read[c]).length;
+    $("#meterBar").style.width=(n/CH.length*100)+"%";
+    $("#meterLab").textContent=n+" / "+CH.length;
+    CH.forEach(c=>{const a=$('[data-nav="'+c+'"]'); if(a)a.classList.toggle("done",!!read[c]);});
+    $$(".readbar[data-read]").forEach(bar=>{
+      const k=bar.dataset.read; if(!CH.includes(k))return;
+      const on=!!read[k];
+      bar.classList.toggle("done",on);
+      $(".txt",bar).textContent=on?"✓ Leído":"¿Capítulo asimilado?";
+      $(".btn",bar).textContent=on?"Desmarcar":"Marcar como leído";
+    });
+  }
+  $$(".readbar[data-read] .btn").forEach(b=>{
+    b.onclick=()=>{const k=b.closest(".readbar").dataset.read;read[k]=!read[k];LS.set("read",read);sync();};
+  });
+  $("#resetBtn").onclick=()=>{read={};LS.set("read",read);LS.set("quiz",{});sync();location.reload();};
+  sync();
+})();
+
+/* scrollspy */
+(function(){
+  const links=$$("#side a"), map={};
+  links.forEach(a=>map[a.dataset.nav]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const a=map[e.target.id]; if(a)a.classList.add("active");
+      }
+    });
+  },{rootMargin:"-70px 0px -70% 0px",threshold:0});
+  $$("main section").forEach(s=>obs.observe(s));
+})();
+
+/* search */
+(function(){
+  const inp=$("#search"), secs=$$("main section"), nores=$("#nores"), hrs=$$("main hr");
+  const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  inp.oninput=()=>{
+    const q=norm(inp.value.trim());
+    if(!q){secs.forEach(s=>s.classList.remove("hidden"));hrs.forEach(h=>h.style.display="");nores.classList.remove("on");return;}
+    let any=false;
+    secs.forEach(s=>{
+      const hay=norm((s.dataset.title||"")+" "+s.textContent).includes(q);
+      s.classList.toggle("hidden",!hay); if(hay)any=true;
+    });
+    hrs.forEach(h=>h.style.display="none");
+    nores.classList.toggle("on",!any);
+  };
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();inp.focus();inp.select();}
+    if(e.key==="Escape"&&document.activeElement===inp){inp.value="";inp.dispatchEvent(new Event("input"));inp.blur();}
+  });
+})();
+</script>
+</body>
+</html>
