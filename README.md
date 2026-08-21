@@ -114,11 +114,7 @@ La **evaluación final oficial** está pendiente de hacer.
 ## Estructura
 
 ```
-CLAUDE.md                     cómo se elabora un curso, de principio a fin
 index.html                    página de inicio: cursos, progreso y certificación
-scripts/
-├── extraer_curso.py          descarga un curso de Skilljar → markdown crudo
-└── validar_html.py           valida un curso-interactivo.html antes de publicarlo
 <nombre-del-curso>/
 ├── README.md                 índice y hilo conductor del curso
 ├── 01-....md ... NN-....md   una lección por fichero
@@ -132,16 +128,6 @@ certificacion-ccar-f/
 ├── 09-plan-de-estudio.md     preparación, mapa curso↔dominio, huecos, alcance
 └── certificacion-interactiva.html
 ```
-
-## Añadir un curso nuevo
-
-```bash
-python3 scripts/extraer_curso.py <slug-del-curso>     # → /tmp/<slug>/raw_*.md
-# leer los raw_*.md, escribir los resúmenes y el HTML
-python3 scripts/validar_html.py <slug>/curso-interactivo.html
-```
-
-El procedimiento completo y las convenciones de redacción están en [CLAUDE.md](CLAUDE.md).
 
 ## Aviso
 

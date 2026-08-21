@@ -86,11 +86,6 @@ h2.sec::before{content:"";width:6px;height:6px;border-radius:99px;background:var
 .files{display:flex;flex-direction:column;gap:2px;margin-top:2px}
 .files a{font-size:13px;color:var(--muted);text-decoration:none;font-family:var(--mono);padding:2px 0;transition:.13s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .files a:hover{color:var(--accent-ink)}
-/* ── soon ── */
-.soon{border:1px dashed var(--border-strong);border-radius:16px;padding:22px 24px;background:transparent}
-.soon h3{font-size:17px;margin:0 0 6px;color:var(--ink-2)}
-.soon p{margin:0;font-size:14.5px;color:var(--muted)}
-.soon code{font-family:var(--mono);font-size:.87em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:.12em .4em;color:var(--accent-ink)}
 /* ── footer ── */
 footer{margin-top:46px;padding-top:24px;border-top:1px solid var(--border);font-size:14px;color:var(--muted);line-height:1.6}
 footer a{color:var(--accent-ink)}
@@ -199,10 +194,6 @@ footer a{color:var(--accent-ink)}
 <div class="courses" id="courses"></div>
 <div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
 
-<div class="soon" style="margin-top:16px">
-  <h3>Añadir otro curso</h3>
-  <p><code>python3 scripts/extraer_curso.py &lt;slug-del-curso&gt;</code> — el procedimiento completo está en <code>CLAUDE.md</code>.</p>
-</div>
 </div>
 
 <hr>
@@ -494,14 +485,12 @@ const MAPA={
   const nores=$("#nores"), zonas=[$("#zPrep"),$("#zCert")], hrs=[...document.querySelectorAll(".wrap>hr")];
   const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const cards=[...document.querySelectorAll("#courses .course")];
-  const soon=document.querySelector(".soon");
   inp.oninput=()=>{
     const q=norm(inp.value.trim());
     if(!q){
       cards.forEach(c=>c.classList.remove("hidden"));
       zonas.forEach(z=>z&&z.classList.remove("hidden"));
       hrs.forEach(h=>h.classList.remove("hidden"));
-      if(soon)soon.classList.remove("hidden");
       nores.classList.remove("on");
       return;
     }
@@ -516,7 +505,6 @@ const MAPA={
     if(certHay)any=true;
     $("#zPrep").classList.add("hidden");
     hrs.forEach(h=>h.classList.add("hidden"));
-    if(soon)soon.classList.add("hidden");
     nores.classList.toggle("on",!any);
   };
   document.addEventListener("keydown",e=>{
