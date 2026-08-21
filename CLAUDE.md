@@ -15,7 +15,11 @@ Deja en `/tmp/<slug>/` un `raw_<id>.md` por lección más `indice.txt` con el or
 
 Si un `raw_*.md` sale casi vacío, esa lección se renderiza por JavaScript (típicamente un quiz). Búscale el endpoint AJAX en el HTML de la lección en vez de dar la lección por perdida.
 
+**Si el script dice «No se encontraron lecciones», mira si el curso está matriculado.** Sin matrícula, `/<slug>` devuelve la landing pública: no hay `href="/<slug>/<id>"` ninguno, y en su lugar hay un botón *Register | FREE* que apunta a `/checkout/<id>`. Matricularse es un `GET` a esa URL siguiendo redirecciones con las cookies de sesión (`/payment` → `/callback` → `/<slug>`). **Es una acción sobre la cuenta del usuario: pídele permiso antes.**
+
 **No lances un quiz oficial sin permiso:** empezarlo registra un intento en la cuenta del usuario. Cargarlo en modo lectura (`load=true`) sí vale para saber cuántas preguntas tiene.
+
+Del quiz, tres cosas que ahorran tiempo: los ids (`lesson_id`, `published_course_id`, `quiz_id`) están en la función `startQuiz` del HTML de la lección; `quiz_response_id` y `question_id` vienen **en el JSON de respuesta**, no en el HTML; y el recuento de preguntas engaña — **las últimas suelen ser encuesta de satisfacción, NPS y un texto libre**, que no puntúan pero **sí bloquean el envío**. Las escalas se pueden dejar en blanco; el texto libre no. Ni la satisfacción ni el NPS son tuyos: déjalos vacíos.
 
 #### Si el curso es de vídeo y todas las lecciones salen vacías
 

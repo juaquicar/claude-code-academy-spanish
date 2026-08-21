@@ -36,12 +36,23 @@ def cookies_skilljar(tmpdir):
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
     from cryptography.hazmat.primitives import hashes
     import secretstorage
+    from secretstorage.exceptions import SecretStorageException
 
     col = secretstorage.get_default_collection(secretstorage.dbus_init())
     if col.is_locked():
         col.unlock()
-    pw = next((i.get_secret() for i in col.get_all_items()
-               if i.get_label() == "Chrome Safe Storage"), None)
+    def _items():
+        # col.get_all_items() muere entera si el keyring lista un item ya
+        # borrado, así que se recorren las rutas a mano y se saltan las rotas
+        for path in col._collection.get_property("Items"):
+            try:
+                item = secretstorage.Item(col.connection, path, col.session)
+                if item.get_label() == "Chrome Safe Storage":
+                    yield item.get_secret()
+            except SecretStorageException:
+                continue
+
+    pw = next(_items(), None)
     if pw is None:
         sys.exit("No se encuentra 'Chrome Safe Storage' en el keyring. "
                  "¿Chrome instalado y el keyring desbloqueado?")
