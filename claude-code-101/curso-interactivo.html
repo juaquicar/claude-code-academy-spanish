@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code 101 — Curso interactivo</title>
+<style>
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --surface-2:#F4F2EC;
+  --ink:#1F1E1D; --ink-2:#4A4742; --muted:#7A756D;
+  --accent:#C15F3C; --accent-soft:#F6E7E0; --accent-ink:#8F3F24; --on-accent:#FFFFFF;
+  --border:#E4DFD6; --border-strong:#CFC8BC;
+  --good:#2E7D5B; --good-soft:#E3F1EA;
+  --warn:#9A6B08; --warn-soft:#FAF0DA;
+  --bad:#AE3323; --bad-soft:#FAE6E2;
+  --info:#2C5F8A; --info-soft:#E3EDF6;
+  --code-bg:#F1EEE7;
+  --shadow:0 1px 2px rgba(31,30,29,.05),0 8px 24px -12px rgba(31,30,29,.18);
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#171614; --surface:#201F1C; --surface-2:#2A2825;
+  --ink:#F2EFE7; --ink-2:#D3CEC4; --muted:#9A948A;
+  --accent:#E0876A; --accent-soft:#3A2A22; --accent-ink:#F0A98F; --on-accent:#1C1A17;
+  --border:#34322D; --border-strong:#47443E;
+  --good:#6DC49B; --good-soft:#1E322A;
+  --warn:#DFAE4E; --warn-soft:#332A18;
+  --bad:#E88476; --bad-soft:#372220;
+  --info:#7FB0DB; --info-soft:#1C2A36;
+  --code-bg:#26241F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px}
+#topbar .brand{font-weight:650;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+#topbar .brand small{color:var(--muted);font-weight:450;display:block;font-size:11.5px;letter-spacing:.02em}
+.tb-spacer{flex:1}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+#search{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;width:230px}
+#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#search::placeholder{color:var(--muted)}
+.meter-wrap{display:flex;align-items:center;gap:9px}
+.meter{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.meter-lab{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1420px;margin:0 auto;padding-top:60px}
+#side{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:24px 14px 60px 20px;border-right:1px solid var(--border)}
+#side::-webkit-scrollbar{width:8px}
+#side::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+.side-h{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:650;margin:18px 0 8px 10px}
+.side-h:first-child{margin-top:0}
+#side a{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:9px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.4;transition:.13s}
+#side a:hover{background:var(--surface-2);color:var(--ink)}
+#side a.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+#side a .num{flex:none;width:20px;height:20px;border-radius:6px;background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:2px;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+#side a.active .num{background:var(--accent);color:var(--on-accent);border-color:transparent}
+#side a.done .num{background:var(--good-soft);color:var(--good);border-color:transparent}
+#side a.done .num::after{content:"✓"}
+#side a.done .num span{display:none}
+main{padding:36px 44px 120px;max-width:900px;min-width:0}
+#shell>*{min-width:0}
+section{margin-bottom:14px;scroll-margin-top:80px}
+section.hidden{display:none}
+h1{font-family:var(--serif);font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px}
+h2{font-family:var(--serif);font-size:29px;line-height:1.2;letter-spacing:-.018em;margin:0 0 6px}
+h3{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;font-weight:650}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{color:var(--ink);font-weight:640}
+a.ext{color:var(--accent-ink)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);padding:.13em .38em;border-radius:5px;color:var(--accent-ink);border:1px solid var(--border)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:13.2px;line-height:1.6}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px;font-family:var(--serif)}
+.box{border-radius:var(--radius);padding:16px 18px;margin:0 0 18px;border:1px solid var(--border);background:var(--surface)}
+.box .bh{display:flex;align-items:center;gap:8px;font-weight:680;font-size:13.5px;margin-bottom:7px}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.box.key{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.box.key .bh{color:var(--accent-ink)}
+.box.trap{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.box.trap .bh{color:var(--bad)}
+.box.tip{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 28%,transparent)}
+.box.tip .bh{color:var(--good)}
+.box.note{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 26%,transparent)}
+.box.note .bh{color:var(--info)}
+.box.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.box.warn .bh{color:var(--warn)}
+blockquote{margin:0 0 18px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55}
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+th{font-weight:640;color:var(--ink);background:var(--surface-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.widget{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.widget-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:680;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.widget-t::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:560;cursor:pointer;transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--border-strong);color:var(--ink)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl{display:flex;gap:0;margin-bottom:18px;position:relative;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--border)}
+.tl button{position:relative;flex:1;min-width:96px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tl .dot{width:40px;height:40px;border-radius:99px;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:16px;transition:.2s;z-index:1}
+.tl button:hover .dot{border-color:var(--border-strong)}
+.tl button[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:scale(1.12)}
+.tl .lab{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+.tl button[aria-selected="true"] .lab{color:var(--accent-ink)}
+.ad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.ad{grid-template-columns:1fr}}
+.ad>div{border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.ad .yes{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.ad .no{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.ad h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.ad .yes h5{color:var(--good)}
+.ad .no h5{color:var(--bad)}
+.ad ul{margin:0;padding-left:18px;font-size:13.8px}
+.ad li{margin-bottom:4px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+.scale-labs{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:-8px 2px 16px}
+.btn{font-family:inherit;font-size:14px;font-weight:580;cursor:pointer;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--border-strong);background:var(--surface)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.q-step{margin-bottom:14px}
+.q-step p{font-weight:600;color:var(--ink);margin-bottom:9px}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:11px;border:1px solid var(--border);background:var(--surface-2);display:none}
+.verdict.on{display:block;animation:fade .3s}
+.verdict b{font-size:17px;display:block;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{perspective:1000px;height:155px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;overflow:auto}
+.card .f{background:var(--surface);color:var(--ink);font-weight:600}
+.card .b{background:var(--accent-soft);color:var(--accent-ink);transform:rotateY(180deg);font-size:13.5px;font-weight:500}
+.card .f::after{content:"clic para girar";position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);font-weight:400}
+.quiz-group{position:relative}
+.quiz-q{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin-bottom:14px}
+.quiz-q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.quiz-q .qt{font-weight:620;color:var(--ink);margin-bottom:13px;font-size:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;font-family:inherit;font-size:14.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:10px 13px;color:var(--ink-2);transition:.15s;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--border-strong);color:var(--ink)}
+.opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.ok .k{background:var(--good);color:var(--surface);border-color:transparent}
+.opt.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opt.ko .k{background:var(--bad);color:var(--surface);border-color:transparent}
+.opt:disabled{cursor:default}
+.expl{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:14px;color:var(--ink-2);display:none}
+.expl.on{display:block;animation:fade .25s}
+.expl b{color:var(--ink)}
+.score{position:sticky;bottom:16px;margin-top:20px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score .lab{font-size:13px;color:var(--muted);line-height:1.4}
+.readbar{display:flex;align-items:center;gap:12px;margin:30px 0 8px;padding:14px 16px;border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--surface);flex-wrap:wrap}
+.readbar.done{border-style:solid;background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.readbar .txt{font-size:14px;color:var(--muted);flex:1;min-width:160px}
+.readbar.done .txt{color:var(--good);font-weight:600}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.grid2>*{min-width:0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.mini{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.mini h5{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+.mini p{margin:0;font-size:14px}
+.vid{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:5px 13px;background:var(--surface);transition:.15s}
+.vid:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hero-stats{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 8px}
+.hero-stats div span{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.hero-stats div small{font-size:12.5px;color:var(--muted)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+.map a,.map .mini{text-decoration:none}
+.map a{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.18s;display:block}
+.map a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.map .t{font-weight:640;color:var(--ink);font-size:15px;line-height:1.35}
+.map .d{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── flow diagram ── */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:stretch;margin-bottom:16px}
+@media(max-width:700px){.flow{grid-template-columns:1fr}}
+.flow .col{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.flow .col.main{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft)}
+.flow .col h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.flow .col.main h5{color:var(--accent-ink)}
+.flow .arrow{display:grid;place-items:center;padding:0 14px;color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+@media(max-width:700px){.flow .arrow{padding:10px 0}}
+.flow ul{margin:0;padding-left:17px;font-size:13.5px}
+.flow li{margin-bottom:3px}
+.discard{text-decoration:line-through;color:var(--muted);opacity:.7}
+/* ── config builder ── */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.cfg-ctl,.cfg-out{min-width:0}
+@media(max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.cfg-ctl label:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:inherit;font-size:13px;font-weight:560;cursor:pointer;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);transition:.15s}
+.seg button:hover{border-color:var(--border-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.cfg-out pre{margin:0;height:100%}
+.cfg-hint{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;border-left:2px solid var(--border-strong);padding-left:12px}
+/* ── diagrama de flujo de mensajes ── */
+.msg{display:grid;grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);gap:0;align-items:center;margin-bottom:14px}
+@media(max-width:700px){.msg{grid-template-columns:minmax(0,1fr)}}
+.msg .node{border:1px solid var(--border);border-radius:12px;padding:13px 15px;background:var(--surface-2);min-width:0}
+.msg .node.hl{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.msg .node h5{margin:0 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.msg .node.hl h5{color:var(--accent-ink)}
+.msg .node p{margin:0;font-size:13.5px}
+.msg .link{display:grid;place-items:center;gap:3px;padding:0 8px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+.msg .link .ar{font-size:19px;color:var(--accent);line-height:1}
+.msg .link.dead .ar{color:var(--bad)}
+.msg .link.dead{color:var(--bad)}
+/* ── tabla comparativa de flags ── */
+.flags td.y{color:var(--good);font-weight:640}
+.flags td.n{color:var(--bad);font-weight:640}
+.flags td.c{text-align:center}
+/* ── flujo numerado ── */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.steps .st{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:11px;padding:12px 14px;background:var(--surface);min-width:0}
+.steps .st::before{counter-increment:s;content:counter(s);flex:none;width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.steps .st p{margin:0;font-size:14.3px}
+.steps .st b{color:var(--ink)}
+/* ── las tres primitivas ── */
+.prims{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.prims button{
+  font-family:inherit;text-align:left;cursor:pointer;border:1px solid var(--border);border-radius:13px;
+  padding:16px;background:var(--surface-2);transition:.18s;color:var(--ink);min-width:0;
+}
+.prims button:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+.prims button[aria-selected="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.prims .pn{display:block;font-size:19px;font-weight:680;letter-spacing:-.01em;margin-bottom:6px}
+.prims button[aria-selected="true"] .pn{color:var(--accent-ink)}
+.prims .pc{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:650}
+.prims button[aria-selected="true"] .pc{color:var(--accent-ink)}
+/* ── flujo cliente-servidor ── */
+.chain{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.chain .hop{display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:10px;padding:10px 13px;background:var(--surface-2);min-width:0;transition:.18s}
+.chain .hop.on{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.chain .hop.past{opacity:.5}
+.chain .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11px;font-weight:700;display:grid;place-items:center;color:var(--muted);font-family:var(--mono)}
+.chain .hop.on .k{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.chain .who{font-family:var(--mono);font-size:11.5px;color:var(--muted);flex:none;width:104px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chain .hop.on .who{color:var(--accent-ink)}
+.chain .txt2{font-size:14px;color:var(--ink-2);min-width:0}
+.chain .hop.on .txt2{color:var(--ink)}
+/* ── créditos ── */
+footer.credits{margin:60px 0 0;padding:24px 0 0;border-top:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.6}
+footer.credits strong{color:var(--ink-2);font-weight:640}
+footer.credits a{color:var(--accent-ink);text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);text-underline-offset:2px}
+footer.credits .who{font-size:14.5px;color:var(--ink-2);margin-bottom:10px}
+footer.credits .src{padding-left:13px;border-left:2px solid var(--border-strong)}
+
+.nores{padding:30px;text-align:center;color:var(--muted);display:none}
+.nores.on{display:block}
+@media(max-width:960px){
+  #shell{grid-template-columns:1fr}
+  #side{display:none}
+  main{padding:26px 20px 100px}
+  #search{width:140px}
+  .meter-wrap{display:none}
+}
+/* ── modos de permisos ── */
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
+.modes button{font-family:inherit;text-align:left;cursor:pointer;border:1px solid var(--border);border-radius:12px;padding:13px 15px;background:var(--surface-2);transition:.18s;color:var(--ink);min-width:0}
+.modes button:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+.modes button[aria-selected="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.modes .mn{display:block;font-family:var(--mono);font-size:14px;font-weight:660;margin-bottom:5px}
+.modes button[aria-selected="true"] .mn{color:var(--accent-ink)}
+.modes .mc{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:650}
+.modes button[aria-selected="true"] .mc{color:var(--accent-ink)}
+.perm{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:4px}
+.perm>div{border-radius:11px;padding:11px 13px;border:1px solid var(--border);background:var(--surface-2);min-width:0}
+.perm h5{margin:0 0 5px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.perm p{margin:0;font-size:13.6px}
+.perm .ask{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 28%,transparent)}
+.perm .auto{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 26%,transparent)}
+.perm .block{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 26%,transparent)}
+/* ── barra de coste de contexto ── */
+.cost{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.cost .row{display:grid;grid-template-columns:minmax(0,170px) minmax(0,1fr) minmax(0,152px);gap:11px;align-items:center;min-width:0}
+@media(max-width:640px){.cost .row{grid-template-columns:minmax(0,1fr);gap:4px}}
+.cost .nm{font-size:13.8px;color:var(--ink-2);min-width:0}
+.cost .bar{height:11px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden}
+.cost .bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.cost .bar i.lo{background:var(--good)}
+.cost .bar i.hi{background:var(--bad)}
+.cost .vl{font-size:12.5px;color:var(--muted);line-height:1.35}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">Claude Code 101<small>Anthropic Academy · resumen interactivo</small></div>
+  <div class="tb-spacer"></div>
+  <div class="meter-wrap"><div class="meter"><i id="meterBar"></i></div><span class="meter-lab" id="meterLab">0 / 12</span></div>
+  <input id="search" type="search" placeholder="Buscar… (⌘/Ctrl+K)" autocomplete="off">
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  <button class="icon-btn" id="resetBtn" title="Reiniciar progreso">↺</button>
+</div>
+
+<div id="shell">
+<nav id="side">
+  <div class="side-h">Inicio</div>
+  <a href="#intro" data-nav="intro"><span class="num"><span>★</span></span> Mapa del curso</a>
+  <div class="side-h">Qué es Claude Code</div>
+  <a href="#c1" data-nav="c1"><span class="num"><span>1</span></span> ¿Qué es Claude Code?</a>
+  <a href="#c2" data-nav="c2"><span class="num"><span>2</span></span> Cómo funciona</a>
+  <div class="side-h">Instalación</div>
+  <a href="#c3" data-nav="c3"><span class="num"><span>3</span></span> Instalar Claude Code</a>
+  <a href="#c4" data-nav="c4"><span class="num"><span>4</span></span> Tu primer prompt</a>
+  <div class="side-h">Flujos diarios</div>
+  <a href="#c5" data-nav="c5"><span class="num"><span>5</span></span> Explore → plan → code → commit</a>
+  <a href="#c6" data-nav="c6"><span class="num"><span>6</span></span> Gestión del contexto</a>
+  <a href="#c7" data-nav="c7"><span class="num"><span>7</span></span> Revisión de código</a>
+  <div class="side-h">Personalización</div>
+  <a href="#c8" data-nav="c8"><span class="num"><span>8</span></span> El fichero CLAUDE.md</a>
+  <a href="#c9" data-nav="c9"><span class="num"><span>9</span></span> Subagentes</a>
+  <a href="#c10" data-nav="c10"><span class="num"><span>10</span></span> Skills</a>
+  <a href="#c11" data-nav="c11"><span class="num"><span>11</span></span> MCP</a>
+  <a href="#c12" data-nav="c12"><span class="num"><span>12</span></span> Hooks</a>
+  <div class="side-h">Repaso</div>
+  <a href="#flash" data-nav="flash"><span class="num"><span>◆</span></span> Flashcards</a>
+  <a href="#quiz" data-nav="quiz"><span class="num"><span>?</span></span> Quiz</a>
+</nav>
+
+<main>
+<div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
+
+<!-- ═══ INTRO ═══ -->
+<section id="intro" data-title="mapa del curso claude code 101 agente bucle agentico introduccion">
+  <span class="pill acc">Anthropic Academy</span>
+  <h1 style="margin-top:14px">Claude Code&nbsp;101</h1>
+  <p class="lede">Claude Code no es un chat que te sugiere código: es <strong>un agente que entra en tu repositorio y hace el trabajo</strong>. Sacarle partido son dos cosas — <strong>el flujo Explore → Plan → Code → Commit</strong> y <strong>saber qué ocupa tu ventana de contexto</strong>.</p>
+
+  <div class="hero-stats">
+    <div><span>5</span><small>pasos del bucle agéntico</small></div>
+    <div><span>4</span><small>fases del flujo</small></div>
+    <div><span>5</span><small>eventos de hooks</small></div>
+    <div><span>10%</span><small>umbral de tool search</small></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ La frase del curso</div>
+    <p style="margin:0">«Si te llevas <strong>una sola cosa</strong> de este curso, que sea este flujo: <strong>Explore, Plan, Code y Commit</strong>.» Sin él, la mayoría salta directamente a pedir código — y acaba corrigiendo el rumbo mucho más tarde, cuando ya cuesta.</p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">El bucle agéntico, paso a paso</div>
+    <div class="tl" id="loopTl" role="tablist"></div>
+    <div id="loopOut"></div>
+  </div>
+
+  <h3>El mapa</h3>
+  <div class="map">
+    <a href="#c1"><div class="t">1 · ¿Qué es Claude Code?</div><div class="d">Agente, no chat. Qué puede hacer y los tres conceptos que importan.</div></a>
+    <a href="#c2"><div class="t">2 · Cómo funciona</div><div class="d">Bucle, contexto, tools y los tres modos de permisos.</div></a>
+    <a href="#c3"><div class="t">3 · Instalar</div><div class="d">Terminal, VS Code, JetBrains, escritorio y web — y cuál elegir.</div></a>
+    <a href="#c4"><div class="t">4 · Tu primer prompt</div><div class="d"><code>Shift + Tab</code>, auto-accept y Plan Mode.</div></a>
+    <a href="#c5"><div class="t">5 · Explore → plan → code → commit</div><div class="d">El flujo. La lección central del curso.</div></a>
+    <a href="#c6"><div class="t">6 · Gestión del contexto</div><div class="d"><code>/compact</code>, <code>/clear</code>, <code>/context</code> y qué te lo come.</div></a>
+    <a href="#c7"><div class="t">7 · Revisión de código</div><div class="d">Subagente revisor, <code>/commit-push-pr</code> y <code>--from-pr</code>.</div></a>
+    <a href="#c8"><div class="t">8 · CLAUDE.md</div><div class="d">Memoria persistente. Se lee al inicio de cada sesión.</div></a>
+    <a href="#c9"><div class="t">9 · Subagentes</div><div class="d">Contexto aislado, vuelve solo el resumen.</div></a>
+    <a href="#c10"><div class="t">10 · Skills</div><div class="d">Carga progresiva: nombre y descripción primero.</div></a>
+    <a href="#c11"><div class="t">11 · MCP</div><div class="d">Tools externas, tres alcances y su coste en contexto.</div></a>
+    <a href="#c12"><div class="t">12 · Hooks</div><div class="d">Deterministas: siempre se ejecutan.</div></a>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══ C1 ═══ -->
+<section id="c1" data-title="que es claude code agente ai agent codebase terminal vs code jetbrains desktop web">
+  <div class="chead"><span class="pill">Capítulo 01</span><a class="vid" href="https://www.youtube.com/embed/fl1DSmwQKKY" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>¿Qué es Claude Code?</h2>
+  <p class="lede">Una herramienta de codificación <strong>agéntica</strong>: entiende tu base de código, edita tus ficheros, ejecuta comandos y se integra con tus herramientas.</p>
+
+  <h3>Qué lo separa de Claude.ai</h3>
+  <p>Claude Code tiene <strong>acceso directo a tus ficheros, tu terminal y toda tu base de código</strong>. En vez de copiar y pegar código de un lado a otro, <strong>entra y hace el trabajo</strong>.</p>
+  <blockquote>El diferenciador clave es que Claude Code funciona como un <strong>AI Agent</strong>.</blockquote>
+
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 1 del quiz oficial</div>
+    <p style="margin:0">Un agente de IA es <strong>software que interactúa con su entorno y ejecuta acciones para completar un objetivo definido</strong>, con un modelo de lenguaje operando <strong>en bucle en tiempo real</strong>. Los distractores que te ofrecen — <span class="discard">un chatbot que responde en tiempo real</span>, <span class="discard">un editor con autocompletado</span>, <span class="discard">un servicio en la nube que aloja proyectos</span> — describen herramientas que <strong>no actúan</strong>.</p>
+  </div>
+
+  <h3>Qué puede hacer en la práctica</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Capacidad</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Leer y entender tu base de código</strong></td><td>Explicar una funcionalidad o rastrear un bug por todo el código</td></tr>
+      <tr><td><strong>Editar ficheros de todo el proyecto</strong></td><td>Refactorizar una función y actualizar todos los ficheros que la referencian</td></tr>
+      <tr><td><strong>Ejecutar comandos de terminal</strong></td><td>Build, tests, instalar paquetes — y <strong>usar la salida para decidir qué hace después</strong></td></tr>
+      <tr><td><strong>Buscar en la web</strong></td><td>Documentación o referencias de API actualizadas</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Los tres conceptos que hay que tener presentes</h3>
+  <div class="grid2">
+    <div class="mini"><h5>La ventana de contexto</h5><p>Su memoria de trabajo. <strong>Cabe mucho, pero no todo a la vez.</strong> Por eso Claude busca formas estratégicas de encontrar respuestas <strong>sin cargar el repositorio entero</strong>.</p></div>
+    <div class="mini"><h5>Pide permiso</h5><p>Por defecto pregunta antes de ejecutar comandos o hacer cambios. <strong>Tú mandas siempre.</strong></p></div>
+  </div>
+  <div class="box warn">
+    <div class="bh">⚠ Puede equivocarse</div>
+    <p style="margin:0">Puede malinterpretar tu intención, introducir un bug o sobre-diseñar una solución. <strong>Estar en el bucle es lo que te permite pillarlo pronto.</strong></p>
+  </div>
+
+  <div class="readbar" data-read="c1"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C2 ═══ -->
+<section id="c2" data-title="como funciona bucle agentico contexto compactacion tools permisos default auto-accept plan mode">
+  <div class="chead"><span class="pill">Capítulo 02</span><a class="vid" href="https://www.youtube.com/embed/6bs5b4FltCU" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Cómo funciona Claude Code</h2>
+  <p class="lede">Un bucle agéntico, una ventana de contexto gestionada, tools y permisos configurables — <strong>dentro de tu terminal</strong>.</p>
+
+  <h3>El bucle agéntico</h3>
+  <div class="steps">
+    <div class="st"><p><b>Escribes un prompt</b> en Claude Code.</p></div>
+    <div class="st"><p><b>Reúne el contexto</b> que necesita interactuando con el modelo, que devuelve texto o una llamada a una tool ejecutable.</p></div>
+    <div class="st"><p><b>Actúa</b> — edita un fichero, ejecuta un comando.</p></div>
+    <div class="st"><p><b>Verifica</b> si los resultados logran lo que pedía tu prompt.</p></div>
+    <div class="st"><p>Si sí, <b>termina</b> y espera. Si no, <b>vuelve al bucle</b> hasta que el resultado esté completo y sea verificable.</p></div>
+  </div>
+  <div class="box tip">
+    <div class="bh">✓ Estás dentro del bucle</div>
+    <p style="margin:0">Durante todo el proceso puedes <strong>añadir contexto, interrumpir o redirigir</strong> al modelo.</p>
+  </div>
+
+  <h3>Contexto</h3>
+  <p>La ventana de contexto determina cuánto puede almacenar y referenciar: conversación, contenido de ficheros, salida de comandos. Al llegar al límite, <strong>Claude Code compacta la conversación</strong>: decide automáticamente qué eliminar o resumir.</p>
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 2 del quiz oficial</div>
+    <p style="margin:0">Al llenarse el contexto <strong>no</strong> cambia a un modelo más pequeño, <strong>no</strong> borra tus ficheros más antiguos y <strong>no</strong> deja de funcionar. <strong>Compacta automáticamente la conversación para liberar espacio.</strong></p>
+  </div>
+
+  <h3>Tools</h3>
+  <p>Las tools son <strong>la columna vertebral de los agentes</strong>. La mayoría de asistentes toman texto y devuelven texto; las tools le permiten a Claude decidir <strong>cuándo</strong> ejecutar código. Usa <strong>comprensión semántica</strong> para saber cuándo llamarlas y cómo usar su salida.</p>
+
+  <div class="widget">
+    <div class="widget-t">Los tres modos de permisos</div>
+    <div class="modes" id="permModes" role="tablist"></div>
+    <div id="permOut"></div>
+  </div>
+
+  <div class="box warn">
+    <div class="bh">⚠ Cuidado al saltarte los permisos</div>
+    <p style="margin:0">Barra libre para ejecutar comandos significa que <strong>un error puede ser más difícil de pillar antes de que ocurra</strong>.</p>
+  </div>
+
+  <div class="readbar" data-read="c2"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C3 ═══ -->
+<section id="c3" data-title="instalar claude code terminal curl homebrew winget vs code jetbrains desktop web github">
+  <div class="chead"><span class="pill">Capítulo 03</span><a class="vid" href="https://www.youtube.com/embed/0kILa02vKuI" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Instalar Claude Code</h2>
+  <p class="lede">Cinco sitios donde vive, y una regla para elegir: <strong>las novedades llegan primero al terminal</strong>.</p>
+
+  <h3>Terminal</h3>
+  <p>En <strong>macOS, Linux o WSL</strong>: <code>curl</code> de una vez, o <code>brew install</code>. En <strong>Windows</strong>: <code>Invoke-RestMethod</code> en PowerShell, <code>curl</code> en CMD, o <code>winget</code>.</p>
+  <div class="box trap">
+    <div class="bh">⚠ El detalle que se olvida</div>
+    <p style="margin:0"><strong>Homebrew y winget no soportan auto-actualizaciones.</strong> El script de <code>curl</code> sí.</p>
+  </div>
+  <p>Tras instalar, ejecuta <code>claude</code> — si no responde, reinicia el terminal. Pasarás por el tema de color y el inicio de sesión (cuenta Pro, Max o Enterprise, o API key). <strong>Si tu organización tiene Enterprise, selecciona esa opción.</strong></p>
+  <pre><code>claude</code></pre>
+  <div class="box key">
+    <div class="bh">◈ El alcance lo marca el directorio</div>
+    <p style="margin:0">Donde ejecutes <code>claude</code>, tendrá acceso a <strong>ese directorio y a todas sus subcarpetas</strong>.</p>
+  </div>
+
+  <h3>IDEs, escritorio y web</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Dónde</th><th>Cómo se instala</th><th>Qué te da</th></tr></thead>
+    <tbody>
+      <tr><td><strong>VS Code</strong></td><td>Extensions → "Claude Code" <strong>de Anthropic, con el check azul</strong>. Reinicia. <code>Ctrl/Cmd + Shift + P</code> → "Claude Code Open in New Tab"</td><td>Experiencia muy parecida al terminal; puedes <strong>renunciar a la UI</strong> desde los settings</td></tr>
+      <tr><td><strong>JetBrains</strong></td><td>Plugin desde el Marketplace, reiniciar el IDE</td><td>Un panel con la experiencia de terminal junto a tu editor</td></tr>
+      <tr><td><strong>Desktop</strong></td><td>Toggle <strong>"Code"</strong> arriba, tras iniciar sesión</td><td>Trabajar en una carpeta, cambiar permisos, <strong>entorno en la nube</strong></td></tr>
+      <tr><td><strong>Web</strong></td><td><code>claude.ai/code</code> o "Code" en la barra lateral del chat</td><td>Como el escritorio, pero <strong>restringido a repositorios de GitHub</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>¿Cuál usar?</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Si quieres…</th><th>Usa</th></tr></thead>
+    <tbody>
+      <tr><td>Estar en la cresta de la ola</td><td><strong>Terminal</strong> — las novedades llegan ahí primero</td></tr>
+      <tr><td>Que se sienta entrelazado con tu editor</td><td><strong>Integraciones de IDE</strong></td></tr>
+      <tr><td>Dejarlo corriendo mientras haces otra cosa</td><td><strong>Desktop</strong></td></tr>
+      <tr><td>Trabajar en remoto sobre un repo de GitHub</td><td><strong>Web</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="readbar" data-read="c3"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C4 ═══ -->
+<section id="c4" data-title="tu primer prompt shift tab auto accept approval plan mode dark mode toggle">
+  <div class="chead"><span class="pill">Capítulo 04</span><a class="vid" href="https://www.youtube.com/embed/gbetp6D7J_Q" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Tu primer prompt</h2>
+  <p class="lede">Le hablas como a cualquier asistente. Lo que cambia es <strong>cuánto le dejas hacer sin preguntar</strong>.</p>
+
+  <h3>Auto-accept vs. approval</h3>
+  <p>Pulsa <span class="kbd">Shift + Tab</span> para <strong>ciclar entre modos</strong>.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Modo</th><th>Ficheros</th><th>Comandos</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Approval mode</strong></td><td>Pide permiso cada vez</td><td>Pide permiso cada vez</td></tr>
+      <tr><td><strong>Auto-accept mode</strong></td><td>Se aprueban automáticamente</td><td><strong>Siguen requiriendo tu permiso</strong></td></tr>
+    </tbody>
+  </table></div>
+  <div class="box trap">
+    <div class="bh">⚠ Detalle que se cuela</div>
+    <p style="margin:0"><strong>Auto-accept no es barra libre.</strong> Los comandos siguen pasando por ti.</p>
+  </div>
+
+  <h3>Plan Mode</h3>
+  <p>Dentro del mismo menú de <span class="kbd">Shift + Tab</span>. Toma tu prompt y usa <strong>tools de solo lectura</strong> para analizar el código e investigar la implementación, <strong>hace preguntas aclaratorias</strong> y devuelve <strong>un plan detallado</strong> que puede ejecutar.</p>
+  <div class="ad">
+    <div class="yes"><h5>Brilla en</h5><ul><li>Cambios complejos</li><li><strong>Revisión de código segura</strong></li><li>Implementaciones multi-paso hacia una funcionalidad</li></ul></div>
+    <div class="no"><h5>No puede</h5><ul><li><strong>Editar ficheros</strong> — solo lee</li><li>Ejecutar el plan sin que lo apruebes</li></ul></div>
+  </div>
+
+  <h3>Ejemplo: un toggle de modo oscuro</h3>
+  <pre><code>My app needs a dark mode implemented across the entire app. Can you
+create a toggle switch on the header that allows a user to toggle
+between light mode and dark mode? I need you to find a good contrast
+color that works based on my existing light theme.</code></pre>
+  <p>Deja que lo planifique, revisa el plan y, si te vale, acéptalo. Al final ves <strong>qué hizo y cómo llegó a sus conclusiones</strong>.</p>
+
+  <div class="box key">
+    <div class="bh">◈ Conclusión</div>
+    <p style="margin:0">Sé <strong>todo lo descriptivo que puedas</strong>. Usa Plan Mode para que Claude escarbe en los detalles <strong>antes</strong> de ejecutar nada.</p>
+  </div>
+
+  <div class="readbar" data-read="c4"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C5 ═══ -->
+<section id="c5" data-title="explore plan code commit flujo workflow criterio de exito tests subagente revisor webp">
+  <div class="chead"><span class="pill">Capítulo 05</span><span class="pill acc">la lección central</span><a class="vid" href="https://www.youtube.com/embed/xJQuF02NAK8" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>El flujo explore → plan → code → commit</h2>
+  <p class="lede">Sin él, la mayoría salta directamente a pedir código — <strong>y eso significa más correcciones de rumbo después</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">Las cuatro fases</div>
+    <div class="tl" id="flowTl" role="tablist"></div>
+    <div id="flowOut"></div>
+  </div>
+
+  <h3>El prompt de ejemplo</h3>
+  <pre><code>I need to add WebP conversion to our image upload pipeline. Figure out
+where in the pipeline it should happen, whether we need new dependencies,
+and how to approach it.</code></pre>
+  <p>Claude lee los ficheros relevantes, hace búsquedas web y te da un plan. Revísalo; si no encaja, <strong>pídele que revise áreas concretas</strong>.</p>
+  <div class="box key">
+    <div class="bh">◈ Por qué Plan Mode importa tanto</div>
+    <p style="margin:0"><strong>Es el mejor sitio para corregir el rumbo, porque es antes de que se escriba ningún código.</strong></p>
+  </div>
+  <p>También puedes ejecutar el <strong>subagente de explore sin estar en plan mode</strong> si solo quieres un resumen general del repositorio sin intención de cambiar nada.</p>
+
+  <div class="box tip">
+    <div class="bh">✓ Truco rápido</div>
+    <p style="margin:0">Si Claude tropieza una y otra vez con lo mismo, <strong>pídele que guarde la solución en su fichero CLAUDE.md</strong>.</p>
+  </div>
+
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 3 del quiz oficial</div>
+    <p style="margin:0">El flujo es <strong>Explore → Plan → Code → Commit</strong>. Los distractores suenan igual de plausibles: <span class="discard">Code → Test → Deploy → Monitor</span>, <span class="discard">Write → Review → Merge → Ship</span>, <span class="discard">Prompt → Accept → Push → Repeat</span>.</p>
+  </div>
+
+  <div class="readbar" data-read="c5"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C6 ═══ -->
+<section id="c6" data-title="gestion del contexto compact clear context compactacion subagentes mcp prompt especifico">
+  <div class="chead"><span class="pill">Capítulo 06</span><a class="vid" href="https://www.youtube.com/embed/eW3oTyfeWZ0" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Gestión del contexto</h2>
+  <p class="lede">El contexto es la <strong>memoria de trabajo</strong> de Claude. Cada fichero leído, cada comando ejecutado, cada mensaje — todo ocupa espacio.</p>
+
+  <h3>Qué pasa cuando se llena</h3>
+  <p>Se <strong>compacta automáticamente</strong>: resume los detalles importantes y elimina resultados de tools innecesarios.</p>
+  <div class="box warn">
+    <div class="bh">⚠ La compactación no es gratis</div>
+    <p style="margin:0">El proceso <strong>puede perder detalles</strong>.</p>
+  </div>
+
+  <h3>Los tres comandos</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Comando</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><code>/compact</code></td><td>Compacta todo lo anterior. Libera espacio <strong>conservando memoria</strong> de lo trabajado</td></tr>
+      <tr><td><code>/clear</code></td><td>Empieza de cero <strong>sin memoria</strong>. Lo elimina todo</td></tr>
+      <tr><td><code>/context</code></td><td>Tamaño de tu contexto, <strong>qué categorías ocupan más</strong> y un gráfico del desglose</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="widget">
+    <div class="widget-t">¿<code>/compact</code> o <code>/clear</code>?</div>
+    <div id="ccDecider">
+      <div class="q-step">
+        <p>¿Lo que viene ahora tiene que ver con lo que acabas de hacer?</p>
+        <div class="btn-row">
+          <button class="btn" data-a="compact">Sí — sigo con la misma funcionalidad</button>
+          <button class="btn" data-a="clear">No — empiezo una funcionalidad nueva</button>
+          <button class="btn" data-a="md">Es algo que quiero que recuerde <em>siempre</em></button>
+        </div>
+      </div>
+      <div class="verdict" id="ccVerdict"></div>
+      <div class="btn-row" style="margin-top:12px"><button class="btn" id="ccReset">Empezar de nuevo</button></div>
+    </div>
+  </div>
+
+  <h3>Tres formas de gastar menos</h3>
+  <div class="box trap">
+    <div class="bh">⚠ Lo contraintuitivo del capítulo</div>
+    <p style="margin:0"><strong>Un prompt vago no ahorra contexto: lo gasta.</strong> Sin instrucciones claras, Claude explora más código y razona más por su cuenta — y eso ocupa <strong>mucho más</strong> que un prompt detallado.</p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Coste en contexto, según el curso</div>
+    <div class="cost" id="costBars"></div>
+    <p style="font-size:13.5px;color:var(--muted);margin:0">Barras cualitativas: el curso no da cifras salvo el umbral del <strong>10 %</strong> de tool search. La idea que sí da es el <strong>orden</strong>: un servidor MCP inactivo cuesta más que su equivalente en CLI o que una skill.</p>
+  </div>
+
+  <ul>
+    <li><strong>Gestiona tus servidores MCP.</strong> Cargan <strong>todas</strong> sus tools en contexto por defecto, aunque no las uses. Las <strong>Skills</strong> no lo cargan todo de entrada.</li>
+    <li><strong>Usa subagentes.</strong> Contexto <strong>completamente separado</strong>: hacen el trabajo y <strong>devuelven solo un resumen</strong>. Para «¿dónde están los endpoints de autenticación?», es la herramienta.</li>
+  </ul>
+
+  <div class="readbar" data-read="c6"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C7 ═══ -->
+<section id="c7" data-title="revision de codigo code review subagente solo lectura commit push pr skill from-pr gh pr create slack">
+  <div class="chead"><span class="pill">Capítulo 07</span><a class="vid" href="https://www.youtube.com/embed/RKsADl0ZC3Y" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Revisión de código</h2>
+  <p class="lede">Tres funcionalidades pequeñas que quitan mucha fricción del flujo de git.</p>
+
+  <h3>Revisar con un subagente</h3>
+  <p>Antes de subir un PR, que un <strong>subagente</strong> revise tus cambios: corre en <strong>su propia ventana de contexto con ojos frescos</strong> y <strong>no arrastra el sesgo</strong> del agente que acaba de escribir ese código.</p>
+  <div class="grid2">
+    <div class="mini"><h5>Restríngelo a solo lectura</h5><p>Un revisor debe <strong>señalar problemas, no editar ficheros</strong>.</p></div>
+    <div class="mini"><h5>Versiónalo</h5><p>Mete la configuración del subagente en el repositorio para que <strong>todo el equipo use el mismo revisor</strong>.</p></div>
+  </div>
+
+  <h3>La skill <code>/commit-push-pr</code></h3>
+  <p>Commit, push y creación del PR <strong>en un solo paso</strong>. Si tienes un <strong>servidor MCP de Slack</strong> con los canales listados en tu CLAUDE.md, publica el enlace del PR en el canal del equipo automáticamente.</p>
+
+  <h3>Retomar con <code>--from-pr</code></h3>
+  <p>Cuando Claude crea un PR con <code>gh pr create</code>, <strong>la sesión queda enlazada a ese PR</strong>. Para volver a ella:</p>
+  <pre><code>claude --from-pr &lt;PR_NUMBER&gt;</code></pre>
+
+  <div class="readbar" data-read="c7"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C8 ═══ -->
+<section id="c8" data-title="claude.md memoria persistente init arroba referencia proyecto usuario onboarding">
+  <div class="chead"><span class="pill">Capítulo 08</span><a class="vid" href="https://www.youtube.com/embed/O0FGCxkHM-U" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>El fichero CLAUDE.md</h2>
+  <p class="lede">Memoria persistente del proyecto. <strong>Un script de onboarding para tu base de código.</strong></p>
+
+  <h3>El problema que resuelve</h3>
+  <p>Sin él, Claude <strong>empieza de cero cada vez</strong>: reexplora el código, averigua dependencias, entiende qué hay implementado — y a veces <strong>hace suposiciones</strong>.</p>
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 4 del quiz oficial</div>
+    <p style="margin:0"><strong>Claude Code lo lee automáticamente al inicio de cada sesión</strong>, y su contenido <strong>se añade a tu prompt</strong>. No <span class="discard">solo tras ejecutar <code>/init</code></span>, no <span class="discard">una vez al crear el proyecto</span>, no <span class="discard">solo cuando lo pides</span>. <code>/init</code> sirve para <strong>generarlo</strong>, no para que se lea.</p>
+  </div>
+
+  <h3>Un ejemplo</h3>
+  <pre><code># Project
+
+This is a Next.js 15 app using the App Router, Tailwind, and Drizzle ORM.
+
+# Commands
+- Dev server: `pnpm dev`
+- Run tests: `pnpm test`
+- Lint: `pnpm lint`
+
+# Code Style
+- Use 2-space indentation
+- Prefer named exports
+- All API routes go in app/api/
+- Use server actions instead of API routes where possible</code></pre>
+
+  <h3>La jerarquía</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Nivel</th><th>Dónde vive</th><th>Para quién</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Proyecto</strong></td><td>Directorio raíz del proyecto</td><td><strong>Compartido con el equipo</strong> (versiónalo)</td></tr>
+      <tr><td><strong>Usuario</strong></td><td>Tu carpeta de configuración</td><td><strong>Solo para ti</strong>, en <strong>todos</strong> tus proyectos</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Trucos</h3>
+  <ul>
+    <li><strong>Guarda las correcciones en memoria.</strong> Si te ves corrigiendo lo mismo, pídele explícitamente que lo guarde.</li>
+    <li><strong>Referencia documentación con <code>@</code>:</strong></li>
+  </ul>
+  <pre><code>## README.md
+
+Please read if you need more info: @README.md</code></pre>
+
+  <div class="box key">
+    <div class="bh">◈ Contraintuitivo: empieza <em>sin</em> CLAUDE.md</div>
+    <p style="margin:0">Arranca sin él para <strong>ver dónde tienes que corregir el rumbo constantemente</strong>. Así el fichero queda <strong>compacto y centrado</strong> en lo necesario. Cuando estés listo, <code>/init</code> te genera uno.</p>
+  </div>
+
+  <div class="readbar" data-read="c8"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C9 ═══ -->
+<section id="c9" data-title="subagentes agents contexto aislado paralelo memoria persistente skill precargada frontmatter yaml">
+  <div class="chead"><span class="pill">Capítulo 09</span><a class="vid" href="https://www.youtube.com/embed/jKErNxuxPXg" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Subagentes</h2>
+  <p class="lede">Delegar tareas a agentes con <strong>su propia ventana de contexto aislada</strong>, que devuelven solo el resumen.</p>
+
+  <h3>Cómo funciona</h3>
+  <div class="msg">
+    <div class="node"><h5>Agente principal</h5><p>«Explórame esta base de código»</p></div>
+    <div class="link"><span class="ar">→</span><span>lanza subagente</span></div>
+    <div class="node hl"><h5>Subagente</h5><p>Corre <strong>en paralelo</strong>, con <strong>contexto propio</strong>. Explora, lee, busca.</p></div>
+  </div>
+  <div class="msg">
+    <div class="node hl"><h5>Subagente</h5><p>Termina y <strong>resume sus hallazgos</strong></p></div>
+    <div class="link"><span class="ar">→</span><span>devuelve resumen</span></div>
+    <div class="node"><h5>Agente principal</h5><p>Recibe <strong>solo la respuesta</strong>, no el viaje</p></div>
+  </div>
+  <div class="box key">
+    <div class="bh">◈ El resultado</div>
+    <p style="margin:0">Obtienes la respuesta que buscabas <strong>sin que todo el viaje que hizo falta para llegar a ella ensucie tu contexto principal</strong>.</p>
+  </div>
+
+  <h3>Crear el tuyo</h3>
+  <p>Se definen en <strong>ficheros Markdown con frontmatter YAML</strong>. Lo fácil es que te lo genere Claude:</p>
+  <pre><code>/agents</code></pre>
+  <p>→ «Create new agent». Eliges <strong>alcance</strong>, <strong>propósito</strong>, <strong>tools</strong> y hasta <strong>color</strong>. Claude genera nombre, descripción y prompt — y eso también le dice <strong>cuándo llamarlo</strong>.</p>
+
+  <h3>Personalización adicional</h3>
+  <div class="grid2">
+    <div class="mini"><h5>Memoria persistente</h5><p>El subagente <strong>retiene memoria entre conversaciones</strong>. Útil si lo usas siempre en los mismos proyectos.</p></div>
+    <div class="mini"><h5>Precargar skills</h5><p>Con la clave <code>skill</code>, listándolas por nombre. <strong>Ojo:</strong> aquí <strong>la skill entera se carga en contexto</strong>, al revés que en la conversación principal.</p></div>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ ¿Quieres profundizar?</div>
+    <p style="margin:0">Curso dedicado: <a class="ext" href="https://anthropic.skilljar.com/introduction-to-subagents" target="_blank" rel="noopener">Introduction to subagents</a>.</p>
+  </div>
+
+  <div class="readbar" data-read="c9"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C10 ═══ -->
+<section id="c10" data-title="skills carga progresiva nombre descripcion commit-push-pr skill precargada">
+  <div class="chead"><span class="pill">Capítulo 10</span><a class="vid" href="https://www.youtube.com/embed/bjdBVZa66oU" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Skills</h2>
+
+  <div class="box warn">
+    <div class="bh">⚠ Aviso sobre el material</div>
+    <p style="margin:0">Esta lección <strong>no tiene contenido escrito</strong> en la plataforma: es solo el vídeo más un enlace al curso dedicado. Lo que sigue <strong>no es un resumen del vídeo</strong>, sino <strong>lo que el propio Claude Code 101 dice de las skills en sus otras lecciones</strong>.</p>
+  </div>
+
+  <h3>Lo que este curso sí dice</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Dónde</th><th>Qué afirma</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Gestión del contexto</strong></td><td>Las skills son la alternativa a MCP cuando el problema es el contexto: <strong>no lo cargan todo de entrada</strong></td></tr>
+      <tr><td><strong>MCP</strong></td><td>La mecánica exacta: <strong>nombre y descripción</strong> en contexto, y el contenido completo <strong>solo cuando Claude determina que la necesita</strong></td></tr>
+      <tr><td><strong>Revisión de código</strong></td><td><code>/commit-push-pr</code> <strong>es una skill</strong></td></tr>
+      <tr><td><strong>Subagentes</strong></td><td>Se <strong>precargan</strong> con la clave <code>skill</code> — y ahí <strong>la skill entera sí se carga en contexto</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ La regla que se deduce</div>
+    <p style="margin:0">Del <strong>servidor MCP</strong> se cargan al arrancar <strong>todas</strong> las definiciones de tools. De la <strong>skill</strong>, <strong>solo nombre y descripción</strong>. Por eso el curso propone las skills como sustituto de un servidor MCP que te come contexto sin que lo uses.</p>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ ¿Quieres profundizar?</div>
+    <p style="margin:0">Curso dedicado: <a class="ext" href="https://anthropic.skilljar.com/introduction-to-agent-skills" target="_blank" rel="noopener">Introduction to agent skills</a>.</p>
+  </div>
+
+  <div class="readbar" data-read="c10"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C11 ═══ -->
+<section id="c11" data-title="mcp model context protocol claude mcp add http stdio local user project .mcp.json tool search mode 10%">
+  <div class="chead"><span class="pill">Capítulo 11</span><a class="vid" href="https://www.youtube.com/embed/kkBFmwkDzdo" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>MCP</h2>
+  <p class="lede">Un <strong>estándar abierto</strong> para conectar Claude Code a herramientas y datos externos. Buena parte de tu contexto <strong>vive fuera de tu base de código</strong>.</p>
+
+  <h3>Añadir un servidor</h3>
+  <pre><code>claude mcp add</code></pre>
+  <div class="tw"><table>
+    <thead><tr><th>Tipo</th><th>Para qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>HTTP servers</strong></td><td>Servicios <strong>remotos</strong> alojados por el proveedor, por red</td></tr>
+      <tr><td><strong>Stdio servers</strong></td><td><strong>Procesos locales</strong> en tu máquina</td></tr>
+    </tbody>
+  </table></div>
+  <p>Dentro de una sesión, <code>/mcp</code> te deja ver qué está conectado, comprobar el estado y <strong>desactivar lo que no necesites</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">Los tres alcances</div>
+    <div class="chips" id="scopeChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="sc1">Local</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="sc2">User</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="sc3">Project</button>
+    </div>
+    <div class="panel on" id="sc1">
+      <p style="margin:0"><strong>Solo en el proyecto actual, solo para ti.</strong> El alcance más estrecho: nada se comparte y nada te sigue a otros repositorios.</p>
+    </div>
+    <div class="panel" id="sc2">
+      <p style="margin:0"><strong>Disponible en todos tus proyectos.</strong> Tuyo, pero global — el sitio de los servidores que usas siempre, independientemente del repositorio.</p>
+    </div>
+    <div class="panel" id="sc3">
+      <p style="margin:0"><strong>Un fichero <code>.mcp.json</code> versionado en el repositorio.</strong> Cualquiera que trabaje en el código <strong>obtiene exactamente los mismos servidores automáticamente</strong>.</p>
+    </div>
+  </div>
+
+  <h3>El coste en contexto</h3>
+  <p>Los servidores MCP <strong>añaden definiciones de tools a tu contexto aunque no las uses</strong>. Tres alternativas más baratas:</p>
+  <div class="tw"><table>
+    <thead><tr><th>En vez de…</th><th>Usa…</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td>Un servidor MCP de GitHub o AWS</td><td>La <strong>CLI</strong> (<code>gh</code>, <code>aws</code>)</td><td><strong>No añade definiciones de tools persistentes</strong></td></tr>
+      <tr><td>Un servidor MCP para un procedimiento</td><td>Una <strong>Skill</strong></td><td>Solo nombre y descripción en contexto; el resto <strong>bajo demanda</strong></td></tr>
+      <tr><td>Dejarlo todo conectado</td><td><code>/mcp</code> y <strong>desactivar</strong></td><td>Lo que no usas, no debería costarte</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box trap">
+    <div class="bh">⚠ El número que hay que recordar</div>
+    <p style="margin:0">Si tus tools de MCP <strong>superan el 10 % de tu ventana de contexto</strong>, Claude Code cambia automáticamente a <strong>tool search mode</strong>, que descubre las tools bajo demanda — <strong>aunque puede no funcionar de forma tan fiable</strong>.</p>
+  </div>
+
+  <div class="readbar" data-read="c11"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C12 ═══ -->
+<section id="c12" data-title="hooks deterministas settings.json PreToolUse PostToolUse UserPromptSubmit Stop Notification exit code 2 stderr CLAUDE_PROJECT_DIR">
+  <div class="chead"><span class="pill">Capítulo 12</span><a class="vid" href="https://www.youtube.com/embed/IkaPHiMDazM" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Hooks</h2>
+  <p class="lede">Comandos en puntos concretos del ciclo de vida. La diferencia con todo lo demás del curso: <strong>los hooks son deterministas. Siempre se ejecutan.</strong></p>
+
+  <blockquote>Puedes decirle en tu CLAUDE.md que ejecute Prettier tras cada edición. <strong>La mayoría de las veces lo hará. Pero a veces no.</strong> Un hook lo hace <strong>todas y cada una de las veces</strong>.</blockquote>
+
+  <h3>Los cinco eventos</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Evento</th><th>Cuándo se dispara</th></tr></thead>
+    <tbody>
+      <tr><td><code>PreToolUse</code></td><td>Antes de una llamada a una tool — <strong>puede bloquearla</strong></td></tr>
+      <tr><td><code>PostToolUse</code></td><td>Después de que la llamada se complete</td></tr>
+      <tr><td><code>UserPromptSubmit</code></td><td>Al enviar un prompt, <strong>antes de que Claude lo procese</strong></td></tr>
+      <tr><td><code>Stop</code></td><td>Cuando Claude termina de responder</td></tr>
+      <tr><td><code>Notification</code></td><td>Cuando Claude envía una notificación</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="widget">
+    <div class="widget-t">Constructor de hooks — <code>settings.json</code></div>
+    <div class="cfg">
+      <div class="cfg-ctl">
+        <label>Evento</label>
+        <div class="seg" id="hkEvent"></div>
+        <label>Matcher (a qué tools aplica)</label>
+        <div class="seg" id="hkMatcher"></div>
+        <label>Qué debe hacer</label>
+        <div class="seg" id="hkAction"></div>
+      </div>
+      <div class="cfg-out"><pre><code id="hkOut"></code></pre></div>
+    </div>
+    <div class="cfg-hint" id="hkHint"></div>
+  </div>
+
+  <h3>Bloquear con PreToolUse</h3>
+  <p>El hook recibe <strong>el nombre de la tool y su entrada como JSON por stdin</strong>. El <strong>código de salida</strong> manda:</p>
+  <div class="tw"><table class="flags">
+    <thead><tr><th>Código</th><th>Comportamiento</th></tr></thead>
+    <tbody>
+      <tr><td class="c"><strong>0</strong></td><td class="y">Continúa normalmente</td></tr>
+      <tr><td class="c"><strong>2</strong></td><td class="n"><strong>Bloquea la acción.</strong> El mensaje de <strong>stderr se le devuelve a Claude como feedback</strong>, para que sepa por qué y pueda ajustarse</td></tr>
+      <tr><td class="c">otro</td><td>Error <strong>no bloqueante</strong>: se te muestra, no detiene nada</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box trap">
+    <div class="bh">⚠ El detalle que se olvida</div>
+    <p style="margin:0">El código de bloqueo es el <strong>2</strong>, no el 1. Y el mensaje útil va a <strong>stderr</strong>, porque es lo que Claude lee.</p>
+  </div>
+  <p>Así se imponen reglas duras: bloquear escrituras en producción, bloquear <code>rm -rf</code>, bloquear commits a main. Lo que tu equipo necesite que esté <strong>garantizado, no sugerido</strong>.</p>
+
+  <h3>Compartirlos con tu equipo</h3>
+  <p>Los hooks en <code>.claude/settings.json</code> son <strong>de nivel proyecto</strong> y se versionan. Usa <code>CLAUDE_PROJECT_DIR</code> para referenciar scripts del proyecto, <strong>independientemente del directorio de trabajo actual de Claude</strong>.</p>
+
+  <div class="box key">
+    <div class="bh">◈ La frase del capítulo</div>
+    <p style="margin:0"><strong>Si algo tiene que pasar siempre y sin fallo, no lo pongas en un prompt. Ponlo en un hook.</strong></p>
+  </div>
+
+  <div class="readbar" data-read="c12"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ FLASHCARDS ═══ -->
+<section id="flash" data-title="flashcards repaso tarjetas chuleta">
+  <span class="pill acc">Repaso activo</span>
+  <h2 style="margin-top:12px">Flashcards</h2>
+  <p class="lede">Los hechos concretos del curso. Clic para girar.</p>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn" id="flipAll">Girar todas</button>
+    <button class="btn" id="shuffleCards">Barajar</button>
+  </div>
+  <div class="cards" id="cardGrid"></div>
+</section>
+
+<hr>
+
+<!-- ═══ QUIZ ═══ -->
+<section id="quiz" data-title="quiz oficial preguntas reales distractores banco extra">
+  <span class="pill acc">Quiz</span>
+  <h2 style="margin-top:12px">Quiz — 16 preguntas</h2>
+  <p class="lede">Las <strong>4 preguntas oficiales</strong> del curso, marcadas como tales, más 12 del banco extra. Elige y te digo al momento si es correcta y <strong>por qué</strong>.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ Sobre el quiz oficial</div>
+    <p style="margin:0">El <code>Course quiz</code> de la plataforma tiene <strong>7 preguntas</strong>, pero solo <strong>4 son evaluables</strong>: las otras tres son encuesta de satisfacción, NPS y un campo de texto libre <strong>obligatorio</strong> para poder enviarlo.</p>
+  </div>
+
+  <div class="quiz-group">
+    <div id="quizBox"></div>
+    <div class="score" id="scoreBox">
+      <div><div class="big" id="scoreNum">0 / 16</div><div class="lab" id="scoreLab">Aún no has contestado</div></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="quizReset">Reiniciar</button>
+    </div>
+  </div>
+</section>
+
+<footer class="credits">
+  <p class="who"><strong>Resúmenes y proyecto:</strong> Juanma Quijada. Elaborados y publicados en español para <strong>facilitar a la comunidad hispanohablante el acceso al conocimiento sobre Claude Code y la inteligencia artificial</strong>. · <a href="https://github.com/juaquicar/claude-code-academy-spanish" target="_blank" rel="noopener">Repositorio</a></p>
+  <p class="src"><strong>El curso original es obra de Anthropic</strong> y la autoría de su contenido —temario, vídeos, ejemplos de código y evaluaciones— le pertenece íntegramente. Esta página es un resumen de estudio derivado de ese material, no lo sustituye. El curso es gratuito: <a href="https://anthropic.skilljar.com/claude-code-101" target="_blank" rel="noopener">hazlo en la Anthropic Academy</a>.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("cc101_"+k))??d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem("cc101_"+k,JSON.stringify(v))}catch(e){}}
+};
+const root=document.documentElement;
+root.dataset.theme=LS.get("theme","light");
+$("#themeBtn").onclick=()=>{const t=root.dataset.theme==="light"?"dark":"light";root.dataset.theme=t;LS.set("theme",t);};
+
+function wireTabs(c){
+  const btns=$$('[role="tab"]',c);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    const scope=c.closest(".widget")||document;
+    btns.forEach(x=>{const p=$("#"+x.dataset.p,scope); if(p)p.classList.toggle("on",x===b);});
+  });
+}
+["#scopeChips"].forEach(s=>{const e=$(s); if(e) wireTabs(e);});
+
+/* ══ intro · bucle agéntico ══ */
+(function(){
+  const tl=$("#loopTl"), out=$("#loopOut"); if(!tl) return;
+  const S=[
+    {i:"✍", l:"Prompt", t:"Escribes un prompt",
+     d:"Todo arranca contigo. <strong>Cuanto más descriptivo, menos contexto gasta después</strong>: un prompt vago obliga a Claude a explorar y razonar por su cuenta."},
+    {i:"◱", l:"Contexto", t:"Reúne el contexto que necesita",
+     d:"Interactúa con el modelo, que devuelve <strong>texto o una llamada a una tool</strong> que Claude Code puede ejecutar. Aquí es donde se llena la ventana de contexto."},
+    {i:"⚙", l:"Acción", t:"Actúa",
+     d:"Edita un fichero, ejecuta un comando. <strong>Según el modo de permisos</strong>, te lo pregunta antes o no."},
+    {i:"✓", l:"Verificación", t:"Verifica los resultados",
+     d:"Determina si lo hecho <strong>logra lo que tu prompt pedía</strong>. Por eso conviene darle un criterio de éxito explícito y una suite de tests."},
+    {i:"↺", l:"Repetir", t:"Termina o vuelve al bucle",
+     d:"Si el resultado es completo y verificable, <strong>termina y espera tu siguiente prompt</strong>. Si no, <strong>lo intenta otra vez</strong>. Y durante todo el bucle puedes añadir contexto, interrumpir o redirigir."}
+  ];
+  tl.innerHTML=S.map((s,i)=>'<button role="tab" aria-selected="'+(i===0)+'" data-v="'+i+'"><span class="dot">'+s.i+'</span><span class="lab">'+s.l+'</span></button>').join("");
+  function render(i){
+    const s=S[i];
+    out.innerHTML='<div class="box key" style="margin:0"><div class="bh">Paso '+(i+1)+' · '+s.t+'</div><p style="margin:0">'+s.d+'</p></div>';
+  }
+  $$('[role="tab"]',tl).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',tl).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ cap 2 · modos de permisos ══ */
+(function(){
+  const host=$("#permModes"), out=$("#permOut"); if(!host) return;
+  const M=[
+    {n:"Default behavior", c:"lo que tienes al instalar",
+     f:["ask","Pide <strong>permiso explícito</strong> antes de editar"],
+     k:["ask","Pide <strong>permiso explícito</strong> antes de ejecutar"],
+     r:["auto","Lee libremente"],
+     nota:"El modo de partida: <strong>estás en el bucle en cada paso</strong>."},
+    {n:"Auto-accept", c:"Shift + Tab",
+     f:["auto","<strong>Se editan sin preguntar</strong>"],
+     k:["ask","<strong>Siguen requiriendo aprobación</strong>"],
+     r:["auto","Lee libremente"],
+     nota:"La confusión típica: auto-accept <strong>no</strong> es barra libre. <strong>Los comandos siguen pasando por ti.</strong>"},
+    {n:"Plan mode", c:"Shift + Tab",
+     f:["block","<strong>No puede editar ficheros</strong>"],
+     k:["block","Solo tools de <strong>solo lectura</strong>"],
+     r:["auto","Lee y busca para <strong>compilar un plan</strong>"],
+     nota:"Hace <strong>preguntas aclaratorias</strong> y devuelve un plan que puede ejecutar <strong>cuando lo apruebes</strong>. Es el mejor sitio para corregir el rumbo: <strong>aún no hay código escrito</strong>."}
+  ];
+  host.innerHTML=M.map((m,i)=>'<button role="tab" aria-selected="'+(i===0)+'" data-v="'+i+'"><span class="mn">'+m.n+'</span><span class="mc">'+m.c+'</span></button>').join("");
+  function render(i){
+    const m=M[i];
+    out.innerHTML=
+      '<div class="perm">'+
+        '<div class="'+m.f[0]+'"><h5>Editar ficheros</h5><p>'+m.f[1]+'</p></div>'+
+        '<div class="'+m.k[0]+'"><h5>Ejecutar comandos</h5><p>'+m.k[1]+'</p></div>'+
+        '<div class="'+m.r[0]+'"><h5>Leer y buscar</h5><p>'+m.r[1]+'</p></div>'+
+      '</div>'+
+      '<div class="box note" style="margin:14px 0 0"><div class="bh">ℹ Lo que hay que retener</div><p style="margin:0">'+m.nota+'</p></div>';
+  }
+  $$('[role="tab"]',host).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',host).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ cap 5 · las cuatro fases ══ */
+(function(){
+  const tl=$("#flowTl"), out=$("#flowOut"); if(!tl) return;
+  const F=[
+    {i:"🔍", l:"Explore", t:"Explore — el contexto relevante",
+     d:"Claude lee los ficheros que importan y hace búsquedas web. <strong>En Plan Mode no puede editar</strong>: solo reúne información.",
+     tip:"También puedes lanzar el <strong>subagente de explore fuera de plan mode</strong> si solo quieres un resumen del repositorio."},
+    {i:"📋", l:"Plan", t:"Plan — el criterio de éxito",
+     d:"Devuelve un plan de acción que <strong>Claude usa después para medir el éxito</strong>. Revísalo y, si no encaja, pídele que revise áreas concretas.",
+     tip:"<strong>Este es el mejor sitio para corregir el rumbo, porque es antes de que exista código.</strong>"},
+    {i:"⌨", l:"Code", t:"Code — el ida y vuelta",
+     d:"Apruebas el plan y Claude recorre la lista. Depura antes de dar nada por terminado, pero <strong>a veces tendrás que intervenir</strong>.",
+     tip:"Tres cosas lo hacen ir suave: <strong>define un criterio de éxito</strong>, <strong>añade tools</strong> (p. ej. Claude in Chrome para probar la UI) e <strong>incluye una suite de tests fiable</strong> — si no lo es, tendrás falsos positivos."},
+    {i:"⎇", l:"Commit", t:"Commit — revisar y subir",
+     d:"Antes del commit, <strong>un subagente revisor</strong> mira tu trabajo: <strong>ojos frescos, sin el sesgo</strong> del agente que escribió el código.",
+     tip:"Luego pídele que genere el mensaje de commit <strong>en tu estilo</strong>. Enjuaga y repite."}
+  ];
+  tl.innerHTML=F.map((f,i)=>'<button role="tab" aria-selected="'+(i===0)+'" data-v="'+i+'"><span class="dot">'+f.i+'</span><span class="lab">'+f.l+'</span></button>').join("");
+  function render(i){
+    const f=F[i];
+    out.innerHTML='<p style="margin-bottom:10px"><strong>'+f.t+'.</strong> '+f.d+'</p>'+
+      '<div class="box tip" style="margin:0"><div class="bh">✓ Del propio curso</div><p style="margin:0">'+f.tip+'</p></div>';
+  }
+  $$('[role="tab"]',tl).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',tl).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ cap 6 · decisor compact/clear ══ */
+(function(){
+  const box=$("#ccDecider"); if(!box) return;
+  const steps=$$(".q-step",box), v=$("#ccVerdict");
+  const V={
+    compact:["/compact","Estás en la misma funcionalidad y chocas con el límite, pero <strong>necesitas continuar</strong>. <code>/compact</code> resume todo lo anterior <strong>conservando memoria de lo que trabajaste</strong>. Mantener el contexto relevante a la funcionalidad actual es lo importante."],
+    clear:["/clear","Funcionalidad nueva: <strong>no quieres que la conversación anterior introduzca sesgo</strong>. <code>/clear</code> lo elimina todo y empiezas de cero."],
+    md:["CLAUDE.md","Ni uno ni otro. Lo que quieres que Claude <strong>recuerde entre sesiones</strong> va en el fichero <strong>CLAUDE.md</strong>, así <strong>no tiene que redescubrirlo desde cero</strong> cada vez."]
+  };
+  function reset(){steps.forEach(s=>s.style.display="");v.classList.remove("on");}
+  $$("button[data-a]",box).forEach(b=>b.onclick=()=>{
+    const [t,d]=V[b.dataset.a];
+    v.innerHTML="<b>→ "+t+"</b>"+d; v.classList.add("on");
+    steps.forEach(s=>s.style.display="none");
+  });
+  $("#ccReset").onclick=reset;
+})();
+
+/* ══ cap 6 · barras de coste ══ */
+(function(){
+  const host=$("#costBars"); if(!host) return;
+  const C=[
+    ["Servidor MCP conectado y sin usar", 92, "hi", "todas sus tools, siempre"],
+    ["Servidor MCP en uso", 92, "", "el mismo coste: no depende del uso"],
+    ["Prompt vago", 70, "hi", "obliga a explorar y razonar de más"],
+    ["Skill disponible", 14, "lo", "solo nombre y descripción"],
+    ["CLI equivalente (gh, aws)", 8, "lo", "sin definiciones persistentes"],
+    ["Subagente delegado", 10, "lo", "solo vuelve el resumen"]
+  ];
+  host.innerHTML=C.map(c=>
+    '<div class="row"><span class="nm">'+c[0]+'</span>'+
+    '<span class="bar"><i class="'+c[2]+'" style="width:'+c[1]+'%"></i></span>'+
+    '<span class="vl">'+c[3]+'</span></div>').join("");
+})();
+
+/* ══ cap 12 · constructor de hooks ══ */
+(function(){
+  const outEl=$("#hkOut"); if(!outEl) return;
+  const EV=[
+    {k:"PostToolUse", lab:"PostToolUse"},
+    {k:"PreToolUse", lab:"PreToolUse"},
+    {k:"UserPromptSubmit", lab:"UserPromptSubmit"},
+    {k:"Stop", lab:"Stop"},
+    {k:"Notification", lab:"Notification"}
+  ];
+  const MA=[
+    {k:'Edit|MultiEdit|Write', lab:"Edit|MultiEdit|Write"},
+    {k:'Bash', lab:"Bash"},
+    {k:'', lab:"sin matcher"}
+  ];
+  const AC=[
+    {k:"fmt", lab:"Formatear el fichero",
+     cmd:'"$CLAUDE_PROJECT_DIR/.claude/hooks/format.sh"',
+     hint:"El caso más común del curso: <strong>auto-formatear tras las ediciones</strong>. El script mira la extensión y llama al formateador que toque — Prettier para TypeScript, gofmt para Go. Con <code>PostToolUse</code> y matcher <code>\"Edit|MultiEdit|Write\"</code> se dispara <strong>siempre que Claude modifica un fichero</strong>."},
+    {k:"log", lab:"Registrar el comando",
+     cmd:'"$CLAUDE_PROJECT_DIR/.claude/hooks/log.sh"',
+     hint:"Registrar todos los comandos ejecutados es uno de los casos de uso que nombra el curso, <strong>para cumplimiento normativo</strong>. Como es un hook, <strong>no se olvida ninguno</strong>."},
+    {k:"block", lab:"Bloquear la operación",
+     cmd:'"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.sh"',
+     hint:"Solo tiene sentido en <strong><code>PreToolUse</code></strong>, que es el único evento que puede <strong>bloquear la llamada antes de que se ejecute</strong>. El script recibe la tool y su entrada <strong>como JSON por stdin</strong> y sale con <strong>código 2</strong> para bloquear, escribiendo en <strong>stderr</strong> el motivo — que Claude lee como feedback."},
+    {k:"notify", lab:"Notificarte",
+     cmd:'"$CLAUDE_PROJECT_DIR/.claude/hooks/notify.sh"',
+     hint:"Enviarte una notificación cuando Claude termina. Encaja con <strong><code>Stop</code></strong> (termina de responder) o con <strong><code>Notification</code></strong>."}
+  ];
+  let ev=0, ma=0, ac=0;
+  function seg(host,arr,cur,cb){
+    host.innerHTML=arr.map((x,i)=>'<button aria-pressed="'+(i===cur)+'" data-i="'+i+'">'+x.lab+'</button>').join("");
+    $$("button",host).forEach(b=>b.onclick=()=>{cb(+b.dataset.i);});
+  }
+  function draw(){
+    seg($("#hkEvent"),EV,ev,i=>{ev=i;draw();});
+    seg($("#hkMatcher"),MA,ma,i=>{ma=i;draw();});
+    seg($("#hkAction"),AC,ac,i=>{ac=i;draw();});
+    const e=EV[ev], m=MA[ma], a=AC[ac];
+    const entry={};
+    if(m.k) entry.matcher=m.k;
+    entry.hooks=[{type:"command",command:a.cmd.replace(/^"|"$/g,"")}];
+    const cfg={hooks:{}}; cfg.hooks[e.k]=[entry];
+    outEl.textContent=JSON.stringify(cfg,null,2);
+    let hint=a.hint;
+    if(a.k==="block" && e.k!=="PreToolUse")
+      hint='<strong style="color:var(--bad)">Aviso:</strong> solo <code>PreToolUse</code> puede bloquear una llamada; en <code>'+e.k+'</code> la tool ya se habrá ejecutado. '+hint;
+    if(!m.k && (e.k==="PreToolUse"||e.k==="PostToolUse"))
+      hint+=' <em>Sin matcher, el hook se dispara con <strong>cualquier</strong> tool.</em>';
+    $("#hkHint").innerHTML=hint;
+  }
+  draw();
+})();
+
+/* ══ flashcards ══ */
+const CARDS=[
+ ["¿Qué es un agente de IA?","<strong>Software que interactúa con su entorno y ejecuta acciones para completar un objetivo definido</strong>, con un modelo de lenguaje operando <strong>en bucle en tiempo real</strong>."],
+ ["¿Qué separa a Claude Code de Claude.ai?","<strong>Acceso directo a tus ficheros, tu terminal y toda tu base de código.</strong> Entra y hace el trabajo en vez de sugerirte código."],
+ ["Los cinco pasos del bucle agéntico","<strong>Prompt → reunir contexto → actuar → verificar → repetir o terminar.</strong> Y durante todo el bucle puedes añadir contexto, interrumpir o redirigir."],
+ ["⚠ ¿Qué pasa al llegar al límite de contexto?","<strong>Se compacta automáticamente la conversación</strong>: resume lo importante y elimina resultados de tools innecesarios. <strong>Puede perder detalles.</strong>"],
+ ["Los tres modos de permisos","<strong>Default</strong> (pide permiso para editar y ejecutar) · <strong>Auto-accept</strong> (edita sin preguntar, <strong>comandos no</strong>) · <strong>Plan mode</strong> (solo lectura, compila un plan)."],
+ ["¿Qué teclas ciclan entre modos?","<span class='kbd'>Shift + Tab</span>. Plan Mode está en ese mismo menú."],
+ ["⚠ En auto-accept, ¿qué sigue requiriendo aprobación?","<strong>Los comandos.</strong> Solo se auto-aprueban las <strong>ediciones de fichero</strong>."],
+ ["¿Qué método de instalación no se auto-actualiza?","<strong>Homebrew</strong> (<code>brew install</code>) y <strong>winget</strong>. El script de <code>curl</code> sí."],
+ ["¿Qué alcance de ficheros tiene Claude Code?","<strong>El directorio donde ejecutas <code>claude</code> y todas sus subcarpetas.</strong>"],
+ ["¿Qué limita a Claude Code en la web?","Está <strong>restringido a repositorios de GitHub</strong>. Y las novedades <strong>llegan antes al terminal</strong>."],
+ ["⭐ El flujo del curso","<strong>Explore → Plan → Code → Commit.</strong> «Si te llevas una sola cosa de este curso, que sea este flujo.»"],
+ ["¿Por qué Plan Mode es el sitio para corregir el rumbo?","Porque es <strong>antes de que se escriba ningún código</strong>. Después, corregir cuesta."],
+ ["Las tres cosas que suavizan la fase Code","<strong>Definir un criterio de éxito</strong> · <strong>añadir tools</strong> (p. ej. Claude in Chrome) · <strong>incluir una suite de tests fiable</strong>."],
+ ["¿Por qué el revisor debe ser un subagente?","Porque tiene <strong>su propio contexto con ojos frescos</strong> y <strong>no arrastra el sesgo</strong> del agente que acaba de escribir el código. Restríngelo a <strong>tools de solo lectura</strong>."],
+ ["<code>/compact</code> vs <code>/clear</code>","<code>/compact</code>: resume y <strong>conserva memoria</strong>, para seguir con la misma funcionalidad. <code>/clear</code>: <strong>lo borra todo</strong>, para empezar una nueva."],
+ ["¿Qué muestra <code>/context</code>?","<strong>Tamaño</strong> del contexto, <strong>categorías que más ocupan</strong> y un <strong>gráfico</strong> del desglose."],
+ ["⚠ ¿Un prompt vago ahorra contexto?","<strong>No: lo gasta.</strong> Obliga a Claude a explorar más código y razonar por su cuenta, y eso ocupa mucho más."],
+ ["¿Qué hace <code>/commit-push-pr</code>?","<strong>Commit, push y creación del PR en un solo paso.</strong> Con MCP de Slack configurado, publica el enlace en el canal del equipo."],
+ ["¿Qué hace <code>claude --from-pr &lt;N&gt;</code>?","<strong>Retoma la sesión enlazada a ese PR.</strong> El enlace se crea solo cuando Claude usa <code>gh pr create</code>."],
+ ["⭐ ¿Cuándo lee Claude el CLAUDE.md?","<strong>Automáticamente al inicio de cada sesión.</strong> Su contenido <strong>se añade a tu prompt</strong>."],
+ ["¿Para qué sirve <code>/init</code>?","Para que Claude <strong>genere</strong> un CLAUDE.md. <strong>No</strong> es lo que hace que se lea."],
+ ["CLAUDE.md de proyecto vs. de usuario","<strong>Proyecto:</strong> raíz del repositorio, <strong>compartido con el equipo</strong>. <strong>Usuario:</strong> tu carpeta de configuración, <strong>solo tuyo, en todos tus proyectos</strong>."],
+ ["¿Cómo referencias documentación desde CLAUDE.md?","Con <strong><code>@</code></strong> y la ruta: <code>@README.md</code>."],
+ ["⚠ ¿Con qué CLAUDE.md conviene empezar?","<strong>Con ninguno.</strong> Arranca sin él para ver dónde corriges el rumbo, y así queda <strong>compacto y centrado</strong>."],
+ ["¿Qué gana tu contexto con un subagente?","El subagente explora <strong>en su propio contexto</strong> y devuelve <strong>solo el resumen</strong>: <strong>el viaje no ensucia tu contexto principal</strong>."],
+ ["¿Cómo se crea un subagente?","<code>/agents</code> → «Create new agent». Se definen en <strong>Markdown con frontmatter YAML</strong>."],
+ ["⚠ Skills precargadas en un subagente","Con la clave <strong><code>skill</code></strong>. Y ahí <strong>la skill entera se carga en contexto</strong>, al contrario que en la conversación principal."],
+ ["Skill vs. servidor MCP en contexto","<strong>MCP:</strong> todas las definiciones de tools al arrancar. <strong>Skill:</strong> solo <strong>nombre y descripción</strong>; el resto cuando Claude decide que la necesita."],
+ ["Los dos tipos de servidor MCP","<strong>HTTP</strong> para servicios remotos alojados por el proveedor · <strong>stdio</strong> para procesos locales."],
+ ["Los tres alcances de MCP","<strong>Local</strong> (este proyecto, solo tú) · <strong>User</strong> (todos tus proyectos) · <strong>Project</strong> (<code>.mcp.json</code> versionado, <strong>todo el equipo</strong>)."],
+ ["⭐ El umbral del 10 %","Si las tools de MCP <strong>superan el 10 % de la ventana de contexto</strong>, Claude Code pasa a <strong>tool search mode</strong> — que <strong>puede no ser tan fiable</strong>."],
+ ["MCP vs. CLI, en contexto","La <strong>CLI</strong> (<code>gh</code>, <code>aws</code>) es <strong>más eficiente</strong>: no añade definiciones de tools persistentes."],
+ ["¿Qué hace únicos a los hooks?","Son <strong>deterministas: siempre se ejecutan</strong>. Un prompt en CLAUDE.md se cumple casi siempre; un hook, siempre."],
+ ["⭐ Los cinco eventos de hooks","<code>PreToolUse</code> · <code>PostToolUse</code> · <code>UserPromptSubmit</code> · <code>Stop</code> · <code>Notification</code>."],
+ ["⚠ Códigos de salida de un hook PreToolUse","<strong>0</strong> continúa · <strong>2 bloquea</strong> y manda <strong>stderr a Claude como feedback</strong> · <strong>cualquier otro</strong> es error no bloqueante."],
+ ["El matcher del hook de formateo","<code>\"Edit|MultiEdit|Write\"</code>, sobre <strong>PostToolUse</strong>."],
+ ["¿Dónde se comparten los hooks del equipo?","En <code>.claude/settings.json</code>, versionado. Con <strong><code>CLAUDE_PROJECT_DIR</code></strong> para referenciar scripts del proyecto."],
+ ["La frase final del curso","<strong>Si algo tiene que pasar siempre y sin fallo, no lo pongas en un prompt. Ponlo en un hook.</strong>"]
+];
+(function(){
+  const grid=$("#cardGrid"); if(!grid) return;
+  function paint(list){
+    grid.innerHTML="";
+    list.forEach(([f,b])=>{
+      const el=document.createElement("button"); el.className="card";
+      el.innerHTML='<div class="inner"><div class="f">'+f+'</div><div class="b">'+b+'</div></div>';
+      el.onclick=()=>el.classList.toggle("flip");
+      grid.appendChild(el);
+    });
+  }
+  paint(CARDS);
+  $("#flipAll").onclick=()=>{
+    const any=$$(".card",grid).some(c=>!c.classList.contains("flip"));
+    $$(".card",grid).forEach(c=>c.classList.toggle("flip",any));
+  };
+  $("#shuffleCards").onclick=()=>{
+    const a=[...CARDS];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    paint(a);
+  };
+})();
+
+/* ══ quiz ══ */
+const QUIZ=[
+ {q:"<b>[Oficial]</b> Claude Code funciona como un agente de IA. ¿Qué es un agente de IA?",
+  o:["Un chatbot que responde preguntas en tiempo real",
+     "Un editor de código con autocompletado integrado",
+     "Un servicio en la nube que aloja tus proyectos de desarrollo",
+     "IA que ejecuta acciones para completar objetivos"],
+  a:3, e:"Pregunta 1 del quiz oficial. Un agente <strong>interactúa con su entorno y ejecuta acciones</strong> para completar un objetivo definido, con un modelo operando en bucle. Los tres distractores describen herramientas que <strong>no actúan</strong>."},
+
+ {q:"<b>[Oficial]</b> ¿Qué pasa cuando Claude Code alcanza el límite de su ventana de contexto?",
+  o:["Cambia a un modelo más pequeño y rápido para ahorrar memoria",
+     "Elimina tus ficheros más antiguos para hacer sitio",
+     "Compacta automáticamente tu conversación para liberar espacio",
+     "Deja de funcionar y te pide reiniciar la sesión"],
+  a:2, e:"Pregunta 2 del quiz oficial. La <strong>compactación</strong> resume los detalles importantes y elimina resultados de tools innecesarios — y <strong>puede perder detalles</strong> en el proceso."},
+
+ {q:"<b>[Oficial]</b> ¿Cuál es el flujo recomendado para usar Claude Code de forma efectiva?",
+  o:["Code → Test → Deploy → Monitor",
+     "Explore → Plan → Code → Commit",
+     "Write → Review → Merge → Ship",
+     "Prompt → Accept → Push → Repeat"],
+  a:1, e:"Pregunta 3 del quiz oficial, y la idea central: «si te llevas una sola cosa de este curso, que sea este flujo». Los distractores son ciclos de despliegue o de git que suenan igual de razonables."},
+
+ {q:"<b>[Oficial]</b> ¿Cómo usa Claude Code el fichero CLAUDE.md?",
+  o:["Lo lee solo después de ejecutar el comando <code>/init</code>",
+     "Lo lee una vez, cuando creas el proyecto",
+     "Lo lee automáticamente al inicio de cada sesión",
+     "Solo lo lee cuando se lo pides explícitamente"],
+  a:2, e:"Pregunta 4 del quiz oficial. Su contenido <strong>se añade a tu prompt</strong> en cada sesión: por eso es memoria persistente. <code>/init</code> solo sirve para <strong>generarlo</strong>."},
+
+ {q:"Estás en auto-accept mode. Claude quiere ejecutar <code>npm install</code>. ¿Qué ocurre?",
+  o:["Lo ejecuta sin preguntar, como con los ficheros",
+     "Te pide aprobación: los comandos nunca se auto-aceptan en ese modo",
+     "Lo bloquea, porque auto-accept solo permite lecturas",
+     "Depende del matcher configurado en settings.json"],
+  a:1, e:"Auto-accept aprueba automáticamente <strong>las ediciones de fichero</strong>, pero <strong>los comandos siguen requiriendo tu permiso</strong>. Es la confusión más habitual del capítulo."},
+
+ {q:"En Plan Mode, ¿qué puede hacer Claude?",
+  o:["Editar ficheros, pero no ejecutar comandos",
+     "Leer con tools de solo lectura y devolver un plan, sin editar nada",
+     "Ejecutar el plan automáticamente al terminarlo",
+     "Solo responder preguntas, sin acceso al código"],
+  a:1, e:"Plan Mode usa <strong>tools de solo lectura</strong> para analizar el código e investigar, <strong>hace preguntas aclaratorias</strong> y devuelve un plan detallado <strong>que ejecuta cuando lo apruebas</strong>."},
+
+ {q:"Acabas de terminar una funcionalidad y vas a empezar otra sin relación. ¿Qué comando?",
+  o:["<code>/compact</code>, para conservar memoria de lo hecho",
+     "<code>/clear</code>, para que la conversación anterior no introduzca sesgo",
+     "<code>/context</code>, que libera espacio al mostrarlo",
+     "Ninguno: la compactación automática ya se encarga"],
+  a:1, e:"<code>/clear</code> elimina todo y empieza de cero. <code>/compact</code> es para cuando <strong>chocas con el límite pero necesitas continuar</strong> con la misma funcionalidad. Lo que quieras conservar entre sesiones va al <strong>CLAUDE.md</strong>."},
+
+ {q:"Quieres ahorrar contexto. ¿Cuál de estas ideas es la que da el curso?",
+  o:["Escribir prompts más cortos y vagos, que ocupan menos",
+     "Ser más específico: un prompt vago obliga a explorar y razonar de más",
+     "Desactivar la compactación automática",
+     "Reducir el número de ficheros del repositorio"],
+  a:1, e:"Es lo contraintuitivo del capítulo: <strong>un prompt vago parece más pequeño, pero cuesta más contexto</strong>, porque Claude tiene que explorar el código y razonar por su cuenta."},
+
+ {q:"¿Por qué el curso recomienda un subagente para revisar el código antes del PR?",
+  o:["Porque es más rápido que el agente principal",
+     "Porque tiene contexto propio y no arrastra el sesgo del agente que escribió el código",
+     "Porque puede editar los ficheros mientras revisa",
+     "Porque es el único que puede ejecutar <code>gh pr create</code>"],
+  a:1, e:"<strong>Ojos frescos.</strong> Y por eso mismo se le <strong>restringe a tools de solo lectura</strong>: un revisor debe señalar problemas, no editarlos. Conviene <strong>versionar su configuración</strong> para que el equipo use el mismo."},
+
+ {q:"El curso recomienda arrancar un proyecto sin fichero CLAUDE.md. ¿Por qué?",
+  o:["Porque <code>/init</code> falla si ya existe uno",
+     "Para ver dónde tienes que corregir el rumbo y que el fichero quede compacto y centrado",
+     "Porque en proyectos nuevos Claude lo ignora",
+     "Para que el equipo decida primero su formato"],
+  a:1, e:"La tentación es escribir un CLAUDE.md enorme el día uno; el curso propone lo contrario: <strong>que el fichero lo escriba la experiencia</strong>. Cuando estés listo, <code>/init</code> lo genera."},
+
+ {q:"Precargas una skill en un subagente con la clave <code>skill</code>. ¿Qué diferencia hay respecto a la conversación principal?",
+  o:["Ninguna: en ambos casos solo se cargan nombre y descripción",
+     "Que en el subagente se carga la skill entera en contexto",
+     "Que en el subagente la skill se ejecuta automáticamente",
+     "Que el subagente no puede usar skills de proyecto"],
+  a:1, e:"Es el aviso explícito de la lección: <strong>«a diferencia de las skills en tu conversación principal, aquí la skill entera se carga en contexto»</strong>."},
+
+ {q:"Quieres que todo tu equipo reciba los mismos servidores MCP automáticamente. ¿Qué alcance?",
+  o:["Local, que es el de por defecto del proyecto",
+     "User, para que esté en todos los proyectos",
+     "Project, con un fichero <code>.mcp.json</code> versionado",
+     "Cualquiera: el alcance solo afecta a la prioridad"],
+  a:2, e:"<strong>Project</strong> usa <code>.mcp.json</code> en el repositorio. <strong>Local</strong> es solo este proyecto y solo para ti; <strong>user</strong> es todos tus proyectos, también solo para ti."},
+
+ {q:"Tienes un servidor MCP de GitHub configurado y también <code>gh</code> instalado. ¿Qué dice el curso?",
+  o:["Que el MCP es preferible porque Claude lo entiende mejor",
+     "Que la CLI es más eficiente en contexto: no añade definiciones de tools persistentes",
+     "Que da igual: ambos ocupan lo mismo",
+     "Que hay que usar los dos para tener redundancia"],
+  a:1, e:"Los servidores MCP <strong>añaden definiciones de tools al contexto aunque no las uses</strong>. Si hay <strong>equivalente en CLI</strong>, sale más barato. La otra alternativa que da el curso es <strong>una Skill</strong>."},
+
+ {q:"¿A partir de qué punto Claude Code cambia a tool search mode?",
+  o:["Cuando hay más de 10 servidores MCP conectados",
+     "Cuando las tools de MCP superan el 10 % de la ventana de contexto",
+     "Cuando la compactación automática se dispara dos veces seguidas",
+     "Cuando un servidor MCP tarda más de 10 segundos en responder"],
+  a:1, e:"El <strong>10 % de la ventana de contexto</strong>. El modo descubre las tools bajo demanda, pero el curso avisa: <strong>puede no funcionar de forma tan fiable</strong>."},
+
+ {q:"Un hook PreToolUse decide bloquear una operación. ¿Con qué código sale y dónde escribe el motivo?",
+  o:["Código 1, y el motivo por stdout",
+     "Código 2, y el motivo por stderr — que Claude lee como feedback",
+     "Código 0 con un JSON <code>{\"blocked\": true}</code> por stdout",
+     "Cualquier código distinto de 0 bloquea; el motivo es opcional"],
+  a:1, e:"<strong>0</strong> continúa, <strong>2 bloquea</strong> y su <strong>stderr se le devuelve a Claude</strong> para que sepa por qué y se ajuste, y <strong>cualquier otro código</strong> es un error <strong>no bloqueante</strong> que solo se te muestra a ti."},
+
+ {q:"Quieres garantizar que Prettier se ejecuta tras cada edición de fichero. ¿Dónde lo pones?",
+  o:["En CLAUDE.md, que se lee en cada sesión",
+     "En un hook PostToolUse con matcher <code>\"Edit|MultiEdit|Write\"</code>",
+     "En una skill, para que se cargue cuando haga falta",
+     "En un subagente de formateo lanzado al final"],
+  a:1, e:"La frase entera del capítulo: en CLAUDE.md <strong>la mayoría de las veces lo hará, pero a veces no</strong>. Los hooks son <strong>deterministas</strong>. <strong>Si algo tiene que pasar siempre y sin fallo, no lo pongas en un prompt: ponlo en un hook.</strong>"}
+];
+function mountQuiz(boxSel,data,key,numSel,labSel,resetSel){
+  const box=$(boxSel); if(!box) return;
+  const KEYS="ABCD";
+  let answers=LS.get(key,{});
+  function render(){
+    box.innerHTML="";
+    data.forEach((q,i)=>{
+      const d=document.createElement("div"); d.className="quiz-q";
+      d.innerHTML='<div class="qn">Pregunta '+(i+1)+' / '+data.length+'</div><div class="qt">'+q.q+'</div>';
+      const ul=document.createElement("div"); ul.className="opts";
+      q.o.forEach((t,j)=>{
+        const b=document.createElement("button"); b.className="opt";
+        b.innerHTML='<span class="k">'+KEYS[j]+'</span><span>'+t+'</span>';
+        b.onclick=()=>{ if(answers[i]!==undefined) return; answers[i]=j; LS.set(key,answers); render(); score(); };
+        ul.appendChild(b);
+      });
+      d.appendChild(ul);
+      const ex=document.createElement("div"); ex.className="expl";
+      ex.innerHTML='<b>'+(answers[i]===q.a?"✓ Correcto. ":"✗ La correcta es "+KEYS[q.a]+". ")+'</b>'+q.e;
+      d.appendChild(ex);
+      if(answers[i]!==undefined){
+        [...ul.children].forEach((b,j)=>{
+          b.disabled=true;
+          if(j===q.a)b.classList.add("ok"); else if(j===answers[i])b.classList.add("ko");
+        });
+        ex.classList.add("on");
+      }
+      box.appendChild(d);
+    });
+  }
+  function score(){
+    const done=Object.keys(answers).length;
+    const ok=Object.entries(answers).filter(([i,v])=>data[i].a===+v).length;
+    $(numSel).textContent=ok+" / "+data.length;
+    const lab=$(labSel);
+    if(!done){lab.textContent="Aún no has contestado";return;}
+    const pct=Math.round(ok/done*100), full=done===data.length;
+    const thr=Math.ceil(data.length*0.85), mid=Math.ceil(data.length*0.65);
+    lab.innerHTML=done+" contestadas · "+pct+"% de acierto"+
+      (full?(ok>=thr?" · <b style='color:var(--good)'>listo para el quiz oficial</b>"
+        :ok>=mid?" · repasa las falladas y vuelve":" · vuelve a leer los capítulos de las falladas"):"");
+  }
+  $(resetSel).onclick=()=>{answers={};LS.set(key,answers);render();score();box.scrollIntoView({behavior:"smooth",block:"start"});};
+  render(); score();
+}
+mountQuiz("#quizBox",QUIZ,"quiz","#scoreNum","#scoreLab","#quizReset");
+
+/* ══ progreso ══ */
+(function(){
+  const CH=["c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12"];
+  let read=LS.get("read",{});
+  function sync(){
+    const n=CH.filter(c=>read[c]).length;
+    $("#meterBar").style.width=(n/CH.length*100)+"%";
+    $("#meterLab").textContent=n+" / "+CH.length;
+    CH.forEach(c=>{const a=$('[data-nav="'+c+'"]'); if(a)a.classList.toggle("done",!!read[c]);});
+    $$(".readbar[data-read]").forEach(bar=>{
+      const k=bar.dataset.read; if(!CH.includes(k))return;
+      const on=!!read[k];
+      bar.classList.toggle("done",on);
+      $(".txt",bar).textContent=on?"✓ Leído":"¿Capítulo asimilado?";
+      $(".btn",bar).textContent=on?"Desmarcar":"Marcar como leído";
+    });
+  }
+  $$(".readbar[data-read] .btn").forEach(b=>{
+    b.onclick=()=>{const k=b.closest(".readbar").dataset.read;read[k]=!read[k];LS.set("read",read);sync();};
+  });
+  $("#resetBtn").onclick=()=>{read={};LS.set("read",read);LS.set("quiz",{});sync();location.reload();};
+  sync();
+})();
+
+/* ══ scrollspy ══ */
+(function(){
+  const links=$$("#side a"), map={};
+  links.forEach(a=>map[a.dataset.nav]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const a=map[e.target.id]; if(a)a.classList.add("active");
+      }
+    });
+  },{rootMargin:"-70px 0px -70% 0px",threshold:0});
+  $$("main section").forEach(s=>obs.observe(s));
+})();
+
+/* ══ buscador ══ */
+(function(){
+  const inp=$("#search"), secs=$$("main section"), nores=$("#nores"), hrs=$$("main hr");
+  const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  inp.oninput=()=>{
+    const q=norm(inp.value.trim());
+    if(!q){secs.forEach(s=>s.classList.remove("hidden"));hrs.forEach(h=>h.style.display="");nores.classList.remove("on");return;}
+    let any=false;
+    secs.forEach(s=>{
+      const hay=norm((s.dataset.title||"")+" "+s.textContent).includes(q);
+      s.classList.toggle("hidden",!hay); if(hay)any=true;
+    });
+    hrs.forEach(h=>h.style.display="none");
+    nores.classList.toggle("on",!any);
+  };
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();inp.focus();inp.select();}
+    if(e.key==="Escape"&&document.activeElement===inp){inp.value="";inp.dispatchEvent(new Event("input"));inp.blur();}
+  });
+})();
+</script>
+</body>
+</html>
