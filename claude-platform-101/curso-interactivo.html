@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Platform 101 — Curso interactivo</title>
+<style>
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --surface-2:#F4F2EC;
+  --ink:#1F1E1D; --ink-2:#4A4742; --muted:#7A756D;
+  --accent:#C15F3C; --accent-soft:#F6E7E0; --accent-ink:#8F3F24; --on-accent:#FFFFFF;
+  --border:#E4DFD6; --border-strong:#CFC8BC;
+  --good:#2E7D5B; --good-soft:#E3F1EA;
+  --warn:#9A6B08; --warn-soft:#FAF0DA;
+  --bad:#AE3323; --bad-soft:#FAE6E2;
+  --info:#2C5F8A; --info-soft:#E3EDF6;
+  --code-bg:#F1EEE7;
+  --shadow:0 1px 2px rgba(31,30,29,.05),0 8px 24px -12px rgba(31,30,29,.18);
+  --radius:14px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --serif:ui-serif,Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+html[data-theme="dark"]{
+  --bg:#171614; --surface:#201F1C; --surface-2:#2A2825;
+  --ink:#F2EFE7; --ink-2:#D3CEC4; --muted:#9A948A;
+  --accent:#E0876A; --accent-soft:#3A2A22; --accent-ink:#F0A98F; --on-accent:#1C1A17;
+  --border:#34322D; --border-strong:#47443E;
+  --good:#6DC49B; --good-soft:#1E322A;
+  --warn:#DFAE4E; --warn-soft:#332A18;
+  --bad:#E88476; --bad-soft:#372220;
+  --info:#7FB0DB; --info-soft:#1C2A36;
+  --code-bg:#26241F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+#topbar{position:fixed;top:0;left:0;right:0;height:60px;z-index:60;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 18px}
+#topbar .brand{font-weight:650;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+#topbar .brand small{color:var(--muted);font-weight:450;display:block;font-size:11.5px;letter-spacing:.02em}
+.tb-spacer{flex:1}
+.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--ink-2);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--border-strong);color:var(--ink)}
+#search{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:9px;padding:8px 12px;font:inherit;font-size:14px;width:230px}
+#search:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+#search::placeholder{color:var(--muted)}
+.meter-wrap{display:flex;align-items:center;gap:9px}
+.meter{width:120px;height:7px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.meter-lab{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#shell{display:grid;grid-template-columns:288px minmax(0,1fr);max-width:1420px;margin:0 auto;padding-top:60px}
+#side{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:24px 14px 60px 20px;border-right:1px solid var(--border)}
+#side::-webkit-scrollbar{width:8px}
+#side::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+.side-h{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:650;margin:18px 0 8px 10px}
+.side-h:first-child{margin-top:0}
+#side a{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:9px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.4;transition:.13s}
+#side a:hover{background:var(--surface-2);color:var(--ink)}
+#side a.active{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+#side a .num{flex:none;width:20px;height:20px;border-radius:6px;background:var(--surface-2);color:var(--muted);font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:2px;font-variant-numeric:tabular-nums;border:1px solid var(--border)}
+#side a.active .num{background:var(--accent);color:var(--on-accent);border-color:transparent}
+#side a.done .num{background:var(--good-soft);color:var(--good);border-color:transparent}
+#side a.done .num::after{content:"✓"}
+#side a.done .num span{display:none}
+main{padding:36px 44px 120px;max-width:900px;min-width:0}
+#shell>*{min-width:0}
+section{margin-bottom:14px;scroll-margin-top:80px}
+section.hidden{display:none}
+h1{font-family:var(--serif);font-size:40px;line-height:1.15;letter-spacing:-.02em;margin:0 0 12px}
+h2{font-family:var(--serif);font-size:29px;line-height:1.2;letter-spacing:-.018em;margin:0 0 6px}
+h3{font-size:19px;letter-spacing:-.01em;margin:34px 0 10px;font-weight:650}
+h4{font-size:15.5px;margin:22px 0 6px;font-weight:650;color:var(--ink)}
+p{margin:0 0 14px;color:var(--ink-2)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+li::marker{color:var(--muted)}
+strong{color:var(--ink);font-weight:640}
+a.ext{color:var(--accent-ink)}
+code{font-family:var(--mono);font-size:.87em;background:var(--code-bg);padding:.13em .38em;border-radius:5px;color:var(--accent-ink);border:1px solid var(--border)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:11px;padding:14px 16px;overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:none;padding:0;color:var(--ink);font-size:13.2px;line-height:1.6}
+hr{border:none;border-top:1px solid var(--border);margin:36px 0}
+.chead{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink);border-color:transparent}
+.lede{font-size:18.5px;color:var(--ink-2);line-height:1.6;margin-bottom:26px;font-family:var(--serif)}
+.box{border-radius:var(--radius);padding:16px 18px;margin:0 0 18px;border:1px solid var(--border);background:var(--surface)}
+.box .bh{display:flex;align-items:center;gap:8px;font-weight:680;font-size:13.5px;margin-bottom:7px}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.box.key{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+.box.key .bh{color:var(--accent-ink)}
+.box.trap{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent)}
+.box.trap .bh{color:var(--bad)}
+.box.tip{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 28%,transparent)}
+.box.tip .bh{color:var(--good)}
+.box.note{background:var(--info-soft);border-color:color-mix(in srgb,var(--info) 26%,transparent)}
+.box.note .bh{color:var(--info)}
+.box.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.box.warn .bh{color:var(--warn)}
+blockquote{margin:0 0 18px;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55}
+.tw{overflow-x:auto;margin:0 0 18px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+th{font-weight:640;color:var(--ink);background:var(--surface-2);font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+.widget{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin:0 0 20px;box-shadow:var(--shadow)}
+.widget-t{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:680;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.widget-t::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);padding:7px 13px;border-radius:99px;font-size:13.5px;font-weight:560;cursor:pointer;transition:.15s;font-family:inherit}
+.chip:hover{border-color:var(--border-strong);color:var(--ink)}
+.chip[aria-selected="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.panel{display:none;animation:fade .25s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.tl{display:flex;gap:0;margin-bottom:18px;position:relative;flex-wrap:wrap}
+.tl::before{content:"";position:absolute;left:0;right:0;top:19px;height:2px;background:var(--border)}
+.tl button{position:relative;flex:1;min-width:96px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.tl .dot{width:40px;height:40px;border-radius:99px;background:var(--surface);border:2px solid var(--border);display:grid;place-items:center;font-size:16px;transition:.2s;z-index:1}
+.tl button:hover .dot{border-color:var(--border-strong)}
+.tl button[aria-selected="true"] .dot{background:var(--accent);border-color:var(--accent);color:var(--on-accent);transform:scale(1.12)}
+.tl .lab{font-size:12px;color:var(--muted);font-weight:600;text-align:center;line-height:1.3}
+.tl button[aria-selected="true"] .lab{color:var(--accent-ink)}
+.ad{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.ad{grid-template-columns:1fr}}
+.ad>div{border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.ad .yes{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 25%,transparent)}
+.ad .no{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 25%,transparent)}
+.ad h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.ad .yes h5{color:var(--good)}
+.ad .no h5{color:var(--bad)}
+.ad ul{margin:0;padding-left:18px;font-size:13.8px}
+.ad li{margin-bottom:4px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:99px;background:var(--accent);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border-strong);cursor:pointer}
+.scale-labs{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:-8px 2px 16px}
+.btn{font-family:inherit;font-size:14px;font-weight:580;cursor:pointer;padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--border-strong);background:var(--surface)}
+.btn-row{display:flex;gap:9px;flex-wrap:wrap}
+.q-step{margin-bottom:14px}
+.q-step p{font-weight:600;color:var(--ink);margin-bottom:9px}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:11px;border:1px solid var(--border);background:var(--surface-2);display:none}
+.verdict.on{display:block;animation:fade .3s}
+.verdict b{font-size:17px;display:block;margin-bottom:5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{perspective:1000px;height:155px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;border:1px solid var(--border);padding:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;line-height:1.45;overflow:auto}
+.card .f{background:var(--surface);color:var(--ink);font-weight:600}
+.card .b{background:var(--accent-soft);color:var(--accent-ink);transform:rotateY(180deg);font-size:13.5px;font-weight:500}
+.card .f::after{content:"clic para girar";position:absolute;bottom:8px;left:0;right:0;font-size:10px;color:var(--muted);font-weight:400}
+.quiz-group{position:relative}
+.quiz-q{border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:18px;margin-bottom:14px}
+.quiz-q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.quiz-q .qt{font-weight:620;color:var(--ink);margin-bottom:13px;font-size:16px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;font-family:inherit;font-size:14.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);border-radius:10px;padding:10px 13px;color:var(--ink-2);transition:.15s;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--border-strong);color:var(--ink)}
+.opt .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11.5px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.ok .k{background:var(--good);color:var(--surface);border-color:transparent}
+.opt.ko{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.opt.ko .k{background:var(--bad);color:var(--surface);border-color:transparent}
+.opt:disabled{cursor:default}
+.expl{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);font-size:14px;color:var(--ink-2);display:none}
+.expl.on{display:block;animation:fade .25s}
+.expl b{color:var(--ink)}
+.score{position:sticky;bottom:16px;margin-top:20px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.score .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.score .lab{font-size:13px;color:var(--muted);line-height:1.4}
+.readbar{display:flex;align-items:center;gap:12px;margin:30px 0 8px;padding:14px 16px;border:1px dashed var(--border-strong);border-radius:var(--radius);background:var(--surface);flex-wrap:wrap}
+.readbar.done{border-style:solid;background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.readbar .txt{font-size:14px;color:var(--muted);flex:1;min-width:160px}
+.readbar.done .txt{color:var(--good);font-weight:600}
+.kbd{font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:18px}
+.grid2>*{min-width:0}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}}
+.mini{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface)}
+.mini h5{margin:0 0 7px;font-size:14.5px;color:var(--ink)}
+.mini p{margin:0;font-size:14px}
+.vid{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--muted);text-decoration:none;border:1px solid var(--border);border-radius:99px;padding:5px 13px;background:var(--surface);transition:.15s}
+.vid:hover{border-color:var(--accent);color:var(--accent-ink)}
+.hero-stats{display:flex;gap:26px;flex-wrap:wrap;margin:24px 0 8px}
+.hero-stats div span{display:block;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.1}
+.hero-stats div small{font-size:12.5px;color:var(--muted)}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:22px 0}
+.map a,.map .mini{text-decoration:none}
+.map a{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface);transition:.18s;display:block}
+.map a:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.map .t{font-weight:640;color:var(--ink);font-size:15px;line-height:1.35}
+.map .d{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.4}
+/* ── flow diagram ── */
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:0;align-items:stretch;margin-bottom:16px}
+@media(max-width:700px){.flow{grid-template-columns:1fr}}
+.flow .col{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.flow .col.main{border-color:color-mix(in srgb,var(--accent) 40%,transparent);background:var(--accent-soft)}
+.flow .col h5{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.flow .col.main h5{color:var(--accent-ink)}
+.flow .arrow{display:grid;place-items:center;padding:0 14px;color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+@media(max-width:700px){.flow .arrow{padding:10px 0}}
+.flow ul{margin:0;padding-left:17px;font-size:13.5px}
+.flow li{margin-bottom:3px}
+.discard{text-decoration:line-through;color:var(--muted);opacity:.7}
+/* ── config builder ── */
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.cfg-ctl,.cfg-out{min-width:0}
+@media(max-width:820px){.cfg{grid-template-columns:1fr}}
+.cfg-ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:650;margin:12px 0 6px}
+.cfg-ctl label:first-child{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font-family:inherit;font-size:13px;font-weight:560;cursor:pointer;padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);transition:.15s}
+.seg button:hover{border-color:var(--border-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:transparent;color:var(--on-accent)}
+.cfg-out pre{margin:0;height:100%}
+.cfg-hint{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;border-left:2px solid var(--border-strong);padding-left:12px}
+/* ── diagrama de flujo de mensajes ── */
+.msg{display:grid;grid-template-columns:minmax(0,1fr) 116px minmax(0,1fr);gap:0;align-items:center;margin-bottom:14px}
+@media(max-width:700px){.msg{grid-template-columns:minmax(0,1fr)}}
+.msg .node{border:1px solid var(--border);border-radius:12px;padding:13px 15px;background:var(--surface-2);min-width:0}
+.msg .node.hl{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.msg .node h5{margin:0 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.msg .node.hl h5{color:var(--accent-ink)}
+.msg .node p{margin:0;font-size:13.5px}
+.msg .link{display:grid;place-items:center;gap:3px;padding:0 8px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+.msg .link .ar{font-size:19px;color:var(--accent);line-height:1}
+.msg .link.dead .ar{color:var(--bad)}
+.msg .link.dead{color:var(--bad)}
+/* ── tabla comparativa de flags ── */
+.flags td.y{color:var(--good);font-weight:640}
+.flags td.n{color:var(--bad);font-weight:640}
+.flags td.c{text-align:center}
+/* ── flujo numerado ── */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.steps .st{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:11px;padding:12px 14px;background:var(--surface);min-width:0}
+.steps .st::before{counter-increment:s;content:counter(s);flex:none;width:24px;height:24px;border-radius:7px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;font-weight:700;display:grid;place-items:center}
+.steps .st p{margin:0;font-size:14.3px}
+.steps .st b{color:var(--ink)}
+/* ── las tres primitivas ── */
+.prims{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.prims button{
+  font-family:inherit;text-align:left;cursor:pointer;border:1px solid var(--border);border-radius:13px;
+  padding:16px;background:var(--surface-2);transition:.18s;color:var(--ink);min-width:0;
+}
+.prims button:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+.prims button[aria-selected="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.prims .pn{display:block;font-size:19px;font-weight:680;letter-spacing:-.01em;margin-bottom:6px}
+.prims button[aria-selected="true"] .pn{color:var(--accent-ink)}
+.prims .pc{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:650}
+.prims button[aria-selected="true"] .pc{color:var(--accent-ink)}
+/* ── flujo cliente-servidor ── */
+.chain{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.chain .hop{display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:10px;padding:10px 13px;background:var(--surface-2);min-width:0;transition:.18s}
+.chain .hop.on{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.chain .hop.past{opacity:.5}
+.chain .k{flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);border:1px solid var(--border);font-size:11px;font-weight:700;display:grid;place-items:center;color:var(--muted);font-family:var(--mono)}
+.chain .hop.on .k{background:var(--accent);color:var(--on-accent);border-color:transparent}
+.chain .who{font-family:var(--mono);font-size:11.5px;color:var(--muted);flex:none;width:104px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chain .hop.on .who{color:var(--accent-ink)}
+.chain .txt2{font-size:14px;color:var(--ink-2);min-width:0}
+.chain .hop.on .txt2{color:var(--ink)}
+/* ── créditos ── */
+footer.credits{margin:60px 0 0;padding:24px 0 0;border-top:1px solid var(--border);font-size:13.5px;color:var(--muted);line-height:1.6}
+footer.credits strong{color:var(--ink-2);font-weight:640}
+footer.credits a{color:var(--accent-ink);text-decoration-color:color-mix(in srgb,var(--accent) 40%,transparent);text-underline-offset:2px}
+footer.credits .who{font-size:14.5px;color:var(--ink-2);margin-bottom:10px}
+footer.credits .src{padding-left:13px;border-left:2px solid var(--border-strong)}
+
+.nores{padding:30px;text-align:center;color:var(--muted);display:none}
+.nores.on{display:block}
+@media(max-width:960px){
+  #shell{grid-template-columns:1fr}
+  #side{display:none}
+  main{padding:26px 20px 100px}
+  #search{width:140px}
+  .meter-wrap{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="brand">Claude Platform 101<small>Anthropic Academy · resumen interactivo</small></div>
+  <div class="tb-spacer"></div>
+  <div class="meter-wrap"><div class="meter"><i id="meterBar"></i></div><span class="meter-lab" id="meterLab">0 / 13</span></div>
+  <input id="search" type="search" placeholder="Buscar… (⌘/Ctrl+K)" autocomplete="off">
+  <button class="icon-btn" id="themeBtn" title="Cambiar tema">◐</button>
+  <button class="icon-btn" id="resetBtn" title="Reiniciar progreso">↺</button>
+</div>
+
+<div id="shell">
+<nav id="side">
+  <div class="side-h">Inicio</div>
+  <a href="#intro" data-nav="intro"><span class="num"><span>★</span></span> Mapa del curso</a>
+  <div class="side-h">La plataforma</div>
+  <a href="#c1" data-nav="c1"><span class="num"><span>1</span></span> ¿Qué es la Claude Platform?</a>
+  <a href="#c2" data-nav="c2"><span class="num"><span>2</span></span> Tu primera llamada</a>
+  <a href="#c3" data-nav="c3"><span class="num"><span>3</span></span> Elegir el modelo</a>
+  <div class="side-h">Enseñar al agente</div>
+  <a href="#c4" data-nav="c4"><span class="num"><span>4</span></span> El bucle del agente</a>
+  <a href="#c5" data-nav="c5"><span class="num"><span>5</span></span> Uso de tools</a>
+  <a href="#c6" data-nav="c6"><span class="num"><span>6</span></span> Thinking</a>
+  <div class="side-h">Ampliar el agente</div>
+  <a href="#c7" data-nav="c7"><span class="num"><span>7</span></span> Tools integradas</a>
+  <a href="#c8" data-nav="c8"><span class="num"><span>8</span></span> Skills</a>
+  <a href="#c9" data-nav="c9"><span class="num"><span>9</span></span> MCP</a>
+  <a href="#c10" data-nav="c10"><span class="num"><span>10</span></span> Gestión del contexto</a>
+  <div class="side-h">Agentes gestionados</div>
+  <a href="#c11" data-nav="c11"><span class="num"><span>11</span></span> ¿Qué son?</a>
+  <a href="#c12" data-nav="c12"><span class="num"><span>12</span></span> Construir el primero</a>
+  <div class="side-h">Con Claude Code</div>
+  <a href="#c13" data-nav="c13"><span class="num"><span>13</span></span> Construir con Claude Code</a>
+  <div class="side-h">Repaso</div>
+  <a href="#flash" data-nav="flash"><span class="num"><span>◆</span></span> Flashcards</a>
+  <a href="#quiz" data-nav="quiz"><span class="num"><span>?</span></span> Quiz</a>
+</nav>
+
+<main>
+<div class="nores" id="nores">Sin resultados. Borra la búsqueda para volver.</div>
+
+<!-- ═══ INTRO ═══ -->
+<section id="intro" data-title="mapa del curso claude platform 101 api messages create agentes gestionados">
+  <span class="pill acc">Anthropic Academy</span>
+  <h1 style="margin-top:14px">Claude Platform&nbsp;101</h1>
+  <p class="lede">Hay un abismo entre <strong>chatear con Claude</strong> y <strong>publicar algo con Claude dentro</strong>. Este curso lo cruza en línea recta: de una llamada <code>messages.create</code> a un agente que corre solo, con tools, <strong>en la infraestructura de Anthropic</strong>.</p>
+
+  <div class="hero-stats">
+    <div><span>3</span><small>parámetros obligatorios</small></div>
+    <div><span>4</span><small>tiers de modelo</small></div>
+    <div><span>4</span><small>patrones de contexto</small></div>
+    <div><span>4</span><small>primitivos de managed agents</small></div>
+  </div>
+
+  <div class="box key">
+    <div class="bh">◈ El lema de la plataforma</div>
+    <p style="margin:0"><strong>Build with primitives, scale on infrastructure, run with control.</strong></p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Las tres capas</div>
+    <div class="prims" id="layers" role="tablist"></div>
+    <div id="layersOut"></div>
+  </div>
+
+  <h3>El mapa</h3>
+  <div class="map">
+    <a href="#c1"><div class="t">1 · La plataforma</div><div class="d">API REST, SDKs, CLIs y consola. Las tres capas.</div></a>
+    <a href="#c2"><div class="t">2 · Tu primera llamada</div><div class="d"><code>messages.create</code> y el array de bloques.</div></a>
+    <a href="#c3"><div class="t">3 · Elegir el modelo</div><div class="d">Cuatro tiers y una evaluación de 20-30 ejemplos.</div></a>
+    <a href="#c4"><div class="t">4 · El bucle del agente</div><div class="d">Observar, decidir, actuar — hasta <code>end_turn</code>.</div></a>
+    <a href="#c5"><div class="t">5 · Uso de tools</div><div class="d">Quién ejecuta qué, y el tool runner.</div></a>
+    <a href="#c6"><div class="t">6 · Thinking</div><div class="d">Adaptativo, visible, con <code>effort</code>.</div></a>
+    <a href="#c7"><div class="t">7 · Tools integradas</div><div class="d">Server tools sin bucle; client tools con schema listo.</div></a>
+    <a href="#c8"><div class="t">8 · Skills</div><div class="d">El <em>cómo</em>: procedimientos empaquetados.</div></a>
+    <a href="#c9"><div class="t">9 · MCP</div><div class="d">Integraciones que mantiene otro.</div></a>
+    <a href="#c10"><div class="t">10 · Gestión del contexto</div><div class="d">Cuatro patrones, tres modos de fallo.</div></a>
+    <a href="#c11"><div class="t">11 · Agentes gestionados</div><div class="d">Rúbricas, graders, memoria, coordinación.</div></a>
+    <a href="#c12"><div class="t">12 · Tu primer agente gestionado</div><div class="d">Agent → Environment → Session → Events.</div></a>
+    <a href="#c13"><div class="t">13 · Con Claude Code</div><div class="d">La skill <code>/claude-api</code> y un solo prompt.</div></a>
+  </div>
+</section>
+
+<hr>
+
+<!-- ═══ C1 ═══ -->
+<section id="c1" data-title="que es la claude platform capas primitives infrastructure controls consola messages create help desk haiku">
+  <div class="chead"><span class="pill">Capítulo 01</span><a class="vid" href="https://www.youtube.com/embed/RfeC02NmLqs" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>¿Qué es la Claude Platform?</h2>
+  <p class="lede">La infraestructura de Anthropic para <strong>construir con Claude programáticamente</strong>: envías peticiones estructuradas desde tu código y controlas cada detalle.</p>
+
+  <h3>De qué se compone</h3>
+  <ul>
+    <li>Una <strong>API REST</strong> que puedes llamar desde cualquier lenguaje</li>
+    <li><strong>SDKs</strong> para distintos lenguajes</li>
+    <li><strong>Interfaces de línea de comandos</strong></li>
+    <li>Una <strong>consola</strong> donde gestionas API keys, monitorizas uso, despliegas agentes gestionados y pruebas prompts</li>
+  </ul>
+
+  <h3>Un ejemplo real: redactar respuestas de un help desk</h3>
+  <p>Te piden redactar la respuesta a un ticket siguiendo el tono del equipo, conectada a un botón de la interfaz. Caso perfecto para la <strong>Messages API</strong>:</p>
+  <pre><code>client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-haiku-4-5",   # Haiku: buen encaje para una redacción sencilla
+    max_tokens=1024,
+    system=TONE_AND_GUIDELINES,
+    messages=[
+        {"role": "user", "content": ticket_content}
+    ],
+)
+
+draft = response.content</code></pre>
+  <div class="tw"><table>
+    <thead><tr><th>Parámetro</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><code>model</code></td><td>Qué modelo atiende la petición — aquí <strong>Haiku</strong>, porque la tarea es sencilla</td></tr>
+      <tr><td><code>max_tokens</code></td><td><strong>Limita la longitud</strong> de la respuesta</td></tr>
+      <tr><td><code>system</code></td><td>El <strong>rol que juega Claude</strong>: aquí, el tono y las directrices</td></tr>
+      <tr><td><code>messages</code></td><td>Array de objetos; el rol <code>user</code> lleva el contenido del ticket</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ La idea central</div>
+    <p style="margin:0"><strong>No estás construyendo un chatbot desde cero.</strong> Estás metiendo a Claude <strong>dentro de un producto que ya existe</strong>. De <em>preguntarle a Claude</em> a <em>Claude es parte de mi producto</em>.</p>
+  </div>
+
+  <div class="readbar" data-read="c1"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C2 ═══ -->
+<section id="c2" data-title="primera llamada api key env.local sdk messages create system prompt bloques array content review buggy code">
+  <div class="chead"><span class="pill">Capítulo 02</span><a class="vid" href="https://www.youtube.com/embed/j0ftK_R5DTs" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Tu primera llamada a la API</h2>
+  <p class="lede">Una <code>messages.create</code> con <strong>modelo</strong>, <strong>límite de tokens</strong> y <strong>mensajes</strong>. Todo lo demás del curso se construye encima.</p>
+
+  <h3>Preparación</h3>
+  <p>API key desde <code>platform.claude.com</code> (necesitas <strong>comprar créditos</strong>). Guárdala en <code>.env.local</code>.</p>
+  <div class="box warn">
+    <div class="bh">⚠ Por qué en un fichero de entorno</div>
+    <p style="margin:0"><strong>Hardcodear keys en ficheros de código es exactamente cómo acaban filtradas en GitHub.</strong></p>
+  </div>
+  <pre><code>npm install @anthropic-ai/sdk</code></pre>
+
+  <div class="widget">
+    <div class="widget-t">Constructor de la petición</div>
+    <div class="cfg">
+      <div class="cfg-ctl">
+        <label>Modelo</label>
+        <div class="seg" id="rqModel"></div>
+        <label>System prompt</label>
+        <div class="seg" id="rqSystem"></div>
+        <label>Extras</label>
+        <div class="seg" id="rqExtra"></div>
+      </div>
+      <div class="cfg-out"><pre><code id="rqOut"></code></pre></div>
+    </div>
+    <div class="cfg-hint" id="rqHint"></div>
+  </div>
+
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 1 del quiz oficial</div>
+    <p style="margin:0">Los tres parámetros que pide <strong>la llamada en sí</strong> son <strong>model</strong>, <strong>max tokens</strong> y <strong>messages</strong>. El <strong>system prompt es opcional</strong> y <strong>la API key no es un parámetro</strong>: vive en el cliente y en tu <code>.env.local</code>.</p>
+  </div>
+
+  <h3>El detalle que cambia cómo lees la respuesta</h3>
+  <p>El <code>content</code> de la respuesta es un <strong>array de bloques</strong>, no una cadena. Para texto normal suele haber uno de tipo <code>text</code>, pero Claude puede devolver <strong>varios</strong> — texto, llamadas a tools, thinking. Por eso <strong>siempre iteras y compruebas el tipo</strong>:</p>
+  <pre><code>for (const block of response.content) {
+  if (block.type === "text") {
+    console.log(block.text);
+  }
+}</code></pre>
+
+  <div class="readbar" data-read="c2"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C3 ═══ -->
+<section id="c3" data-title="elegir modelo tiers fable opus sonnet haiku evaluacion usage tokens enrutar">
+  <div class="chead"><span class="pill">Capítulo 03</span><a class="vid" href="https://www.youtube.com/embed/UAeTSBsK71A" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Elegir el modelo adecuado</h2>
+  <p class="lede">Si vas por defecto al más listo, <strong>la factura te sorprenderá</strong>. Si eliges el más barato, <strong>la salida puede no dar la talla</strong>.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ Nota del propio curso</div>
+    <p style="margin:0">En el momento de grabarlo, <strong>Claude Fable no estaba disponible de forma general</strong> y no aparece en el vídeo.</p>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Tier</th><th>Perfil</th><th>Para qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Claude Fable</strong></td><td>El más capaz; <strong>por encima de Opus</strong>, con <strong>coste significativamente mayor</strong></td><td>Tus desafíos más duros, cuando esa capacidad extra compensa</td></tr>
+      <tr><td><strong>Claude Opus</strong></td><td>El más capaz de las tres familias principales; <strong>el más lento y caro</strong> de las tres</td><td>Razonamiento profundo, análisis complejo, codificación multi-paso, escritura con matices</td></tr>
+      <tr><td><strong>Claude Sonnet</strong></td><td><strong>El punto dulce</strong>: inteligencia, velocidad y coste equilibrados</td><td>La mayor parte del trabajo de producción</td></tr>
+      <tr><td><strong>Claude Haiku</strong></td><td><strong>El más rápido y barato</strong></td><td>Alto volumen y baja complejidad: clasificación, extracción, enrutado</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="widget">
+    <div class="widget-t">¿Qué modelo para esta tarea?</div>
+    <div class="chips" id="taskChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="tk1">Clasificar ficheros entrantes</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="tk2">Redactar una actualización a cliente</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="tk3">Responder a un RFP</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="tk4">Definir un término en dos frases</button>
+    </div>
+    <div class="panel on" id="tk1"><p style="margin:0"><strong>Haiku.</strong> Alto volumen, baja complejidad. En el dashboard de operaciones del curso, <strong>cada fichero entrante se clasifica con Haiku</strong>.</p></div>
+    <div class="panel" id="tk2"><p style="margin:0"><strong>Sonnet.</strong> El punto dulce para trabajo de producción con algo de matiz. En el ejemplo del curso, <strong>las actualizaciones a cliente se redactan con Sonnet</strong>.</p></div>
+    <div class="panel" id="tk3"><p style="margin:0"><strong>Opus.</strong> Es el único caso del ejemplo que <strong>recurre a Opus</strong>. Una cola, tres modelos, <strong>elegidos por tarea</strong>.</p></div>
+    <div class="panel" id="tk4"><p style="margin:0"><strong>Haiku, y sobra.</strong> Opus tarda más y lee más pulido — pero <strong>para dos frases ese pulido se desperdicia</strong>. Haiku responde a menudo <strong>en menos de un segundo</strong>.</p></div>
+  </div>
+
+  <h3>La evaluación mínima</h3>
+  <div class="steps">
+    <div class="st"><p>Reúne <b>20 o 30 ejemplos representativos</b> de tu carga real. No hace falta nada sofisticado.</p></div>
+    <div class="st"><p>Pásalos por <b>Haiku</b>. Si la calidad aguanta, <b>has terminado</b> — y te has ahorrado mucho dinero.</p></div>
+    <div class="st"><p>Si no, sube a <b>Sonnet</b>. Y solo recurre a <b>Opus</b> cuando la tarea lo pida.</p></div>
+  </div>
+
+  <pre><code>models = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"]
+
+for model in models:
+    response = client.messages.create(
+        model=model,
+        max_tokens=300,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    print(model, response.usage)</code></pre>
+  <p><code>response.usage</code> te da los tokens de entrada y salida <strong>directamente de la API</strong>, que es <strong>sobre lo que se calcula tu factura</strong>.</p>
+
+  <div class="box key">
+    <div class="bh">◈ La regla</div>
+    <p style="margin:0"><strong>El modelo correcto es el más barato cuya salida publicarías de verdad.</strong></p>
+  </div>
+
+  <div class="readbar" data-read="c3"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C4 ═══ -->
+<section id="c4" data-title="bucle del agente agent loop stop reason end_turn tool_use get_weather austin tool result">
+  <div class="chead"><span class="pill">Capítulo 04</span><a class="vid" href="https://www.youtube.com/embed/tBIdyIoCQVU" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>El bucle del agente</h2>
+  <p class="lede">Una sola llamada devuelve una sola respuesta. Un <strong>agente</strong> es Claude <strong>ejecutando los dos lados del bucle sin un humano en medio</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">El bucle, turno a turno</div>
+    <div class="chain" id="loopChain"></div>
+    <div class="btn-row"><button class="btn" id="loopPrev">← Anterior</button><button class="btn" id="loopNext">Siguiente →</button><button class="btn" id="loopAll">Ver todo</button></div>
+  </div>
+
+  <h3>El script completo</h3>
+  <pre><code>tools = [
+    {
+        "name": "get_weather",
+        "description": "Get the current weather for a city.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string", "description": "The city to get weather for"}
+            },
+            "required": ["city"],
+        },
+    }
+]
+
+messages = [{"role": "user", "content": "What should I wear in Austin today?"}]
+
+while True:
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        tools=tools,
+        messages=messages,
+    )
+
+    if response.stop_reason == "end_turn":
+        for block in response.content:
+            if block.type == "text":
+                print(block.text)
+        break
+
+    if response.stop_reason == "tool_use":
+        tool_results = []
+        for block in response.content:
+            if block.type == "tool_use":
+                result = run_tool(block.name, block.input)
+                tool_results.append({
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": result,
+                })
+        messages.append({"role": "assistant", "content": response.content})
+        messages.append({"role": "user", "content": tool_results})</code></pre>
+
+  <div class="box key">
+    <div class="bh">◈ La frase del capítulo</div>
+    <p style="margin:0"><strong>Tú eres dueño del bucle y de las tools. Claude es dueño del razonamiento.</strong></p>
+  </div>
+  <p>Al ejecutarlo verás <strong>dos turnos</strong>: uno con <code>stop_reason: tool_use</code> (Claude pide el tiempo de Austin) y otro con <code>end_turn</code> (te dice que te pongas algo ligero). <strong>Dos llamadas a la API, una ejecución de tool, una respuesta final.</strong></p>
+
+  <div class="readbar" data-read="c4"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C5 ═══ -->
+<section id="c5" data-title="tool use json schema descripcion input_schema despachar switch tool runner untilDone typescript python ruby">
+  <div class="chead"><span class="pill">Capítulo 05</span><a class="vid" href="https://www.youtube.com/embed/Ao759wXbRc0" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>¿Qué es el uso de tools?</h2>
+  <p class="lede">Una tool es <strong>una función que tú defines y expones</strong>. Claude decide cuándo llamarla.</p>
+
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 2 del quiz oficial</div>
+    <p style="margin:0"><strong>Claude no ejecuta la tool — tu código sí.</strong> Claude <strong>pide</strong> la llamada, <strong>tu código ejecuta</strong> la función, <strong>el resultado vuelve</strong> a Claude. (La excepción son las <strong>server tools</strong> del capítulo 07, que ejecuta Anthropic.)</p>
+  </div>
+
+  <h3>Las tres partes de una definición</h3>
+  <pre><code>{
+  "name": "lookup_building_code",
+  "description": "Look up a specific building code section by its identifier. Returns the full text of that code section.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "section": {
+        "type": "string",
+        "description": "The building code section to look up"
+      }
+    },
+    "required": ["section"]
+  }
+}</code></pre>
+  <div class="box warn">
+    <div class="bh">⚠ La causa número uno de fallos</div>
+    <p style="margin:0">La <code>description</code> es lo que Claude lee para decidir si llamar a la tool. <strong>Si escribes una descripción vaga, obtienes mal uso de tools.</strong> Es la razón número uno de que los agentes fallen o no cojan las tools disponibles.</p>
+  </div>
+
+  <h3>Varias tools: despachar por nombre</h3>
+  <pre><code>function runTool(name, input) {
+  switch (name) {
+    case "get_weather":
+      return getWeather(input.city);
+    case "get_forecast":
+      return getForecast(input.city);
+  }
+}</code></pre>
+  <p>¿Una tercera tool? <strong>La añades al array, añades un case, y ya.</strong> Y fíjate en <em>cómo</em> elige Claude: <strong>lee las descripciones</strong> y mapea tu prompt a la tool correcta.</p>
+
+  <h3>El tool runner</h3>
+  <div class="ad">
+    <div class="no"><h5>A mano escribes…</h5><ul><li>Un bucle <code>while</code></li><li>Un switch de <code>stop_reason</code></li><li>Meter resultados en <code>messages</code></li><li><strong>JSON schemas</strong> de cada función</li></ul></div>
+    <div class="yes"><h5>El tool runner te da…</h5><ul><li>El bucle entero, interno</li><li><strong>Los schemas, desde tus funciones reales</strong></li><li><code>runner.untilDone()</code> con el mensaje final</li><li>SDK de <strong>TypeScript, Python y Ruby</strong></li></ul></div>
+  </div>
+  <pre><code>const runner = client.beta.messages.toolRunner({
+  model: "claude-sonnet-4-6",
+  max_tokens: 1024,
+  messages: [{ role: "user", content: "I'm packing for a three-day trip to Denver…" }],
+  tools: [getWeather, getForecast],
+});
+
+const finalMessage = await runner.untilDone();</code></pre>
+
+  <div class="box key">
+    <div class="bh">◈ El espectro de delegación</div>
+    <p style="margin:0"><strong>Tú ejecutas, o delegas el bucle.</strong> En el extremo, <strong>los managed agents delegan el agente entero</strong> en Anthropic.</p>
+  </div>
+
+  <div class="readbar" data-read="c5"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C6 ═══ -->
+<section id="c6" data-title="thinking extended adaptive opus 4.7 effort output_config low medium high xhigh max chain of thought">
+  <div class="chead"><span class="pill">Capítulo 06</span><a class="vid" href="https://www.youtube.com/embed/4SunBsMGRwA" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>¿Qué es el thinking?</h2>
+  <p class="lede">Claude razona <strong>paso a paso antes de responder</strong>, generando tokens de razonamiento — la <em>chain of thought</em>. <strong>Y el razonamiento no está oculto: lo ves en la respuesta.</strong></p>
+
+  <h3>Adaptativo en Opus 4.7</h3>
+  <p><strong>No eliges presupuesto de tokens.</strong> Lo activas y <strong>Claude decide dinámicamente cuándo pensar y cuánto</strong>.</p>
+  <div class="box trap">
+    <div class="bh">⚠ La trampa que avisa el propio curso</div>
+    <p style="margin:0">El parámetro <code>effort</code> va <strong>dentro de <code>output_config</code></strong>, <strong>no</strong> al lado del bloque <code>thinking</code>.</p>
+  </div>
+  <pre><code>response = client.messages.create(
+    model="claude-opus-4-7",
+    max_tokens=16000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "high"},  # low | medium | high | xhigh | max
+    tools=[weather_tool],
+    messages=[{"role": "user", "content": "Plan a road trip out of San Francisco with two stops, weighing weather and drive time."}],
+)</code></pre>
+  <p>Los niveles son <code>low</code>, <code>medium</code>, <code>high</code> — <strong>el valor por defecto</strong> —, <code>xhigh</code> y <code>max</code>.</p>
+
+  <h3>Cuándo sí y cuándo no</h3>
+  <div class="ad">
+    <div class="yes"><h5>Ayuda con</h5><ul><li>Matemáticas y lógica multi-paso</li><li>Depuración de código</li><li>Análisis regulatorio</li><li><strong>Compensaciones y comparación de opciones</strong></li></ul></div>
+    <div class="no"><h5>Sáltatelo en</h5><ul><li>Clasificación simple</li><li>Extracción</li><li>Boilerplate</li><li><em>Ahí solo añade latencia y coste</em></li></ul></div>
+  </div>
+
+  <div class="box note">
+    <div class="bh">ℹ Qué cambia en producción</div>
+    <p style="margin:0">Es la diferencia entre un agente que <strong>encuentra problemas de uno en uno</strong> y uno que <strong>los conecta</strong>: razonar <em>a través</em> de las secciones de un informe permite pillar que la carga de viento de la sección tres <strong>contradice</strong> la especificación de material de otra parte.</p>
+  </div>
+
+  <div class="readbar" data-read="c6"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C7 ═══ -->
+<section id="c7" data-title="tools integradas server tools web search code execution web fetch client tools memory bash server_tool_use">
+  <div class="chead"><span class="pill">Capítulo 07</span><a class="vid" href="https://www.youtube.com/embed/pm8iwdSIs3M" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Tools integradas</h2>
+  <p class="lede">Algunas capacidades son tan comunes que <strong>Anthropic las trae ya hechas</strong>. No escribes el código, no alojas el sandbox: <strong>declaras la tool y Anthropic la ejecuta</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">Server tools vs. client tools</div>
+    <div class="chips" id="btChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="bt1">Server tools</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="bt2">Client tools</button>
+    </div>
+    <div class="panel on" id="bt1">
+      <p><strong>Corren en la infraestructura de Anthropic.</strong> Las declaras en tu array <code>tools</code> y <strong>no necesitas bucle de agente</strong>: Claude las llama por su cuenta y <strong>el resultado vuelve en la misma respuesta</strong>.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Tool</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Web search</strong></td><td>Busca en internet y devuelve resultados <strong>con citas</strong></td></tr>
+          <tr><td><strong>Code execution</strong></td><td>Escribe y ejecuta <strong>Python en un sandbox</strong></td></tr>
+          <tr><td><strong>Web fetch</strong></td><td>Recupera el contenido completo de URLs</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin:0">En la respuesta aparecen <strong>tipos de bloque nuevos</strong>: <code>server_tool_use</code> para la llamada y un bloque de resultado para la salida, junto a los <code>text</code> de siempre.</p>
+    </div>
+    <div class="panel" id="bt2">
+      <p><strong>Corren donde corre tu código</strong>, pero vienen en el SDK: <strong>no defines el schema</strong>.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Tool</th><th>Qué hace</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Memory</strong></td><td>Claude lee y escribe memoria <strong>entre sesiones</strong></td></tr>
+          <tr><td><strong>Bash</strong></td><td>Un shell bash <strong>persistente</strong> para ejecutar comandos</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin:0">Misma forma que una tool personalizada, pero <strong>el SDK te da el schema y un runner sensato</strong>.</p>
+    </div>
+  </div>
+
+  <pre><code>search_response = client.messages.create(
+    model="claude-opus-4-8",
+    max_tokens=1024,
+    tools=[{"type": "web_search_20260209", "name": "web_search"}],
+    messages=[{"role": "user", "content": "What is Anthropic's latest model release? Answer in one sentence."}],
+)
+
+for block in search_response.content:
+    if block.type == "server_tool_use":
+        print(f"Tool call: {block.name} — {block.input}")
+    elif block.type == "text":
+        print(block.text)</code></pre>
+
+  <div class="box warn">
+    <div class="bh">⚠ El aviso del curso</div>
+    <p style="margin:0"><strong>Que algo esté validado en internet no significa que sea verdad.</strong> Comprueba siempre el trabajo de Claude.</p>
+  </div>
+
+  <div class="readbar" data-read="c7"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C8 ═══ -->
+<section id="c8" data-title="skills skill.md container skills skill_id version beta code execution status report carga progresiva">
+  <div class="chead"><span class="pill">Capítulo 08</span><a class="vid" href="https://www.youtube.com/embed/3fGaS8mcD9Q" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Skills</h2>
+  <p class="lede">Carpetas de instrucciones, scripts y recursos que Claude carga dinámicamente. En el núcleo, un fichero <code>SKILL.md</code>: <strong>subes una vez, adjuntas a cualquier llamada</strong>.</p>
+
+  <blockquote>Las tools son sobre <strong>qué</strong> puede hacer Claude; las Skills, sobre <strong>cómo</strong> quieres que se haga.</blockquote>
+
+  <div class="box key">
+    <div class="bh">◈ Carga progresiva</div>
+    <p style="margin:0">Al arrancar <strong>solo se cargan nombre y descripción</strong>. Cuando el agente decide que una Skill es relevante, <strong>entonces carga la Skill completa</strong>. Eso mantiene el contexto ligero aunque tengas muchas.</p>
+  </div>
+
+  <h3>Subir y adjuntar</h3>
+  <pre><code>skill = client.beta.skills.create(
+    display_title="Status Report Generator",
+    files=files_from_dir("status-report-skill"),  # folder containing SKILL.md
+)
+
+print(skill.id)  # reference this ID in future requests</code></pre>
+  <pre><code>response = client.beta.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=4096,
+    betas=["skills-2025-10-02", "code-execution-2025-08-25"],
+    container={
+        "skills": [
+            {"type": "custom", "skill_id": skill.id, "version": "latest"}
+        ]
+    },
+    tools=[{"type": "code_execution_20250825", "name": "code_execution"}],
+    messages=[{"role": "user", "content": f"Generate the daily status report from this activity log:\n\n{activity_log}"}],
+)</code></pre>
+  <ul>
+    <li>Es <code>client.beta.messages.create</code> y va con <strong>beta header</strong>: a fecha del vídeo, las Skills siguen <strong>en beta</strong>.</li>
+    <li><code>container.skills</code> es una <strong>lista</strong>: puedes <strong>apilar varias Skills</strong> en una llamada.</li>
+    <li><strong>Code execution</strong> encaja bien, porque los procedimientos de una Skill <strong>pueden hacer trabajo real</strong>.</li>
+  </ul>
+
+  <div class="box note">
+    <div class="bh">ℹ El resultado en producción</div>
+    <p style="margin:0">El prompt del usuario es <strong>una línea</strong>; el procedimiento vive en la Skill. Así todos los PM reciben <strong>la misma estructura, tono y secciones</strong> sin copiar plantillas en prompts.</p>
+  </div>
+
+  <div class="readbar" data-read="c8"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C9 ═══ -->
+<section id="c9" data-title="mcp mantenimiento integraciones mcp_servers mcp_toolset linear slack default_config enabled false introspeccion">
+  <div class="chead"><span class="pill">Capítulo 09</span><a class="vid" href="https://www.youtube.com/embed/hftmYd97LBw" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>MCP</h2>
+  <p class="lede">¿Por qué existe MCP si ya hay tools? <strong>Porque la pregunta real es quién mantiene el código de integración.</strong></p>
+
+  <p>Con tools personalizadas escribes tres integraciones para Asana, Calendar y Slack — <strong>y luego las mantienes cada vez que esos servicios cambian su API</strong>. Con MCP, <strong>el proveedor publica y mantiene su servidor</strong>. Cuando su API cambia, <strong>tú no cambias nada</strong>.</p>
+
+  <div class="widget">
+    <div class="widget-t">¿Tool, skill o MCP?</div>
+    <div id="tsmDecider">
+      <div class="q-step">
+        <p>¿Qué necesitas conectar o enseñar?</p>
+        <div class="btn-row">
+          <button class="btn" data-a="tool">Mi base de datos o mi API interna</button>
+          <button class="btn" data-a="skill">Mi plantilla de informe o mi checklist</button>
+          <button class="btn" data-a="mcp">Asana, Slack, Linear, Google…</button>
+        </div>
+      </div>
+      <div class="verdict" id="tsmVerdict"></div>
+      <div class="btn-row" style="margin-top:12px"><button class="btn" id="tsmReset">Empezar de nuevo</button></div>
+    </div>
+  </div>
+
+  <h3>Conectar un servidor</h3>
+  <pre><code>response = client.beta.messages.create(
+    model="claude-opus-4-8",
+    max_tokens=1000,
+    messages=[{"role": "user", "content": "What tools do you have available?"}],
+    mcp_servers=[
+        {
+            "type": "url",
+            "url": "https://mcp.linear.app/mcp",
+            "name": "linear",
+            "authorization_token": os.environ["LINEAR_MCP_TOKEN"],
+        }
+    ],
+    tools=[{"type": "mcp_toolset", "mcp_server_name": "linear"}],
+    betas=["mcp-client-2025-11-20"],
+)</code></pre>
+  <ul>
+    <li><code>mcp_servers</code> <strong>declara la conexión</strong>: tipo, URL, nombre y token opcional.</li>
+    <li>Una tool de tipo <code>mcp_toolset</code> <strong>concede acceso</strong>. Por defecto, a todas las tools del servidor.</li>
+  </ul>
+  <div class="box key">
+    <div class="bh">◈ Lo que no escribes</div>
+    <p style="margin:0"><strong>Ni un solo schema de tool.</strong> Claude <strong>introspecciona el servidor</strong>, recibe la lista de tools con sus schemas y elige la adecuada. El conector MCP está <strong>en beta</strong>.</p>
+  </div>
+
+  <h3>Dejarlo en solo lectura</h3>
+  <pre><code>tools=[
+    {
+        "type": "mcp_toolset",
+        "mcp_server_name": "slack",
+        "default_config": {"enabled": False},
+        "configs": {
+            "search_messages": {"enabled": True},
+            "list_channels": {"enabled": True},
+        },
+    }
+]</code></pre>
+  <p>Ahora Claude puede <strong>buscar y listar</strong>, pero <strong>no publicar ni borrar</strong>.</p>
+
+  <div class="readbar" data-read="c9"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C10 ═══ -->
+<section id="c10" data-title="gestion del contexto just in time compactacion servidor prompt caching memory tool context_management">
+  <div class="chead"><span class="pill">Capítulo 10</span><a class="vid" href="https://www.youtube.com/embed/jZQ6b_vVHRc" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Gestión del contexto</h2>
+  <p class="lede">Un millón de tokens suena a mucho, pero <strong>se acaba antes de lo que crees</strong> con un agente real. <strong>Y cuando la ventana se llena, la petición falla.</strong></p>
+
+  <h3>Qué cuenta como contexto</h3>
+  <p>Todo lo que Claude ve en un turno: el <strong>system prompt</strong>, el <strong>historial de mensajes</strong>, las <strong>definiciones y resultados de tools</strong>, los <strong>ficheros y skills</strong> adjuntos y los <strong>bloques de thinking</strong>. Es la entrada de cada llamada: <strong>lo pagas al entrar y lo pagas al salir</strong>.</p>
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 3 del quiz oficial</div>
+    <p style="margin:0">Importa porque <strong>la ventana es finita y pagas por lo que hay dentro</strong> — no porque Claude <span class="discard">rechace peticiones de más de media ventana</span>, ni porque <span class="discard">los mensajes viejos se borren a los diez turnos</span>, ni porque <span class="discard">más contexto sea siempre mejor</span>. <strong>El objetivo no es meterlo todo: es meter lo correcto.</strong></p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Los cuatro patrones</div>
+    <div class="prims" id="ctxPats" role="tablist"></div>
+    <div id="ctxOut"></div>
+  </div>
+
+  <pre><code>response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    context_management={
+        "edits": [
+            {"type": "compact"}
+        ]
+    },
+    messages=messages,
+)</code></pre>
+
+  <div class="box key">
+    <div class="bh">◈ Cómo se eligen</div>
+    <p style="margin:0">Cada patrón ataca <strong>un modo de fallo distinto: coste, tamaño de ventana, ausencia de estado</strong>. En producción normalmente <strong>se apilan los cuatro</strong>. O usas <strong>managed agents</strong>, que traen caching y compactación <strong>activados por defecto</strong>.</p>
+  </div>
+
+  <div class="readbar" data-read="c10"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C11 ═══ -->
+<section id="c11" data-title="managed agents kanban lighthouse rubrica grader memoria incidentes coordinador especialistas permisos">
+  <div class="chead"><span class="pill">Capítulo 11</span><a class="vid" href="https://www.youtube.com/embed/haeslvB0zpg" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>¿Qué son los agentes gestionados?</h2>
+  <p class="lede">Un conjunto de APIs para <strong>construir y desplegar agentes a escala</strong>. Es el bucle de siempre — <strong>alojado en la infraestructura de Anthropic</strong>, en un contenedor aislado con sistema de ficheros, bash y búsqueda web.</p>
+
+  <div class="widget">
+    <div class="widget-t">Tres formas de usarlos</div>
+    <div class="chips" id="maChips" role="tablist">
+      <button class="chip" role="tab" aria-selected="true" data-p="ma1">Un Kanban que trabaja</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="ma2">Investigación recurrente</button>
+      <button class="chip" role="tab" aria-selected="false" data-p="ma3">Respuesta a incidentes</button>
+    </div>
+    <div class="panel on" id="ma1">
+      <p>Arrastras un ticket a «in progress» y <strong>eso dispara una sesión</strong>. El backend la crea, apunta a un <strong>entorno con Lighthouse y Puppeteer preinstalados</strong> y <strong>monta tu repositorio de GitHub</strong> en el contenedor.</p>
+      <p>La <strong>rúbrica</strong> define qué es «hecho»: Lighthouse <strong>por encima de 90</strong>, sin recursos que bloqueen el render, todas las imágenes con lazy load. Un <strong>grader independiente</strong> evalúa, Claude lee el feedback, vuelve a entrar y arregla lo que se dejó — <strong>hasta 96 en la demo</strong>.</p>
+      <p style="margin:0">Cada llamada a tool vuelve al tablero <strong>en tiempo real por el event stream</strong>. Y puedes <strong>arrastrar un segundo ticket</strong> mientras el primero corre: dos sesiones, dos contenedores, en paralelo.</p>
+    </div>
+    <div class="panel" id="ma2">
+      <p>Un agente que <strong>sigue precios y cambios de plan</strong> de cada SaaS que paga la empresa, con el informe listo antes del stand-up. En cada ejecución busca en la web, <strong>corre un análisis de costes en Python en el sandbox</strong>, usa una <strong>skill de Excel</strong>, escribe un resumen y <strong>publica en Slack y crea la tarea en Asana vía MCP</strong>.</p>
+      <p style="margin:0">La clave está en la <strong>memoria</strong>: consulta qué encontró la semana pasada y guarda qué cambió. Así el informe puede decir <strong>«los costes de cómputo son un 15 % más bajos que la semana pasada»</strong> en vez de repetir precios estáticos.</p>
+    </div>
+    <div class="panel" id="ma3">
+      <p>Una <strong>tool personalizada</strong> de tu backend recibe la alerta y la mete en una sesión <strong>como tool result</strong>. Un <strong>coordinador</strong> delega en <strong>tres especialistas</strong>, cada uno en su propia ventana de contexto pero sobre <strong>el mismo sistema de ficheros</strong>, y sintetiza sus hallazgos.</p>
+      <p style="margin:0">Antes de que el resumen salga a Slack se dispara la <strong>política de permisos</strong>: lo ves, lo apruebas, y sale. <strong>Las acciones sensibles esperan a un humano.</strong> Y la memoria flagea el patrón: <em>«esto se parece al problema de DNS de hace dos semanas»</em>.</p>
+    </div>
+  </div>
+
+  <h3>Los bloques de construcción</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Bloque</th><th>Qué es</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Agents</strong></td><td>Definiciones con tools, personas y capacidades concretas</td></tr>
+      <tr><td><strong>Sessions</strong></td><td>Ejecuciones individuales que lanzas desde tu aplicación</td></tr>
+      <tr><td><strong>Environments</strong></td><td>Sandboxes con los paquetes y controles de red adecuados</td></tr>
+      <tr><td><strong>Tools</strong></td><td>Incluidas <strong>tools personalizadas en tu backend</strong></td></tr>
+      <tr><td><strong>MCP</strong></td><td>Conexiones a servicios como Slack y Asana</td></tr>
+      <tr><td><strong>Memory</strong></td><td>Un almacén que <strong>lee antes de empezar y escribe al terminar</strong></td></tr>
+      <tr><td><strong>Outcomes</strong></td><td><strong>Rúbricas y graders</strong> que definen y comprueban qué es «hecho»</td></tr>
+      <tr><td><strong>Multi-agent coordination</strong></td><td>Coordinadores delegando en especialistas</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key">
+    <div class="bh">◈ La frase del capítulo</div>
+    <p style="margin:0"><strong>Tú defines qué significa «hecho». Claude trabaja hasta llegar ahí.</strong></p>
+  </div>
+
+  <div class="readbar" data-read="c11"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C12 ═══ -->
+<section id="c12" data-title="construir agente gestionado agents create environments sessions events stream agent_toolset status_idle">
+  <div class="chead"><span class="pill">Capítulo 12</span><a class="vid" href="https://www.youtube.com/embed/1Rl3gZrlQJo" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Construir tu primer agente gestionado</h2>
+  <p class="lede">Cuando el bucle va a correr <strong>minutos u horas</strong>, con estado que guardar y trabajo que reanudar tras un corte de red, <strong>no quieres ejecutarlo en tu servidor</strong>.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ Sin acceso especial</div>
+    <p style="margin:0">Los managed agents están <strong>activados por defecto para toda cuenta de API</strong>.</p>
+  </div>
+
+  <div class="widget">
+    <div class="widget-t">Los cuatro primitivos, en orden</div>
+    <div class="tl" id="primTl" role="tablist"></div>
+    <div id="primOut"></div>
+  </div>
+
+  <h3>Los cinco pasos</h3>
+  <pre><code>agent = client.beta.agents.create(
+    name="Line Counter",
+    model="claude-opus-4-8",
+    system="You are a helpful agent that completes small file tasks.",
+    tools=[
+        {"type": "agent_toolset_20260401", "default_config": {"enabled": True}}
+    ],
+)
+
+environment = client.beta.environments.create(
+    name="line-counter-env",
+    config={"type": "cloud", "networking": {"type": "unrestricted"}},
+)
+
+session = client.beta.sessions.create(
+    agent=agent.id,
+    environment_id=environment.id,
+    title="Count lines demo",
+)</code></pre>
+
+  <div class="box trap">
+    <div class="bh">⚠ La trampa del capítulo</div>
+    <p style="margin:0"><strong>Abre el event stream antes de enviar el mensaje inicial.</strong> El stream <strong>solo entrega eventos que ocurren después de abrirse</strong>: si envías primero, te pierdes el arranque.</p>
+  </div>
+
+  <pre><code>with client.beta.sessions.events.stream(session_id=session.id) as stream:
+    # Stream is open — now send the kickoff
+    client.beta.sessions.events.send(
+        session_id=session.id,
+        events=[
+            {
+                "type": "user.message",
+                "content": [{"type": "text", "text": "Create a file in the temp directory, count its lines, and report back."}],
+            }
+        ],
+    )
+
+    for event in stream:
+        if event.type == "agent.message":
+            for block in event.content:
+                if block.type == "text":
+                    print(block.text, end="", flush=True)
+        elif event.type == "agent.tool_use":
+            print(f"\n[tool] {event.name}")
+        elif event.type == "session.status_idle":
+            print("\n--- Agent done ---")
+            break</code></pre>
+
+  <div class="tw"><table>
+    <thead><tr><th>Evento</th><th>Qué es</th></tr></thead>
+    <tbody>
+      <tr><td><code>agent.message</code></td><td>El texto de Claude</td></tr>
+      <tr><td><code>agent.tool_use</code></td><td>Qué tool eligió</td></tr>
+      <tr><td><code>session.status_idle</code></td><td>El agente ha terminado</td></tr>
+    </tbody>
+  </table></div>
+  <p>Fíjate en que es <code>events</code>, <strong>en plural</strong>: los eventos son cómo fluye todo en esta API.</p>
+
+  <div class="box key">
+    <div class="bh">◈ El cambio de mentalidad</div>
+    <p style="margin:0"><strong>No estás ejecutando un bucle while. Estás enviando eventos y leyendo eventos.</strong> Recurre a los managed agents cuando el bucle <strong>correría demasiado tiempo, haría demasiadas cosas o necesitaría sobrevivir a un percance</strong>; a un bucle manual, cuando quieras <strong>control total</strong>.</p>
+  </div>
+
+  <div class="readbar" data-read="c12"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ C13 ═══ -->
+<section id="c13" data-title="construir con claude code skill claude-api plugin marketplace AnthropicsSkills stub zod tool runner">
+  <div class="chead"><span class="pill">Capítulo 13</span><a class="vid" href="https://www.youtube.com/embed/Zq_c7xMbxto" target="_blank" rel="noopener">▶ vídeo</a></div>
+  <h2>Construir con Claude Code</h2>
+  <p class="lede">Escribir el código de la API a mano funciona. <strong>Que lo escriba Claude es más rápido.</strong></p>
+
+  <h3>La skill Claude API</h3>
+  <p>Claude Code trae una skill integrada llamada <strong>Claude API</strong>. La invocas con <code>/claude-api</code>, o <strong>se carga sola</strong> cuando Claude Code detecta que usas el SDK de TypeScript.</p>
+  <div class="box trap">
+    <div class="bh">⚠ Pregunta 5 del quiz oficial</div>
+    <p style="margin:0">El slash command es <code>/claude-api</code>. No <span class="discard">/anthropic-api</span>, no <span class="discard">/claude-sdk</span>, no <span class="discard">/api-tools</span>.</p>
+  </div>
+  <pre><code>/plugin marketplace add AnthropicsSkills</code></pre>
+  <div class="box warn">
+    <div class="bh">⚠ La errata fácil</div>
+    <p style="margin:0"><strong>Fíjate en la <code>s</code> al final de Anthropics</strong> — se pasa por alto con facilidad.</p>
+  </div>
+
+  <h3>Un prompt, código funcionando</h3>
+  <p>Un buen prompt hace <strong>tres cosas</strong>:</p>
+  <div class="steps">
+    <div class="st"><p><b>Nombra el fichero</b> que quieres cambiar.</p></div>
+    <div class="st"><p><b>Nombra el patrón</b> que quieres que se use.</p></div>
+    <div class="st"><p><b>Nombra el estado final</b> que esperas.</p></div>
+  </div>
+  <p>Claude Code rellena los stubs contra los tipos, añade una llamada al final del fichero, <strong>ejecuta el script y reporta la salida</strong>. Si algo falla, <strong>lee el error y parchea el código in situ</strong>. En la demo creó una <strong>tool con Zod</strong>, el tool runner y la función <code>run</code>.</p>
+
+  <div class="box key">
+    <div class="bh">◈ El patrón a recordar</div>
+    <p style="margin:0"><strong>Define una tool. Pásasela a un runner. Devuelve el resultado.</strong> No hace falta teclearlo de memoria: <strong>stub, delega, revisa el diff</strong>.</p>
+  </div>
+
+  <div class="readbar" data-read="c13"><span class="txt">¿Capítulo asimilado?</span><button class="btn">Marcar como leído</button></div>
+</section>
+
+<hr>
+
+<!-- ═══ FLASHCARDS ═══ -->
+<section id="flash" data-title="flashcards repaso tarjetas chuleta">
+  <span class="pill acc">Repaso activo</span>
+  <h2 style="margin-top:12px">Flashcards</h2>
+  <p class="lede">Los hechos concretos del curso. Clic para girar.</p>
+  <div class="btn-row" style="margin-bottom:16px">
+    <button class="btn" id="flipAll">Girar todas</button>
+    <button class="btn" id="shuffleCards">Barajar</button>
+  </div>
+  <div class="cards" id="cardGrid"></div>
+</section>
+
+<hr>
+
+<!-- ═══ QUIZ ═══ -->
+<section id="quiz" data-title="quiz oficial preguntas reales distractores banco extra">
+  <span class="pill acc">Quiz</span>
+  <h2 style="margin-top:12px">Quiz — 16 preguntas</h2>
+  <p class="lede">Las <strong>5 preguntas oficiales</strong> del curso, marcadas como tales, más 11 del banco extra. Elige y te digo al momento si es correcta y <strong>por qué</strong>.</p>
+
+  <div class="box note">
+    <div class="bh">ℹ Sobre el quiz oficial</div>
+    <p style="margin:0">El <code>Claude Platform 101 Quiz</code> tiene <strong>8 preguntas</strong>, pero solo <strong>5 son evaluables</strong>: las otras tres son encuesta de satisfacción, NPS y un campo de texto libre <strong>obligatorio</strong> para poder enviarlo.</p>
+  </div>
+
+  <div class="quiz-group">
+    <div id="quizBox"></div>
+    <div class="score" id="scoreBox">
+      <div><div class="big" id="scoreNum">0 / 16</div><div class="lab" id="scoreLab">Aún no has contestado</div></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="quizReset">Reiniciar</button>
+    </div>
+  </div>
+</section>
+
+<footer class="credits">
+  <p class="who"><strong>Resúmenes y proyecto:</strong> Juanma Quijada. Elaborados y publicados en español para <strong>facilitar a la comunidad hispanohablante el acceso al conocimiento sobre Claude Code y la inteligencia artificial</strong>. · <a href="https://github.com/juaquicar/claude-code-academy-spanish" target="_blank" rel="noopener">Repositorio</a></p>
+  <p class="src"><strong>El curso original es obra de Anthropic</strong> y la autoría de su contenido —temario, vídeos, ejemplos de código y evaluaciones— le pertenece íntegramente. Esta página es un resumen de estudio derivado de ese material, no lo sustituye. El curso es gratuito: <a href="https://anthropic.skilljar.com/claude-platform-101" target="_blank" rel="noopener">hazlo en la Anthropic Academy</a>.</p>
+</footer>
+
+</main>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LS={
+  get:(k,d)=>{try{return JSON.parse(localStorage.getItem("cp101_"+k))??d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem("cp101_"+k,JSON.stringify(v))}catch(e){}}
+};
+const root=document.documentElement;
+root.dataset.theme=LS.get("theme","light");
+$("#themeBtn").onclick=()=>{const t=root.dataset.theme==="light"?"dark":"light";root.dataset.theme=t;LS.set("theme",t);};
+
+function wireTabs(c){
+  const btns=$$('[role="tab"]',c);
+  btns.forEach(b=>b.onclick=()=>{
+    btns.forEach(x=>x.setAttribute("aria-selected",x===b));
+    const scope=c.closest(".widget")||document;
+    btns.forEach(x=>{const p=$("#"+x.dataset.p,scope); if(p)p.classList.toggle("on",x===b);});
+  });
+}
+["#taskChips","#btChips","#maChips"].forEach(s=>{const e=$(s); if(e) wireTabs(e);});
+
+/* ══ intro · las tres capas ══ */
+(function(){
+  const host=$("#layers"), out=$("#layersOut"); if(!host) return;
+  const L=[
+    {n:"Primitives", c:"build with",
+     d:"Los <strong>bloques de construcción de la API</strong>, afinados para Claude. Son las piezas que <strong>llamas desde tu código</strong>.",
+     q:"Messages API · tool use · files · web search · code execution · servidores MCP · skills",
+     s:"Es donde empieza todo: una <code>messages.create</code>."},
+    {n:"Infrastructure", c:"scale on",
+     d:"Lo que necesitas para <strong>construir y escalar sistemas agénticos más allá del prototipo</strong>.",
+     q:"Managed agents · reintentos · colas · observabilidad",
+     s:"La fontanería que aguanta <strong>cuando una llamada a Claude se convierte en mil</strong>."},
+    {n:"Controls", c:"run with",
+     d:"Las herramientas para <strong>ejecutar esos sistemas en producción</strong>.",
+     q:"Dashboards · evals",
+     s:"Los diales que usa tu equipo <strong>una vez está en marcha</strong>."}
+  ];
+  host.innerHTML=L.map((l,i)=>'<button role="tab" aria-selected="'+(i===0)+'" data-v="'+i+'"><span class="pn">'+l.n+'</span><span class="pc">'+l.c+'</span></button>').join("");
+  function render(i){
+    const l=L[i];
+    out.innerHTML='<p style="margin-bottom:10px">'+l.d+'</p>'+
+      '<div class="grid2" style="margin-bottom:14px">'+
+        '<div class="mini"><h5>Qué incluye</h5><p>'+l.q+'</p></div>'+
+        '<div class="mini"><h5>Para qué está ahí</h5><p>'+l.s+'</p></div>'+
+      '</div>'+
+      '<div class="box key" style="margin:0"><div class="bh">◈ El lema</div><p style="margin:0">Build with <strong>primitives</strong>, scale on <strong>infrastructure</strong>, run with <strong>control</strong>.</p></div>';
+  }
+  $$('[role="tab"]',host).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',host).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ cap 2 · constructor de la petición ══ */
+(function(){
+  const outEl=$("#rqOut"); if(!outEl) return;
+  const MO=[
+    {k:"claude-haiku-4-5", lab:"Haiku", why:"<strong>Haiku</strong> para alto volumen y baja complejidad: clasificación, extracción, enrutado. Es donde empieza la evaluación del capítulo 03."},
+    {k:"claude-sonnet-4-6", lab:"Sonnet", why:"<strong>Sonnet</strong> es el punto dulce y cubre la mayor parte del trabajo de producción."},
+    {k:"claude-opus-4-8", lab:"Opus", why:"<strong>Opus</strong> para razonamiento profundo y tareas multi-paso. Es el más lento y caro de las tres familias principales."}
+  ];
+  const SY=[
+    {k:1, lab:"Con system prompt", why:" El <strong>system prompt moldea la persona</strong>: «un revisor senior escueto» en vez de uno charlatán. <strong>Es opcional</strong>: no es uno de los tres parámetros obligatorios."},
+    {k:0, lab:"Sin system prompt", why:" Sin él sigue siendo una llamada válida: los tres obligatorios son <strong>model</strong>, <strong>max_tokens</strong> y <strong>messages</strong>."}
+  ];
+  const EX=[
+    {k:"none", lab:"Nada más", why:""},
+    {k:"tools", lab:"+ tools", why:" Con <code>tools</code> la respuesta puede volver con <code>stop_reason: \"tool_use\"</code>, y entonces necesitas <strong>el bucle del capítulo 04</strong>."},
+    {k:"thinking", lab:"+ thinking", why:" Con thinking adaptativo, <strong><code>effort</code> va dentro de <code>output_config</code></strong>, no junto al bloque <code>thinking</code>."},
+    {k:"ctx", lab:"+ context_management", why:" Con <code>context_management</code> la API <strong>resume los turnos antiguos automáticamente</strong> al cruzar el umbral de disparo."}
+  ];
+  let mo=1, sy=0, ex=0;
+  function seg(host,arr,cur,cb){
+    host.innerHTML=arr.map((x,i)=>'<button aria-pressed="'+(i===cur)+'" data-i="'+i+'">'+x.lab+'</button>').join("");
+    $$("button",host).forEach(b=>b.onclick=()=>{cb(+b.dataset.i);});
+  }
+  function draw(){
+    seg($("#rqModel"),MO,mo,i=>{mo=i;draw();});
+    seg($("#rqSystem"),SY,sy,i=>{sy=i;draw();});
+    seg($("#rqExtra"),EX,ex,i=>{ex=i;draw();});
+    const L=[];
+    L.push("response = client.messages.create(");
+    L.push('    model="'+MO[mo].k+'",');
+    L.push("    max_tokens=1024,");
+    if(SY[sy].k) L.push('    system="You are a terse senior code reviewer.",');
+    if(EX[ex].k==="tools") L.push("    tools=tools,");
+    if(EX[ex].k==="thinking"){
+      L.push('    thinking={"type": "adaptive"},');
+      L.push('    output_config={"effort": "high"},');
+    }
+    if(EX[ex].k==="ctx") L.push('    context_management={"edits": [{"type": "compact"}]},');
+    L.push('    messages=[{"role": "user", "content": prompt}],');
+    L.push(")");
+    L.push("");
+    L.push("for block in response.content:      # array de bloques");
+    L.push('    if block.type == "text":');
+    L.push("        print(block.text)");
+    outEl.textContent=L.join("\n");
+    $("#rqHint").innerHTML=MO[mo].why+SY[sy].why+EX[ex].why;
+  }
+  draw();
+})();
+
+/* ══ cap 4 · el bucle turno a turno ══ */
+(function(){
+  const host=$("#loopChain"); if(!host) return;
+  const H=[
+    ["tú","Envías el prompt: <em>«What should I wear in Austin today?»</em> — con el array <code>tools</code> en la petición"],
+    ["Claude","No sabe el tiempo. Responde con <strong><code>stop_reason: \"tool_use\"</code></strong> y un bloque pidiendo <code>get_weather</code> para Austin"],
+    ["tu código","<strong>Ejecuta la función</strong> — aquí una búsqueda simulada; en producción, tu base de datos o tu API"],
+    ["tu código","Mete en <code>messages</code> la respuesta del assistant <strong>y</strong> un bloque <code>tool_result</code> ligado al <code>tool_use_id</code>"],
+    ["Claude","Segunda llamada: ahora sí tiene el dato. <strong><code>stop_reason: \"end_turn\"</code></strong> y la respuesta final"],
+    ["fin","<strong>Dos llamadas a la API, una ejecución de tool, una respuesta final.</strong> Todo lo que construyas se parecerá a esto"]
+  ];
+  let cur=0, all=false;
+  function render(){
+    host.innerHTML=H.map((h,i)=>
+      '<div class="hop '+(all?"on":(i===cur?"on":(i<cur?"past":"")))+'">'+
+      '<span class="k">'+(i+1)+'</span><span class="who">'+h[0]+'</span>'+
+      '<span class="txt2">'+h[1]+'</span></div>').join("");
+  }
+  $("#loopNext").onclick=()=>{all=false;cur=Math.min(H.length-1,cur+1);render();};
+  $("#loopPrev").onclick=()=>{all=false;cur=Math.max(0,cur-1);render();};
+  $("#loopAll").onclick=()=>{all=!all;render();};
+  render();
+})();
+
+/* ══ cap 9 · decisor tools / skills / MCP ══ */
+(function(){
+  const box=$("#tsmDecider"); if(!box) return;
+  const steps=$$(".q-step",box), v=$("#tsmVerdict");
+  const V={
+    tool:["Tools","<strong>Tus sistemas internos</strong> — tu base de datos, tu gestor de proyectos, tus APIs propias. Defines una función y su JSON schema, Claude decide cuándo llamarla y <strong>tu código la ejecuta</strong>. <strong>Tuyo el código, tuyo el mantenimiento.</strong>"],
+    skill:["Skills","Una skill enseña <strong>un procedimiento</strong>: tu plantilla de informe, tu checklist de revisión. Son <strong>instrucciones, no necesariamente integraciones</strong>. Las tools son sobre <em>qué</em> puede hacer Claude; las skills, sobre <em>cómo</em> quieres que se haga."],
+    mcp:["MCP","<strong>Servicios de terceros.</strong> El proveedor publica y mantiene su servidor MCP: <strong>cuando su API cambia, tú no cambias nada</strong>. Y no escribes ni un schema — Claude <strong>introspecciona el servidor</strong>."]
+  };
+  function reset(){steps.forEach(s=>s.style.display="");v.classList.remove("on");}
+  $$("button[data-a]",box).forEach(b=>b.onclick=()=>{
+    const [t,d]=V[b.dataset.a];
+    v.innerHTML="<b>→ "+t+"</b>"+d+"<p style='margin:10px 0 0'><strong>La regla de tres:</strong> las tools son para tus cosas, las skills para tus procesos, y MCP para las cosas de todos los demás.</p>";
+    v.classList.add("on");
+    steps.forEach(s=>s.style.display="none");
+  });
+  $("#tsmReset").onclick=reset;
+})();
+
+/* ══ cap 10 · los cuatro patrones ══ */
+(function(){
+  const host=$("#ctxPats"), out=$("#ctxOut"); if(!host) return;
+  const P=[
+    {n:"Just-in-time", c:"patrón de diseño",
+     d:"<strong>No cargues todo por adelantado.</strong> Carga lo que el agente necesita <em>ahora</em> y deja que traiga más <strong>vía tools</strong> cuando lo pida.",
+     e:"El agente de cumplimiento <strong>no</strong> lleva el libro entero del código de edificación en su system prompt: llama a <code>lookup_building_code</code> cuando necesita una sección.",
+     f:"Tamaño de ventana",
+     api:false},
+    {n:"Compactación", c:"en servidor",
+     d:"Cuando la conversación se alarga, Anthropic <strong>resume los turnos antiguos en un solo bloque</strong>. Te apuntas con la clave <code>context_management</code>.",
+     e:"La API <strong>auto-resume al cruzar el umbral de disparo</strong>: no tienes que llevar tú la cuenta de la longitud.",
+     f:"Tamaño de ventana",
+     api:true},
+    {n:"Prompt caching", c:"reutilizar lo estable",
+     d:"<strong>Marcas las partes estables</strong> de la petición — system prompt, definiciones de tools, un documento largo — y las <strong>reutilizas entre llamadas a una fracción del coste</strong>.",
+     e:"4.000 tokens de system prompt × 100 llamadas por hora: es <strong>la diferencia entre una factura usable y una llamada de finanzas</strong>.",
+     f:"Coste",
+     api:true},
+    {n:"Memory tool", c:"entre sesiones",
+     d:"Claude <strong>lee y escribe un directorio de memoria</strong> vía llamadas a tools. <strong>El backend de almacenamiento lo implementas tú</strong>: ficheros, base de datos, almacén cifrado.",
+     e:"Anthropic <strong>auto-inyecta una instrucción de sistema</strong> diciéndole a Claude que <strong>consulte la memoria antes de empezar a trabajar</strong>.",
+     f:"Ausencia de estado",
+     api:true}
+  ];
+  host.innerHTML=P.map((p,i)=>'<button role="tab" aria-selected="'+(i===0)+'" data-v="'+i+'"><span class="pn">'+p.n+'</span><span class="pc">'+p.c+'</span></button>').join("");
+  function render(i){
+    const p=P[i];
+    out.innerHTML='<p style="margin-bottom:10px">'+p.d+'</p>'+
+      '<div class="grid2" style="margin-bottom:14px">'+
+        '<div class="mini"><h5>En la práctica</h5><p>'+p.e+'</p></div>'+
+        '<div class="mini"><h5>Modo de fallo que ataca</h5><p><strong>'+p.f+'</strong></p></div>'+
+      '</div>'+
+      '<div class="box '+(p.api?"note":"trap")+'" style="margin:0"><div class="bh">'+(p.api?"ℹ Funcionalidad de primera clase de la API":"⚠ Este es el patrón de diseño de los cuatro")+'</div><p style="margin:0">'+
+      (p.api?"Se activa desde la petición: no es una decisión de arquitectura, es una clave más.":"<strong>No hay nada especial en la API</strong>: es <strong>una decisión deliberada</strong> sobre qué cargas y cuándo. Si te preguntan cuál de los cuatro no es funcionalidad de la API, es este.")+
+      '</p></div>';
+  }
+  $$('[role="tab"]',host).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',host).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ cap 12 · los cuatro primitivos ══ */
+(function(){
+  const tl=$("#primTl"), out=$("#primOut"); if(!tl) return;
+  const S=[
+    {i:"◉", l:"Agent", t:"Agent — la persona",
+     d:"<strong>Modelo, system prompt y toolset.</strong> Es <strong>reutilizable entre muchas ejecuciones</strong>: créalo una vez y lánzalo en tantas sesiones como quieras.",
+     c:'client.beta.agents.create(name=…, model=…, system=…, tools=[…])'},
+    {i:"▣", l:"Environment", t:"Environment — dónde corre",
+     d:"El <strong>sandbox</strong>: cloud o local, configuración de red. Es el contenedor donde el fichero se escribe de verdad.",
+     c:'client.beta.environments.create(config={"type": "cloud", …})'},
+    {i:"▶", l:"Session", t:"Session — la unidad de trabajo",
+     d:"<strong>Una única ejecución</strong> de un agente dentro de un entorno. Las sesiones <strong>corren en paralelo</strong>: dos tickets, dos contenedores.",
+     c:'client.beta.sessions.create(agent=agent.id, environment_id=…)'},
+    {i:"↹", l:"Events", t:"Events — cómo fluye todo",
+     d:"Los mensajes que entran y salen: acciones del agente, llamadas a tools, resultados, respuestas. <strong>Abre el stream antes de enviar el kickoff.</strong>",
+     c:'client.beta.sessions.events.stream(session_id=…)   # y luego .send(events=[…])'}
+  ];
+  tl.innerHTML=S.map((s,i)=>'<button role="tab" aria-selected="'+(i===0)+'" data-v="'+i+'"><span class="dot">'+s.i+'</span><span class="lab">'+s.l+'</span></button>').join("");
+  function render(i){
+    const s=S[i];
+    out.innerHTML='<p style="margin-bottom:10px"><strong>'+s.t+'.</strong> '+s.d+'</p>'+
+      '<pre style="margin:0"><code>'+s.c+'</code></pre>';
+  }
+  $$('[role="tab"]',tl).forEach(b=>b.onclick=()=>{
+    $$('[role="tab"]',tl).forEach(x=>x.setAttribute("aria-selected",x===b));
+    render(+b.dataset.v);
+  });
+  render(0);
+})();
+
+/* ══ flashcards ══ */
+const CARDS=[
+ ["Las tres capas de la plataforma","<strong>Primitives</strong> (Messages API, tool use, files, web search, code execution, MCP, skills) · <strong>Infrastructure</strong> (managed agents, reintentos, colas, observabilidad) · <strong>Controls</strong> (dashboards, evals)."],
+ ["El lema de la plataforma","<strong>Build with primitives, scale on infrastructure, run with control.</strong>"],
+ ["⭐ Los tres parámetros de <code>messages.create</code>","<strong>model</strong> · <strong>max tokens</strong> · <strong>messages</strong>. El system prompt es <strong>opcional</strong> y la API key <strong>no es un parámetro de la llamada</strong>."],
+ ["¿Dónde va la API key?","En un fichero <code>.env.local</code>, <strong>fuera del control de versiones</strong>. Hardcodearla es cómo acaban filtradas en GitHub."],
+ ["⚠ ¿Qué es <code>response.content</code>?","Un <strong>array de bloques</strong>, no una cadena. Claude puede devolver texto, llamadas a tools y thinking — <strong>itera y comprueba el <code>type</code></strong>."],
+ ["Los cuatro tiers de modelo","<strong>Fable</strong> (por encima de Opus, coste muy superior) · <strong>Opus</strong> (razonamiento profundo) · <strong>Sonnet</strong> (el punto dulce) · <strong>Haiku</strong> (volumen, rápido y barato)."],
+ ["La evaluación mínima del curso","<strong>20 o 30 ejemplos representativos</strong> de tu carga real, ejecutados <strong>de Haiku hacia arriba</strong>."],
+ ["⭐ La regla para elegir modelo","<strong>El modelo correcto es el más barato cuya salida publicarías de verdad.</strong>"],
+ ["¿Qué campo informa de tu factura?","<code>response.usage</code>: <strong>tokens de entrada y salida</strong>."],
+ ["Enrutado por tarea","Clasificar con <strong>Haiku</strong>, redactar con <strong>Sonnet</strong>, RFP con <strong>Opus</strong>. <strong>Una cola, tres modelos.</strong>"],
+ ["¿Qué es un agente?","<strong>Claude en bucle</strong>: una versión autónoma que ejecuta los dos lados del bucle de mensajes <strong>sin un humano en medio</strong>."],
+ ["⭐ La condición de parada del bucle","<strong><code>stop_reason == \"end_turn\"</code></strong>. Con <code>tool_use</code>, ejecutas la tool y sigues iterando."],
+ ["La frase del bucle","<strong>Tú eres dueño del bucle y de las tools. Claude es dueño del razonamiento.</strong>"],
+ ["⭐ ¿Quién ejecuta una tool?","<strong>Tu código.</strong> Claude solo <strong>pide</strong> la llamada; el resultado vuelve como <code>tool_result</code>."],
+ ["Las tres partes de una definición de tool","<code>name</code> · <code>description</code> · <code>input_schema</code>, en el array <code>tools</code>."],
+ ["⚠ La causa número uno de fallos con tools","<strong>Descripciones vagas.</strong> La <code>description</code> es lo que Claude lee para decidir si llamarla."],
+ ["¿Qué te ahorra el tool runner?","El <strong>bucle</strong>, el switch de stop reason, devolver resultados a mano y <strong>escribir JSON schemas</strong> — los construye desde tus funciones. En <strong>TypeScript, Python y Ruby</strong>."],
+ ["<code>runner.untilDone()</code>","Devuelve <strong>el mensaje final del assistant</strong> cuando todo el ida y vuelta de tools se ha asentado."],
+ ["¿Cómo se activa el thinking en Opus 4.7?","<code>thinking={\"type\": \"adaptive\"}</code>. <strong>Sin presupuesto de tokens</strong>: Claude decide cuándo y cuánto."],
+ ["⚠ ¿Dónde va <code>effort</code>?","<strong>Dentro de <code>output_config</code></strong>, no junto al bloque <code>thinking</code>. Niveles: <code>low</code>, <code>medium</code>, <code>high</code> (por defecto), <code>xhigh</code>, <code>max</code>."],
+ ["¿Cuándo saltarse el thinking?","<strong>Clasificación simple, extracción y boilerplate</strong>: ahí solo añade <strong>latencia y coste</strong>."],
+ ["Las tres server tools","<strong>Web search</strong> (con citas) · <strong>code execution</strong> (Python en sandbox) · <strong>web fetch</strong>. Las ejecuta <strong>Anthropic</strong>."],
+ ["⭐ ¿Qué no necesitan las server tools?","<strong>Bucle de agente.</strong> El resultado viene <strong>en la misma respuesta</strong>, en bloques <code>server_tool_use</code> y de resultado."],
+ ["Las dos client tools","<strong>Memory</strong> (memoria entre sesiones) y <strong>Bash</strong> (shell persistente). Corren donde corre tu código, pero <strong>el SDK trae schema y runner</strong>."],
+ ["Tools vs. Skills","Las <strong>tools</strong> son sobre <strong>qué</strong> puede hacer Claude; las <strong>skills</strong>, sobre <strong>cómo</strong> quieres que se haga."],
+ ["⭐ Carga progresiva de una Skill","Al arrancar, <strong>solo nombre y descripción</strong>. La Skill completa se carga <strong>cuando el agente decide que es relevante</strong>."],
+ ["¿Cómo se adjunta una Skill?","Con <code>container.skills</code> (<code>skill_id</code> + <code>version</code>). Es una <strong>lista</strong>: puedes <strong>apilar varias</strong>. Se suben antes con <code>client.beta.skills.create</code>."],
+ ["⭐ La regla de tres","<strong>Las tools son para tus cosas, las skills para tus procesos, y MCP para las cosas de todos los demás.</strong>"],
+ ["¿Qué problema resuelve MCP?","<strong>El mantenimiento.</strong> El proveedor publica su servidor MCP y lo mantiene: <strong>cuando su API cambia, tú no cambias nada</strong>."],
+ ["Las dos claves de una conexión MCP","<code>mcp_servers</code> (tipo, URL, nombre, token) y una tool <code>mcp_toolset</code>. <strong>Ningún schema que escribir</strong>: Claude <strong>introspecciona</strong>."],
+ ["¿Cómo dejas un servidor MCP en solo lectura?","<code>default_config: {\"enabled\": False}</code> y activas tools concretas en <code>configs</code>."],
+ ["Qué cuenta como contexto","System prompt · historial · <strong>definiciones y resultados de tools</strong> · ficheros y skills · bloques de thinking. <strong>Cuando la ventana se llena, la petición falla.</strong>"],
+ ["⭐ Los cuatro patrones de contexto","<strong>Just-in-time</strong> (patrón de diseño) · <strong>compactación en servidor</strong> · <strong>prompt caching</strong> · <strong>memory tool</strong>."],
+ ["⚠ ¿Cuál de los cuatro no es funcionalidad de la API?","<strong>Just-in-time context</strong>: es un <strong>patrón de diseño</strong>, una decisión sobre qué cargas y cuándo."],
+ ["Los tres modos de fallo del contexto","<strong>Coste</strong> (caching) · <strong>tamaño de ventana</strong> (just-in-time, compactación) · <strong>ausencia de estado</strong> (memory tool)."],
+ ["¿Quién implementa el backend de la memory tool?","<strong>Tú</strong>, en el cliente. Anthropic <strong>auto-inyecta la instrucción</strong> de consultar la memoria antes de empezar."],
+ ["⭐ Los cuatro primitivos de managed agents","<strong>Agent</strong> (persona reutilizable) → <strong>Environment</strong> (dónde corre) → <strong>Session</strong> (una ejecución) → <strong>Events</strong> (todo lo que fluye)."],
+ ["⚠ El orden del stream","<strong>Abre el event stream antes de enviar el mensaje inicial</strong>: solo entrega eventos <strong>posteriores a su apertura</strong>."],
+ ["Los tres eventos de la demo","<code>agent.message</code> (texto) · <code>agent.tool_use</code> (tool elegida) · <code>session.status_idle</code> (terminado)."],
+ ["Rúbricas y graders","La <strong>rúbrica</strong> define qué es «hecho»; un <strong>grader independiente, en su propia ventana de contexto</strong>, evalúa la salida y Claude <strong>itera hasta cumplirla</strong>."],
+ ["¿Qué frena una acción sensible en un managed agent?","La <strong>política de permisos</strong>: ves el borrador, lo apruebas, y entonces sale. <strong>Las acciones sensibles esperan a un humano.</strong>"],
+ ["⭐ El slash command de la skill de la API","<strong><code>/claude-api</code></strong>. También <strong>se carga sola</strong> al detectar el SDK de TypeScript. Marketplace: <code>/plugin marketplace add AnthropicsSkills</code>."],
+ ["Las tres cosas de un buen prompt para Claude Code","<strong>El fichero</strong>, <strong>el patrón</strong> y <strong>el estado final</strong> esperado."],
+ ["El patrón que se repite siempre","<strong>Define una tool. Pásasela a un runner. Devuelve el resultado.</strong>"]
+];
+(function(){
+  const grid=$("#cardGrid"); if(!grid) return;
+  function paint(list){
+    grid.innerHTML="";
+    list.forEach(([f,b])=>{
+      const el=document.createElement("button"); el.className="card";
+      el.innerHTML='<div class="inner"><div class="f">'+f+'</div><div class="b">'+b+'</div></div>';
+      el.onclick=()=>el.classList.toggle("flip");
+      grid.appendChild(el);
+    });
+  }
+  paint(CARDS);
+  $("#flipAll").onclick=()=>{
+    const any=$$(".card",grid).some(c=>!c.classList.contains("flip"));
+    $$(".card",grid).forEach(c=>c.classList.toggle("flip",any));
+  };
+  $("#shuffleCards").onclick=()=>{
+    const a=[...CARDS];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    paint(a);
+  };
+})();
+
+/* ══ quiz ══ */
+const QUIZ=[
+ {q:"<b>[Oficial]</b> ¿Qué tres parámetros pide la propia llamada <code>messages.create</code>?",
+  o:["Un modelo, un system prompt y una API key",
+     "Un modelo, un límite de max tokens y una lista de mensajes",
+     "Un system prompt, una temperature y una lista de mensajes",
+     "Una API key, un workspace y un límite de max tokens"],
+  a:1, e:"Pregunta 1 del quiz oficial. El <strong>system prompt es opcional</strong> (moldea la persona) y <strong>la API key no es un parámetro de la llamada</strong>: vive en el cliente y en tu <code>.env.local</code>."},
+
+ {q:"<b>[Oficial]</b> Cuando Claude decide usar una tool, ¿quién la ejecuta realmente?",
+  o:["Claude, dentro del modelo, durante la respuesta",
+     "Anthropic, en sus servidores, automáticamente",
+     "Tu código la ejecuta y devuelve el resultado",
+     "El SDK bloquea la petición hasta que un humano la aprueba"],
+  a:2, e:"Pregunta 2 del quiz oficial. Claude <strong>pide</strong> la llamada; tu código ejecuta la función y devuelve un <code>tool_result</code>. La excepción son las <strong>server tools</strong> — web search, code execution, web fetch — que sí ejecuta Anthropic, y por eso <strong>no necesitan bucle de agente</strong>."},
+
+ {q:"<b>[Oficial]</b> ¿Por qué importa la gestión del contexto en agentes de larga duración?",
+  o:["Claude rechaza peticiones que usen más de media ventana",
+     "Los mensajes antiguos se borran automáticamente a los diez turnos",
+     "La ventana es finita y pagas por lo que hay dentro: el objetivo es meter lo correcto",
+     "Un contexto más grande siempre mejora la calidad, así que conviene llenarlo"],
+  a:2, e:"Pregunta 3 del quiz oficial. El contexto es la entrada de cada llamada — <strong>lo pagas al entrar y al salir</strong> — y <strong>cuando la ventana se llena, la petición falla</strong>."},
+
+ {q:"<b>[Oficial]</b> ¿Qué trabajos encajan mejor con un agente gestionado?",
+  o:["Preguntas sueltas que necesitan una respuesta rápida",
+     "Trabajo de larga duración, en sandbox o en segundo plano",
+     "Clasificación de alto volumen al menor coste posible",
+     "Cualquier cosa en la que necesites inspeccionar tú cada llamada a tool"],
+  a:1, e:"Pregunta 4 del quiz oficial. Se recurre a ellos cuando el bucle <strong>correría demasiado tiempo, haría demasiadas cosas o necesitaría sobrevivir a un percance</strong>. El volumen barato es Haiku, y si quieres control total, <strong>escribes el bucle tú</strong>."},
+
+ {q:"<b>[Oficial]</b> En Claude Code, ¿qué slash command invoca la skill integrada para trabajar con la Claude API?",
+  o:["<code>/anthropic-api</code>",
+     "<code>/claude-sdk</code>",
+     "<code>/claude-api</code>",
+     "<code>/api-tools</code>"],
+  a:2, e:"Pregunta 5 del quiz oficial. Además <strong>se carga sola</strong> cuando Claude Code detecta el SDK de TypeScript. Si no aparece: <code>/plugin marketplace add AnthropicsSkills</code> — <strong>con <code>s</code> al final de Anthropics</strong>."},
+
+ {q:"Recibes una respuesta y quieres el texto. ¿Por qué no vale <code>response.content</code> directamente?",
+  o:["Porque viene codificado en base64",
+     "Porque es un array de bloques: hay que iterar y comprobar el <code>type</code>",
+     "Porque solo contiene metadatos; el texto va en <code>response.text</code>",
+     "Porque hay que esperar a que el stream termine"],
+  a:1, e:"Para una respuesta de texto normal suele haber <strong>un solo bloque de tipo <code>text</code></strong>, pero Claude puede devolver varios — <strong>texto, llamadas a tools, thinking</strong>. Por eso siempre se itera."},
+
+ {q:"Vas a elegir modelo para una funcionalidad nueva. ¿Qué recomienda el curso hacer primero?",
+  o:["Empezar por Opus y bajar si la latencia molesta",
+     "Montar una evaluación con 20-30 ejemplos reales y empezar por Haiku",
+     "Medir el coste por token de cada tier en la documentación",
+     "Usar Sonnet siempre: es el punto dulce"],
+  a:1, e:"<strong>La evaluación va antes que el código de producción.</strong> Se ejecuta <strong>de Haiku hacia arriba</strong> y te paras en <strong>el modelo más barato cuya salida publicarías de verdad</strong>."},
+
+ {q:"Tu agente responde con <code>stop_reason: \"tool_use\"</code>. ¿Qué toca hacer?",
+  o:["Volver a llamar a la API con el mismo mensaje",
+     "Ejecutar la tool y meter un bloque <code>tool_result</code> ligado al <code>tool_use_id</code>",
+     "Terminar el bucle: Claude ya ha respondido",
+     "Aumentar <code>max_tokens</code> y reintentar"],
+  a:1, e:"Ejecutas la tool, metes en <code>messages</code> <strong>la respuesta del assistant y tus resultados</strong>, y vuelves a llamar. El bucle para <strong>cuando el stop reason es <code>end_turn</code></strong>."},
+
+ {q:"Tu agente ignora una tool que sí debería usar. Según el curso, ¿cuál es la causa más probable?",
+  o:["El modelo elegido es demasiado pequeño",
+     "La descripción de la tool es vaga",
+     "Falta el campo <code>required</code> en el input schema",
+     "Hay demasiadas tools en el array"],
+  a:1, e:"Es explícito en la lección: las descripciones vagas son <strong>«la razón número uno de que los agentes fallen o no cojan las tools disponibles»</strong>. Claude elige <strong>leyendo las descripciones</strong>."},
+
+ {q:"¿Qué te ahorra el tool runner del SDK?",
+  o:["Solo el bucle: los JSON schemas los sigues escribiendo tú",
+     "El bucle completo y los JSON schemas, que construye desde tus funciones reales",
+     "El coste de los tokens de las definiciones de tools",
+     "La necesidad de un system prompt"],
+  a:1, e:"Nada de bucle <code>while</code>, nada de switch de stop reason, nada de meter resultados a mano — <strong>y nada de escribir schemas</strong>. Está en el SDK de <strong>TypeScript, Python y Ruby</strong>; <code>runner.untilDone()</code> devuelve el mensaje final."},
+
+ {q:"Activas thinking adaptativo y quieres subir la profundidad. ¿Dónde va <code>effort</code>?",
+  o:["Junto al bloque <code>thinking</code>, como segunda clave",
+     "Dentro de <code>output_config</code>",
+     "En el system prompt, como instrucción",
+     "En <code>max_tokens</code>, que actúa de presupuesto"],
+  a:1, e:"Es la trampa que avisa el propio curso. Niveles: <code>low</code>, <code>medium</code>, <code>high</code> (<strong>por defecto</strong>), <code>xhigh</code>, <code>max</code>. Y con adaptativo <strong>no eliges presupuesto de tokens</strong>."},
+
+ {q:"Declaras web search en tu array <code>tools</code>. ¿Qué cambia respecto a una tool personalizada?",
+  o:["Nada: sigues necesitando el bucle de agente",
+     "Que Anthropic la ejecuta y el resultado viene en la misma respuesta, sin bucle",
+     "Que hay que definir el input schema con más detalle",
+     "Que solo funciona con Opus"],
+  a:1, e:"Las <strong>server tools</strong> las ejecuta Anthropic. No conmutas sobre <code>stop_reason</code> ni devuelves resultados: la respuesta ya trae bloques <code>server_tool_use</code> y de resultado junto a los de texto."},
+
+ {q:"Quieres que todos los informes de tu equipo salgan con la misma estructura y tono. ¿Qué usas?",
+  o:["Una tool que devuelva la plantilla",
+     "Una Skill: enseña el procedimiento, el <em>cómo</em>",
+     "Un servidor MCP con la plantilla publicada",
+     "Un system prompt distinto en cada endpoint"],
+  a:1, e:"<strong>Las tools son sobre qué puede hacer Claude; las Skills, sobre cómo quieres que se haga.</strong> El prompt del usuario queda en una línea y <strong>el procedimiento vive en el <code>SKILL.md</code></strong>."},
+
+ {q:"Tu agente necesita leer Slack pero no publicar. ¿Cómo lo acotas?",
+  o:["Quitando el token de escritura del servidor",
+     "Con <code>default_config: {\"enabled\": False}</code> y activando tools concretas en <code>configs</code>",
+     "Filtrando las respuestas del modelo antes de enviarlas",
+     "No se puede: un <code>mcp_toolset</code> concede todas las tools"],
+  a:1, e:"Desactivas todo por defecto y habilitas solo <code>search_messages</code> y <code>list_channels</code>. Útil <strong>cuando confías en un servicio para lecturas pero no quieres que Claude escriba por accidente</strong>."},
+
+ {q:"De los cuatro patrones de contexto, ¿cuál <em>no</em> es una funcionalidad de primera clase de la API?",
+  o:["La compactación en servidor",
+     "El prompt caching",
+     "El just-in-time context",
+     "La memory tool"],
+  a:2, e:"El <strong>just-in-time context</strong> es <strong>el patrón de diseño de los cuatro</strong>: nada especial en la API, solo una <strong>decisión deliberada</strong> sobre qué cargas y cuándo — como llamar a <code>lookup_building_code</code> en vez de meter el libro entero en el system prompt."},
+
+ {q:"Creas una sesión de managed agent y quieres ver todo lo que hace. ¿Qué orden sigues?",
+  o:["Enviar el mensaje inicial y luego abrir el stream",
+     "Abrir el stream y luego enviar el mensaje inicial",
+     "Da igual: el stream reproduce los eventos desde el inicio",
+     "Abrir el stream después del primer <code>agent.tool_use</code>"],
+  a:1, e:"El stream <strong>solo entrega eventos que ocurren después de abrirse</strong>. Los tres que vigila la demo: <code>agent.message</code>, <code>agent.tool_use</code> y <code>session.status_idle</code>."}
+];
+function mountQuiz(boxSel,data,key,numSel,labSel,resetSel){
+  const box=$(boxSel); if(!box) return;
+  const KEYS="ABCD";
+  let answers=LS.get(key,{});
+  function render(){
+    box.innerHTML="";
+    data.forEach((q,i)=>{
+      const d=document.createElement("div"); d.className="quiz-q";
+      d.innerHTML='<div class="qn">Pregunta '+(i+1)+' / '+data.length+'</div><div class="qt">'+q.q+'</div>';
+      const ul=document.createElement("div"); ul.className="opts";
+      q.o.forEach((t,j)=>{
+        const b=document.createElement("button"); b.className="opt";
+        b.innerHTML='<span class="k">'+KEYS[j]+'</span><span>'+t+'</span>';
+        b.onclick=()=>{ if(answers[i]!==undefined) return; answers[i]=j; LS.set(key,answers); render(); score(); };
+        ul.appendChild(b);
+      });
+      d.appendChild(ul);
+      const ex=document.createElement("div"); ex.className="expl";
+      ex.innerHTML='<b>'+(answers[i]===q.a?"✓ Correcto. ":"✗ La correcta es "+KEYS[q.a]+". ")+'</b>'+q.e;
+      d.appendChild(ex);
+      if(answers[i]!==undefined){
+        [...ul.children].forEach((b,j)=>{
+          b.disabled=true;
+          if(j===q.a)b.classList.add("ok"); else if(j===answers[i])b.classList.add("ko");
+        });
+        ex.classList.add("on");
+      }
+      box.appendChild(d);
+    });
+  }
+  function score(){
+    const done=Object.keys(answers).length;
+    const ok=Object.entries(answers).filter(([i,v])=>data[i].a===+v).length;
+    $(numSel).textContent=ok+" / "+data.length;
+    const lab=$(labSel);
+    if(!done){lab.textContent="Aún no has contestado";return;}
+    const pct=Math.round(ok/done*100), full=done===data.length;
+    const thr=Math.ceil(data.length*0.85), mid=Math.ceil(data.length*0.65);
+    lab.innerHTML=done+" contestadas · "+pct+"% de acierto"+
+      (full?(ok>=thr?" · <b style='color:var(--good)'>listo para el quiz oficial</b>"
+        :ok>=mid?" · repasa las falladas y vuelve":" · vuelve a leer los capítulos de las falladas"):"");
+  }
+  $(resetSel).onclick=()=>{answers={};LS.set(key,answers);render();score();box.scrollIntoView({behavior:"smooth",block:"start"});};
+  render(); score();
+}
+mountQuiz("#quizBox",QUIZ,"quiz","#scoreNum","#scoreLab","#quizReset");
+
+/* ══ progreso ══ */
+(function(){
+  const CH=["c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13"];
+  let read=LS.get("read",{});
+  function sync(){
+    const n=CH.filter(c=>read[c]).length;
+    $("#meterBar").style.width=(n/CH.length*100)+"%";
+    $("#meterLab").textContent=n+" / "+CH.length;
+    CH.forEach(c=>{const a=$('[data-nav="'+c+'"]'); if(a)a.classList.toggle("done",!!read[c]);});
+    $$(".readbar[data-read]").forEach(bar=>{
+      const k=bar.dataset.read; if(!CH.includes(k))return;
+      const on=!!read[k];
+      bar.classList.toggle("done",on);
+      $(".txt",bar).textContent=on?"✓ Leído":"¿Capítulo asimilado?";
+      $(".btn",bar).textContent=on?"Desmarcar":"Marcar como leído";
+    });
+  }
+  $$(".readbar[data-read] .btn").forEach(b=>{
+    b.onclick=()=>{const k=b.closest(".readbar").dataset.read;read[k]=!read[k];LS.set("read",read);sync();};
+  });
+  $("#resetBtn").onclick=()=>{read={};LS.set("read",read);LS.set("quiz",{});sync();location.reload();};
+  sync();
+})();
+
+/* ══ scrollspy ══ */
+(function(){
+  const links=$$("#side a"), map={};
+  links.forEach(a=>map[a.dataset.nav]=a);
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{
+      if(e.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const a=map[e.target.id]; if(a)a.classList.add("active");
+      }
+    });
+  },{rootMargin:"-70px 0px -70% 0px",threshold:0});
+  $$("main section").forEach(s=>obs.observe(s));
+})();
+
+/* ══ buscador ══ */
+(function(){
+  const inp=$("#search"), secs=$$("main section"), nores=$("#nores"), hrs=$$("main hr");
+  const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  inp.oninput=()=>{
+    const q=norm(inp.value.trim());
+    if(!q){secs.forEach(s=>s.classList.remove("hidden"));hrs.forEach(h=>h.style.display="");nores.classList.remove("on");return;}
+    let any=false;
+    secs.forEach(s=>{
+      const hay=norm((s.dataset.title||"")+" "+s.textContent).includes(q);
+      s.classList.toggle("hidden",!hay); if(hay)any=true;
+    });
+    hrs.forEach(h=>h.style.display="none");
+    nores.classList.toggle("on",!any);
+  };
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();inp.focus();inp.select();}
+    if(e.key==="Escape"&&document.activeElement===inp){inp.value="";inp.dispatchEvent(new Event("input"));inp.blur();}
+  });
+})();
+</script>
+</body>
+</html>
