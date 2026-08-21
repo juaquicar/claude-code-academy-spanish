@@ -1,6 +1,6 @@
 # Claude Code Academy — resúmenes en español
 
-Resúmenes completos, en español, de los cursos de la [Anthropic Academy](https://www.anthropic.com/learn) sobre Claude Code.
+Resúmenes completos, en español, de los cursos de la [Anthropic Academy](https://www.anthropic.com/learn) sobre Claude Code — y una guía de la certificación **[Claude Certified Architect – Foundations](certificacion-ccar-f/)** hacia la que apuntan.
 
 Cada curso trae **un `.md` por lección** para leer en el editor, y **un `curso-interactivo.html`** autocontenido —sin dependencias ni conexión— con diagramas interactivos, flashcards, quiz con corrección al momento, seguimiento de progreso, buscador y tema claro/oscuro. Se abre con doble clic.
 
@@ -15,7 +15,21 @@ Cada curso trae **un `.md` por lección** para leer en el editor, y **un `curso-
 | **[Introduction to Agent Skills](introduction-to-agent-skills/)** | 6 | Qué son · Crearlas · Configuración y multi-fichero · Vs. otras funcionalidades · Compartir · Diagnóstico |
 | **[Introduction to Model Context Protocol](introduction-to-model-context-protocol/)** | 11 | Qué es MCP · Clientes · Tools e inspector · Implementar un cliente · Resources · Prompts · Las tres primitivas |
 
-> **[▶ index.html](index.html)** — página de inicio para navegar entre los cursos, con tu progreso de cada uno. Ábrela con doble clic.
+> **[▶ index.html](index.html)** — página de inicio: navega entre los cursos, busca con `⌘/Ctrl+K`, y ve tu progreso y tu cobertura por dominio del examen. Ábrela con doble clic.
+
+## La certificación
+
+| | Contenido |
+|---|---|
+| **[Claude Certified Architect – Foundations (CCAR-F)](certificacion-ccar-f/)** | Ficha y políticas · los 5 dominios con sus 30 task statements · los 6 escenarios · las 12 preguntas oficiales de muestra · plan de estudio, mapa curso↔dominio y temas dentro y fuera de alcance |
+
+La credencial hacia la que apuntan estos cursos. **No pregunta sintaxis: pregunta criterio de arquitectura** — un problema de producción con síntomas concretos y cuatro arreglos plausibles, y hay que elegir el que ataca la causa raíz con el esfuerzo proporcionado. Premia el arreglo más simple que funciona, el determinismo donde el resultado lo exige, y diagnosticar dónde falla de verdad. Castiga la sobreingeniería.
+
+**60 ítems · 120 minutos · 4 escenarios de un banco de 6 · corte en 720 sobre 1000 · 125 USD · válida 12 meses.** Pesos por dominio: **27 / 18 / 20 / 20 / 15 %**.
+
+La guía interactiva trae **blueprint navegable, simulacro de 60 preguntas con modo por dominio, flashcards y un panel de preparación** que estima tu nota ponderando por los pesos reales. Todo se guarda en tu navegador; el índice del repo lee ese resumen y te muestra la cobertura por dominio.
+
+> Elaborada a partir del **Exam Guide oficial v1.0** (efectiva julio 2026). La guía oficial es la única referencia autoritativa y puede cambiar sin previo aviso. Este proyecto **no está afiliado ni respaldado por Anthropic PBC**, y aquí no hay preguntas reales del examen: solo las 12 de muestra que la propia guía publica.
 
 ### Claude Code in Action
 
@@ -75,6 +89,7 @@ La **evaluación final oficial** está pendiente de hacer.
 
 ```
 CLAUDE.md                     cómo se elabora un curso, de principio a fin
+index.html                    página de inicio: cursos, progreso y certificación
 scripts/
 ├── extraer_curso.py          descarga un curso de Skilljar → markdown crudo
 └── validar_html.py           valida un curso-interactivo.html antes de publicarlo
@@ -82,6 +97,14 @@ scripts/
 ├── README.md                 índice y hilo conductor del curso
 ├── 01-....md ... NN-....md   una lección por fichero
 └── curso-interactivo.html    el curso entero en una página
+certificacion-ccar-f/
+├── README.md                 índice y hilo conductor de la certificación
+├── 01-la-certificacion.md    ficha, blueprint, registro, políticas, renovación
+├── 02-....md ... 06-....md   un fichero por dominio del examen
+├── 07-los-seis-escenarios.md los 6 escenarios y el mapa escenario↔dominio
+├── 08-preguntas-oficiales.md las 12 preguntas de muestra de la guía oficial
+├── 09-plan-de-estudio.md     preparación, mapa curso↔dominio, huecos, alcance
+└── certificacion-interactiva.html
 ```
 
 ## Añadir un curso nuevo
