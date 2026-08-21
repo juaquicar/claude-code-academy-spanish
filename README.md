@@ -8,6 +8,8 @@ Cada curso trae **un `.md` por lección** para leer en el editor, y **un `curso-
 
 | Curso | Lecciones | Contenido |
 |---|---|---|
+| **[Claude Code 101](claude-code-101/)** | 13 | Qué es y cómo funciona · Instalación · Tu primer prompt y Plan Mode · Explore → Plan → Code → Commit · Gestión del contexto · Revisión de código · CLAUDE.md · Subagentes · Skills · MCP · Hooks |
+| **[Claude Platform 101](claude-platform-101/)** | 14 | La plataforma y sus tres capas · Tu primera llamada · Elegir el modelo · El bucle del agente · Tool use y tool runner · Thinking · Tools integradas · Skills · MCP · Gestión del contexto · Agentes gestionados · Construir con Claude Code |
 | **[Claude Code in Action](claude-code-in-action/)** | 9 | Dirigir sesiones largas · CLAUDE.md · Skills de verificación · Modos de permisos · Hooks · Routines y headless · GitHub Actions y Code Review · Verificar runs no supervisados · Plugins |
 | **[Introduction to Subagents](introduction-to-subagents/)** | 4 | Qué son · Crearlos · Diseñarlos bien · Usarlos con criterio |
 | **[MCP: Advanced Topics](model-context-protocol-advanced-topics/)** | 8 | Sampling · Log y progreso · Roots · Mensajes JSON · STDIO · StreamableHTTP · SSE en profundidad · stateless_http y json_response |
@@ -30,6 +32,30 @@ La credencial hacia la que apuntan estos cursos. **No pregunta sintaxis: pregunt
 La guía interactiva trae **blueprint navegable, simulacro de 60 preguntas con modo por dominio, flashcards y un panel de preparación** que estima tu nota ponderando por los pesos reales. Todo se guarda en tu navegador; el índice del repo lee ese resumen y te muestra la cobertura por dominio.
 
 > Elaborada a partir del **Exam Guide oficial v1.0** (efectiva julio 2026). La guía oficial es la única referencia autoritativa y puede cambiar sin previo aviso. Este proyecto **no está afiliado ni respaldado por Anthropic PBC**, y aquí no hay preguntas reales del examen: solo las 12 de muestra que la propia guía publica.
+
+### Claude Code 101
+
+[Curso original](https://anthropic.skilljar.com/claude-code-101) · **quiz oficial superado 5/5**
+
+La puerta de entrada. Claude Code no es un chat que te sugiere código: es **un agente que entra en tu repositorio y hace el trabajo**. Y sacarle partido son dos cosas — el flujo **Explore → Plan → Code → Commit** («si te llevas una sola cosa de este curso, que sea este flujo») y **saber qué ocupa tu ventana de contexto**.
+
+Lo contraintuitivo que deja: un prompt vago **no ahorra contexto, lo gasta**; conviene **empezar sin CLAUDE.md** para que lo escriba la experiencia; y si algo tiene que pasar siempre y sin fallo, **no va en un prompt, va en un hook**.
+
+El quiz oficial tiene 7 preguntas, de las que **4 son evaluables**; el repo recoge las reales con sus distractores más un banco extra de 24. La lección **Skills** no tiene texto en la plataforma — solo vídeo y enlace al curso dedicado — y el capítulo lo dice explícitamente en vez de rellenar el hueco.
+
+> **Orden sugerido:** este curso primero, y luego [Claude Code in Action](claude-code-in-action/) para autonomía y verificación.
+
+### Claude Platform 101
+
+[Curso original](https://anthropic.skilljar.com/claude-platform-101) · **quiz oficial superado 6/6**
+
+El salto de **chatear con Claude** a **publicar algo con Claude dentro**. En línea recta: una llamada `messages.create` → un bucle de agente con tools → delegar ese bucle, primero al **tool runner**, después entero a los **managed agents** de Anthropic.
+
+Dos ideas ordenan el curso. La delegación es un espectro: **tú eres dueño del bucle y de las tools, Claude es dueño del razonamiento** — hasta que decides no serlo. Y la elección entre funcionalidades es una regla de tres: **las tools son para tus cosas, las skills para tus procesos, y MCP para las cosas de todos los demás.**
+
+El quiz oficial tiene 8 preguntas, de las que **5 son evaluables**; el repo recoge las reales más un banco extra de 28.
+
+> **Orden sugerido:** después de este, [Claude with the Anthropic API](claude-with-the-anthropic-api/) para evals, prompt engineering y RAG en profundidad.
 
 ### Claude Code in Action
 
